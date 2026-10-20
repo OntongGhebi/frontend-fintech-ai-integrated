@@ -1,326 +1,276 @@
 import { useEffect, useState } from "react";
 
-import { ApiRequestError, apiClient, getApiBaseUrl } from "../lib/api-client";
+import { apiClient, ApiRequestError } from "../lib/api-client";
+import "./DashboardPage.css";
 
-type DashboardLoadState = "loading" | "success" | "empty" | "error";
-
-interface DashboardRequest {
-  startDate: string;
-  endDate: string;
+interface DashboardSummary {
+  currency: string;
+  totalIncome: string;
+  totalExpense: string;
+  netCashFlow: string;
+  transactionCount: number;
 }
 
-function toLocalDateInput(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+interface DashboardOverview {
+  currency: string;
+  summary: DashboardSummary;
 }
 
-function getDefaultDateRange(): DashboardRequest {
-  const end = new Date();
-  const start = new Date(end);
+type SummaryCardConfig = {
+  key: "income" | "expense" | "cashFlow" | "transactions";
+  title: string;
+  value: string;
+  description: string;
+  icon: string;
+  tone: "positive" | "negative" | "neutral" | "accent";
+};
 
-  start.setDate(start.getDate() - 29);
+function formatCurrency(value: string | number, currency = "IDR"): string {
+  const amount = Number(value);
 
-  return {
-    startDate: toLocalDateInput(start),
-    endDate: toLocalDateInput(end),
-  };
+  if (!Number.isFinite(amount)) {
+    return "—";
+  }
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
-function isNonEmptyObject(value: unknown): boolean {
-  return (
-    typeof value === "object" && value !== null && Object.keys(value).length > 0
-  );
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("id-ID").format(value);
 }
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (error.status === 401) {
-      return "Sesi login tidak lagi berlaku. Silakan login kembali.";
+    if (error.status === 0) {
+      return "Tidak dapat terhubung ke backend. Pastikan server API sedang berjalan dan konfigurasi URL sudah benar.";
     }
 
-    if (error.status === 403) {
-      return "Akses ke ringkasan keuangan tidak diizinkan.";
-    }
+    return error.message || "Dashboard gagal dimuat dari server.";
+  }
 
-    if (error.status >= 500) {
-      return "Server sedang mengalami kendala. Silakan coba kembali.";
-    }
-
+  if (error instanceof Error) {
     return error.message;
   }
 
-  if (error instanceof TypeError) {
-    return "Tidak dapat terhubung ke backend. Periksa server API dan konfigurasi URL.";
-  }
+  return "Terjadi kesalahan yang tidak diketahui saat memuat dashboard.";
+}
 
-  return "Ringkasan dashboard belum dapat dimuat. Silakan coba kembali.";
+function getCurrentPeriodLabel(): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 }
 
 export function DashboardPage() {
-  const [dateRange, setDateRange] =
-    useState<DashboardRequest>(getDefaultDateRange);
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const [appliedRange, setAppliedRange] =
-    useState<DashboardRequest>(getDefaultDateRange);
+  // const loadOverview = useCallback(async () => {
+  //   setIsLoading(true);
+  //   setErrorMessage(null);
 
-  const [loadState, setLoadState] = useState<DashboardLoadState>("loading");
+  //   try {
+  //     const response =
+  //       await apiClient.get<DashboardOverview>("/dashboard/overview");
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [overview, setOverview] = useState<unknown>(null);
-  const [requestVersion, setRequestVersion] = useState(0);
+  //     if (!response?.summary) {
+  //       throw new Error(
+  //         "Respons dashboard tidak memiliki objek summary yang diharapkan.",
+  //       );
+  //     }
 
-  const [formError, setFormError] = useState("");
+  //     setOverview(response);
+  //   } catch (error: unknown) {
+  //     setErrorMessage(getErrorMessage(error));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
 
-    async function loadDashboard() {
-      setLoadState("loading");
-      setErrorMessage("");
-
-      const query = new URLSearchParams({
-        startDate: appliedRange.startDate,
-        endDate: appliedRange.endDate,
-      });
+    const fetchOverview = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
 
       try {
-        const result = await apiClient.get<unknown>(
-          `dashboard/overview?${query.toString()}`,
-          { signal: controller.signal },
+        const response = await apiClient.get<DashboardOverview>(
+          "/dashboard/overview",
         );
 
-        if (controller.signal.aborted) return;
+        if (!response?.summary) {
+          throw new Error(
+            "Respons dashboard tidak memiliki objek summary yang diharapkan.",
+          );
+        }
 
-        setOverview(result);
-        setLoadState(isNonEmptyObject(result) ? "success" : "empty");
-      } catch (error) {
-        if (controller.signal.aborted) return;
-
-        setErrorMessage(getErrorMessage(error));
-        setLoadState("error");
+        if (!cancelled) {
+          setOverview(response);
+        }
+      } catch (error: unknown) {
+        if (!cancelled) {
+          setErrorMessage(getErrorMessage(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
-    }
+    };
 
-    void loadDashboard();
+    void fetchOverview();
 
     return () => {
-      controller.abort();
+      cancelled = true;
     };
-  }, [appliedRange, requestVersion]);
+  }, [reloadKey]);
 
-  function handleApplyPeriod(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError("");
+  const currency = overview?.currency ?? overview?.summary.currency ?? "IDR";
+  const summary = overview?.summary;
 
-    if (!dateRange.startDate || !dateRange.endDate) {
-      setFormError("Tanggal mulai dan tanggal akhir wajib diisi.");
-      return;
-    }
-
-    if (dateRange.startDate > dateRange.endDate) {
-      setFormError("Tanggal mulai tidak boleh setelah tanggal akhir.");
-      return;
-    }
-
-    setAppliedRange({ ...dateRange });
-  }
-
-  function handleRetry() {
-    setRequestVersion((version) => version + 1);
-  }
-
-  const periodIsApplied =
-    dateRange.startDate === appliedRange.startDate &&
-    dateRange.endDate === appliedRange.endDate;
+  const cards: SummaryCardConfig[] = [
+    {
+      key: "income",
+      title: "Total pemasukan",
+      value: summary ? formatCurrency(summary.totalIncome, currency) : "—",
+      description: "Pemasukan dari transaksi yang tercatat",
+      icon: "↗",
+      tone: "positive",
+    },
+    {
+      key: "expense",
+      title: "Total pengeluaran",
+      value: summary ? formatCurrency(summary.totalExpense, currency) : "—",
+      description: "Pengeluaran dari transaksi yang tercatat",
+      icon: "↘",
+      tone: "negative",
+    },
+    {
+      key: "cashFlow",
+      title: "Arus kas bersih",
+      value: summary ? formatCurrency(summary.netCashFlow, currency) : "—",
+      description: "Pemasukan dikurangi pengeluaran",
+      icon: "⇄",
+      tone: "accent",
+    },
+    {
+      key: "transactions",
+      title: "Total transaksi",
+      value: summary ? formatNumber(summary.transactionCount) : "—",
+      description: "Jumlah transaksi pada periode ringkasan",
+      icon: "#",
+      tone: "neutral",
+    },
+  ];
 
   return (
     <section className="dashboard-page">
       <div className="dashboard-heading">
-        <div>
+        <div className="dashboard-heading-copy">
           <span className="eyebrow">OVERVIEW</span>
-          <h2>Your financial overview</h2>
-          <p>
-            Pantau kondisi keuanganmu dari satu tempat. Ringkasan diambil dari
-            akun yang sedang login.
-          </p>
+          <h1>Ringkasan keuangan</h1>
+          <p>Pantau pemasukan, pengeluaran, dan arus kas dari satu tempat.</p>
         </div>
 
-        <span className="dashboard-live-label">
-          <span className="dashboard-live-dot" />
-          Live API
-        </span>
-      </div>
-
-      <section className="dashboard-filter-card" aria-label="Filter periode">
-        <div className="dashboard-section-title">
-          <div>
-            <h3>Periode laporan</h3>
-            <p>Pilih rentang tanggal untuk memuat ringkasan keuangan.</p>
-          </div>
-
-          <span className="filter-calendar-icon" aria-hidden="true">
-            ▦
+        <div className="dashboard-heading-actions">
+          <span className="dashboard-period">
+            <span className="period-dot" aria-hidden="true" />
+            {getCurrentPeriodLabel()}
           </span>
-        </div>
-
-        <form className="period-filter-form" onSubmit={handleApplyPeriod}>
-          <label className="date-field">
-            <span>Tanggal mulai</span>
-            <input
-              type="date"
-              value={dateRange.startDate}
-              max={dateRange.endDate || undefined}
-              onChange={(event) =>
-                setDateRange((current) => ({
-                  ...current,
-                  startDate: event.target.value,
-                }))
-              }
-              required
-            />
-          </label>
-
-          <label className="date-field">
-            <span>Tanggal akhir</span>
-            <input
-              type="date"
-              value={dateRange.endDate}
-              min={dateRange.startDate || undefined}
-              onChange={(event) =>
-                setDateRange((current) => ({
-                  ...current,
-                  endDate: event.target.value,
-                }))
-              }
-              required
-            />
-          </label>
 
           <button
-            className="dashboard-primary-button"
-            type="submit"
-            disabled={loadState === "loading" && periodIsApplied}
+            className="dashboard-refresh-button"
+            type="button"
+            onClick={() => setReloadKey((current) => current + 1)}
+            disabled={isLoading}
           >
-            Terapkan periode
+            <span aria-hidden="true">{isLoading ? "…" : "↻"}</span>
+            {isLoading ? "Memuat..." : "Perbarui"}
           </button>
-        </form>
-
-        {formError && (
-          <p className="dashboard-inline-error" role="alert">
-            {formError}
-          </p>
-        )}
-      </section>
-
-      <section className="dashboard-result-section">
-        <div className="dashboard-result-heading">
-          <div>
-            <h3>Financial overview</h3>
-            <p>
-              {appliedRange.startDate} — {appliedRange.endDate}
-            </p>
-          </div>
-
-          <span className={`api-state api-state-${loadState}`}>
-            <span className="api-state-dot" />
-            {loadState === "loading" && "Memuat data"}
-            {loadState === "success" && "Terhubung"}
-            {loadState === "empty" && "Belum ada data"}
-            {loadState === "error" && "Gagal memuat"}
-          </span>
         </div>
+      </div>
 
-        {loadState === "loading" && (
-          <div className="dashboard-feedback" role="status" aria-live="polite">
-            <span className="dashboard-spinner" aria-hidden="true" />
-            <div>
-              <strong>Memuat ringkasan keuangan</strong>
-              <p>Meminta data dashboard dari backend.</p>
-            </div>
+      {errorMessage && (
+        <div className="dashboard-error" role="alert">
+          <div className="dashboard-error-icon" aria-hidden="true">
+            !
           </div>
-        )}
 
-        {loadState === "error" && (
-          <div
-            className="dashboard-feedback dashboard-feedback-error"
-            role="alert"
+          <div className="dashboard-error-content">
+            <strong>Data dashboard belum tersedia</strong>
+            <p>{errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => setReloadKey((current) => current + 1)}
+              disabled={isLoading}
+            >
+              Coba lagi
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="financial-summary-grid"
+        aria-label="Ringkasan keuangan"
+        aria-busy={isLoading}
+      >
+        {cards.map((card) => (
+          <article
+            className={`financial-summary-card financial-summary-card--${card.tone}`}
+            key={card.key}
           >
-            <span className="feedback-icon" aria-hidden="true">
-              !
-            </span>
-            <div className="feedback-content">
-              <strong>Dashboard belum dapat dimuat</strong>
-              <p>{errorMessage}</p>
-              <button
-                type="button"
-                className="dashboard-secondary-button"
-                onClick={handleRetry}
-              >
-                Coba lagi
-              </button>
+            <div className="financial-summary-card-top">
+              <span className="financial-summary-title">{card.title}</span>
+              <span className="financial-summary-icon" aria-hidden="true">
+                {card.icon}
+              </span>
             </div>
-          </div>
-        )}
 
-        {loadState === "empty" && (
-          <div className="dashboard-feedback">
-            <span className="feedback-icon" aria-hidden="true">
-              ↗
-            </span>
-            <div>
-              <strong>Belum ada ringkasan untuk ditampilkan</strong>
-              <p>
-                Respons backend kosong. Coba periode lain atau tambahkan
-                transaksi terlebih dahulu.
-              </p>
+            <div className="financial-summary-value">
+              {isLoading && !overview ? (
+                <span
+                  className="financial-summary-skeleton"
+                  aria-label="Memuat nilai"
+                />
+              ) : (
+                card.value
+              )}
             </div>
-          </div>
-        )}
 
-        {loadState === "success" && (
-          <div className="dashboard-feedback dashboard-feedback-success">
-            <span className="feedback-icon" aria-hidden="true">
-              ✓
-            </span>
-            <div>
-              <strong>Data dashboard berhasil dimuat</strong>
-              <p>
-                Backend mengembalikan ringkasan untuk periode yang dipilih.
-                Integrasi berikutnya akan memetakan respons ini ke kartu saldo,
-                pemasukan, pengeluaran, grafik, dan anggaran.
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
+            <p className="financial-summary-description">{card.description}</p>
+          </article>
+        ))}
+      </div>
 
-      <section className="dashboard-connection-card">
-        <div className="connection-card-icon" aria-hidden="true">
-          ↗
+      <div className="dashboard-section-heading">
+        <div>
+          <span className="eyebrow">FINANCIAL WORKSPACE</span>
+          <h2>Aktivitas keuangan Anda</h2>
         </div>
+      </div>
 
-        <div className="connection-card-copy">
-          <strong>Koneksi backend</strong>
+      <div className="dashboard-next-steps">
+        <div className="dashboard-next-steps-mark" aria-hidden="true">
+          <span>✳</span>
+        </div>
+        <div className="dashboard-next-steps-copy">
+          <h3>Semua data dalam satu workspace</h3>
           <p>
-            Request dashboard menggunakan API client bersama sehingga mekanisme
-            access token dan refresh session tetap digunakan.
+            Ringkasan di atas berasal dari API dashboard. Visualisasi arus kas,
+            rincian akun, kategori transaksi, dan performa anggaran akan
+            ditambahkan pada fase integrasi berikutnya.
           </p>
-          <code>{getApiBaseUrl()}/dashboard/overview</code>
         </div>
-
-        <span className={`connection-status connection-status-${loadState}`}>
-          {loadState === "success"
-            ? "Request berhasil"
-            : loadState === "loading"
-              ? "Memproses"
-              : loadState === "empty"
-                ? "Respons kosong"
-                : "Perlu pemeriksaan"}
-        </span>
-      </section>
+      </div>
     </section>
   );
 }
