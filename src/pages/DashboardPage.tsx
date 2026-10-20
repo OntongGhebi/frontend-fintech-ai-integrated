@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { apiClient, ApiRequestError } from "../lib/api-client";
+import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./DashboardPage.css";
 
 interface DashboardSummary {
@@ -11,9 +11,49 @@ interface DashboardSummary {
   transactionCount: number;
 }
 
+interface MonthlyFinancialItem {
+  month: string;
+  income: string;
+  expense: string;
+  netCashFlow: string;
+  transactionCount: number;
+  savingsRate: string;
+}
+
+interface MonthlyFinancialSummary {
+  currency: string;
+  startDate: string;
+  endDate: string;
+  months: MonthlyFinancialItem[];
+  totalIncome: string;
+  totalExpense: string;
+  totalNetCashFlow: string;
+  totalTransactionCount: number;
+  averageMonthlyIncome: string;
+  averageMonthlyExpense: string;
+}
+
+interface CategoryAnalyticsItem {
+  categoryId: string;
+  categoryName: string;
+  totalAmount: string;
+  transactionCount: number;
+  percentage: string;
+}
+
+interface CategoryAnalytics {
+  currency: string;
+  type: "INCOME" | "EXPENSE";
+  categories: CategoryAnalyticsItem[];
+  totalAmount: string;
+  transactionCount: number;
+}
+
 interface DashboardOverview {
   currency: string;
   summary: DashboardSummary;
+  monthlyFinancialSummary: MonthlyFinancialSummary;
+  categoryAnalytics: CategoryAnalytics;
 }
 
 type SummaryCardConfig = {
@@ -43,10 +83,25 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("id-ID").format(value);
 }
 
+function formatMonth(month: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(month);
+
+  if (!match) {
+    return month;
+  }
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, 1);
+
+  return new Intl.DateTimeFormat("id-ID", {
+    month: "short",
+    year: "2-digit",
+  }).format(date);
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
     if (error.status === 0) {
-      return "Tidak dapat terhubung ke backend. Pastikan server API sedang berjalan dan konfigurasi URL sudah benar.";
+      return "Tidak dapat terhubung ke backend. Pastikan server API aktif dan URL API sudah benar.";
     }
 
     return error.message || "Dashboard gagal dimuat dari server.";
@@ -59,11 +114,35 @@ function getErrorMessage(error: unknown): string {
   return "Terjadi kesalahan yang tidak diketahui saat memuat dashboard.";
 }
 
-function getCurrentPeriodLabel(): string {
-  return new Intl.DateTimeFormat("id-ID", {
-    month: "long",
+function getPeriodLabel(summary?: MonthlyFinancialSummary): string {
+  if (!summary?.startDate || !summary.endDate) {
+    return "Ringkasan keuangan";
+  }
+
+  const start = new Date(summary.startDate);
+  const end = new Date(summary.endDate);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return "Ringkasan keuangan";
+  }
+
+  const monthYear = new Intl.DateTimeFormat("id-ID", {
+    month: "short",
     year: "numeric",
-  }).format(new Date());
+    timeZone: "Asia/Jakarta",
+  });
+
+  return `${monthYear.format(start)} – ${monthYear.format(end)}`;
+}
+
+function getPercentage(value: string): number {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, parsed));
 }
 
 export function DashboardPage() {
@@ -72,32 +151,10 @@ export function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // const loadOverview = useCallback(async () => {
-  //   setIsLoading(true);
-  //   setErrorMessage(null);
-
-  //   try {
-  //     const response =
-  //       await apiClient.get<DashboardOverview>("/dashboard/overview");
-
-  //     if (!response?.summary) {
-  //       throw new Error(
-  //         "Respons dashboard tidak memiliki objek summary yang diharapkan.",
-  //       );
-  //     }
-
-  //     setOverview(response);
-  //   } catch (error: unknown) {
-  //     setErrorMessage(getErrorMessage(error));
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, []);
-
   useEffect(() => {
     let cancelled = false;
 
-    const fetchOverview = async () => {
+    async function fetchOverview() {
       setIsLoading(true);
       setErrorMessage(null);
 
@@ -106,9 +163,13 @@ export function DashboardPage() {
           "/dashboard/overview",
         );
 
-        if (!response?.summary) {
+        if (
+          !response?.summary ||
+          !response.monthlyFinancialSummary ||
+          !response.categoryAnalytics
+        ) {
           throw new Error(
-            "Respons dashboard tidak memiliki objek summary yang diharapkan.",
+            "Respons dashboard tidak memiliki data analitik yang diperlukan.",
           );
         }
 
@@ -124,7 +185,7 @@ export function DashboardPage() {
           setIsLoading(false);
         }
       }
-    };
+    }
 
     void fetchOverview();
 
@@ -133,8 +194,12 @@ export function DashboardPage() {
     };
   }, [reloadKey]);
 
-  const currency = overview?.currency ?? overview?.summary.currency ?? "IDR";
   const summary = overview?.summary;
+  const monthlySummary = overview?.monthlyFinancialSummary;
+  const categoryAnalytics = overview?.categoryAnalytics;
+  const currency = overview?.currency ?? "IDR";
+  const months = monthlySummary?.months ?? [];
+  const categories = categoryAnalytics?.categories ?? [];
 
   const cards: SummaryCardConfig[] = [
     {
@@ -165,11 +230,28 @@ export function DashboardPage() {
       key: "transactions",
       title: "Total transaksi",
       value: summary ? formatNumber(summary.transactionCount) : "—",
-      description: "Jumlah transaksi pada periode ringkasan",
+      description: "Transaksi dalam periode ringkasan",
       icon: "#",
       tone: "neutral",
     },
   ];
+
+  const maxMonthlyAmount = Math.max(
+    1,
+    ...months.flatMap((month) => [
+      Number(month.income) || 0,
+      Number(month.expense) || 0,
+    ]),
+  );
+
+  const hasMonthlyTransactions = months.some(
+    (month) =>
+      (Number(month.income) || 0) > 0 || (Number(month.expense) || 0) > 0,
+  );
+
+  const hasCategoryTransactions = categories.some(
+    (category) => (Number(category.totalAmount) || 0) > 0,
+  );
 
   return (
     <section className="dashboard-page">
@@ -177,13 +259,16 @@ export function DashboardPage() {
         <div className="dashboard-heading-copy">
           <span className="eyebrow">OVERVIEW</span>
           <h1>Ringkasan keuangan</h1>
-          <p>Pantau pemasukan, pengeluaran, dan arus kas dari satu tempat.</p>
+          <p>
+            Pantau pemasukan, pengeluaran, dan pola keuangan Anda dari satu
+            tempat.
+          </p>
         </div>
 
         <div className="dashboard-heading-actions">
           <span className="dashboard-period">
             <span className="period-dot" aria-hidden="true" />
-            {getCurrentPeriodLabel()}
+            {getPeriodLabel(monthlySummary)}
           </span>
 
           <button
@@ -253,24 +338,246 @@ export function DashboardPage() {
 
       <div className="dashboard-section-heading">
         <div>
-          <span className="eyebrow">FINANCIAL WORKSPACE</span>
-          <h2>Aktivitas keuangan Anda</h2>
+          <span className="eyebrow">ANALYTICS</span>
+          <h2>Analisis arus kas</h2>
         </div>
+        <span className="analytics-period-label">{months.length} bulan</span>
       </div>
 
-      <div className="dashboard-next-steps">
+      <section className="analytics-panel" aria-labelledby="cash-flow-title">
+        <div className="analytics-panel-heading">
+          <div>
+            <h3 id="cash-flow-title">Pemasukan vs. pengeluaran</h3>
+            <p>Perbandingan aktivitas keuangan dari bulan ke bulan.</p>
+          </div>
+
+          <div className="chart-legend" aria-label="Legenda grafik">
+            <span>
+              <i className="legend-dot legend-dot--income" />
+              Pemasukan
+            </span>
+            <span>
+              <i className="legend-dot legend-dot--expense" />
+              Pengeluaran
+            </span>
+          </div>
+        </div>
+
+        {isLoading && !overview ? (
+          <div className="analytics-loading" role="status">
+            <span className="analytics-loading-bar" />
+            <span className="analytics-loading-bar" />
+            <span className="analytics-loading-bar" />
+            <span className="analytics-loading-bar" />
+          </div>
+        ) : !hasMonthlyTransactions ? (
+          <div className="analytics-empty-state">
+            <span className="analytics-empty-icon" aria-hidden="true">
+              ↗
+            </span>
+            <strong>Belum ada aktivitas keuangan</strong>
+            <p>
+              Grafik akan menampilkan perbandingan pemasukan dan pengeluaran
+              setelah transaksi tersedia pada periode ini.
+            </p>
+          </div>
+        ) : (
+          <div className="monthly-chart">
+            <div className="monthly-chart-axis-labels" aria-hidden="true">
+              <span>{formatCurrency(maxMonthlyAmount, currency)}</span>
+              <span>{formatCurrency(maxMonthlyAmount / 2, currency)}</span>
+              <span>Rp0</span>
+            </div>
+
+            <div
+              className="monthly-chart-plot"
+              role="img"
+              aria-label="Grafik batang pemasukan dan pengeluaran per bulan. Rincian angka tersedia pada daftar data di bawah grafik."
+            >
+              <div className="monthly-chart-gridline monthly-chart-gridline--top" />
+              <div className="monthly-chart-gridline monthly-chart-gridline--middle" />
+              <div className="monthly-chart-gridline monthly-chart-gridline--bottom" />
+
+              <div className="monthly-chart-columns">
+                {months.map((month) => {
+                  const income = Math.max(0, Number(month.income) || 0);
+                  const expense = Math.max(0, Number(month.expense) || 0);
+                  const incomeHeight = (income / maxMonthlyAmount) * 100;
+                  const expenseHeight = (expense / maxMonthlyAmount) * 100;
+
+                  return (
+                    <div className="monthly-chart-column" key={month.month}>
+                      <div className="monthly-chart-bars">
+                        <div
+                          className="monthly-chart-bar monthly-chart-bar--income"
+                          style={{
+                            height: `${incomeHeight}%`,
+                          }}
+                          title={`${formatMonth(month.month)} — Pemasukan: ${formatCurrency(income, currency)}`}
+                        />
+                        <div
+                          className="monthly-chart-bar monthly-chart-bar--expense"
+                          style={{
+                            height: `${expenseHeight}%`,
+                          }}
+                          title={`${formatMonth(month.month)} — Pengeluaran: ${formatCurrency(expense, currency)}`}
+                        />
+                      </div>
+                      <span className="monthly-chart-month">
+                        {formatMonth(month.month)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="monthly-chart-data">
+              {months.map((month) => (
+                <div className="monthly-chart-data-row" key={month.month}>
+                  <strong>{formatMonth(month.month)}</strong>
+                  <span className="chart-data-income">
+                    Masuk: {formatCurrency(month.income, currency)}
+                  </span>
+                  <span className="chart-data-expense">
+                    Keluar: {formatCurrency(month.expense, currency)}
+                  </span>
+                  <span>
+                    Bersih: {formatCurrency(month.netCashFlow, currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <div className="dashboard-section-heading">
+        <div>
+          <span className="eyebrow">SPENDING BREAKDOWN</span>
+          <h2>Pengeluaran per kategori</h2>
+        </div>
+        <span className="analytics-period-label">Berdasarkan nilai</span>
+      </div>
+
+      <section
+        className="analytics-panel category-analytics-panel"
+        aria-labelledby="category-analytics-title"
+      >
+        <div className="analytics-panel-heading">
+          <div>
+            <h3 id="category-analytics-title">Distribusi pengeluaran</h3>
+            <p>
+              Kategori dengan nilai pengeluaran terbesar ditampilkan lebih
+              dahulu.
+            </p>
+          </div>
+        </div>
+
+        {isLoading && !overview ? (
+          <div className="category-loading-list" role="status">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+        ) : !hasCategoryTransactions ? (
+          <div className="analytics-empty-state">
+            <span className="analytics-empty-icon" aria-hidden="true">
+              ◌
+            </span>
+            <strong>Belum ada data pengeluaran per kategori</strong>
+            <p>
+              Tambahkan transaksi pengeluaran berkategori untuk melihat
+              distribusi pengeluaran Anda.
+            </p>
+          </div>
+        ) : (
+          <div className="category-analytics-content">
+            <div className="category-total">
+              <span>Total pengeluaran per kategori</span>
+              <strong>
+                {formatCurrency(
+                  categoryAnalytics?.totalAmount ?? "0",
+                  categoryAnalytics?.currency ?? currency,
+                )}
+              </strong>
+              <small>
+                {formatNumber(categoryAnalytics?.transactionCount ?? 0)}{" "}
+                transaksi
+              </small>
+            </div>
+
+            <div className="category-analytics-list">
+              {categories
+                .filter((category) => Number(category.totalAmount) > 0)
+                .map((category, index) => {
+                  const percentage = getPercentage(category.percentage);
+
+                  return (
+                    <article
+                      className="category-analytics-item"
+                      key={category.categoryId}
+                    >
+                      <div className="category-analytics-item-heading">
+                        <div className="category-name-group">
+                          <span
+                            className={`category-color-dot category-color-dot--${index % 5}`}
+                            aria-hidden="true"
+                          />
+                          <strong>{category.categoryName}</strong>
+                        </div>
+                        <strong className="category-amount">
+                          {formatCurrency(category.totalAmount, currency)}
+                        </strong>
+                      </div>
+
+                      <div
+                        className="category-progress-track"
+                        role="progressbar"
+                        aria-label={`Persentase pengeluaran kategori ${category.categoryName}`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={percentage}
+                      >
+                        <div
+                          className={`category-progress-fill category-progress-fill--${index % 5}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+
+                      <div className="category-analytics-meta">
+                        <span>
+                          {percentage.toLocaleString("id-ID", {
+                            maximumFractionDigits: 1,
+                          })}
+                          % dari total
+                        </span>
+                        <span>
+                          {formatNumber(category.transactionCount)} transaksi
+                        </span>
+                      </div>
+                    </article>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="dashboard-next-steps">
         <div className="dashboard-next-steps-mark" aria-hidden="true">
           <span>✳</span>
         </div>
         <div className="dashboard-next-steps-copy">
-          <h3>Semua data dalam satu workspace</h3>
+          <h3>Insight keuangan berbasis data</h3>
           <p>
-            Ringkasan di atas berasal dari API dashboard. Visualisasi arus kas,
-            rincian akun, kategori transaksi, dan performa anggaran akan
-            ditambahkan pada fase integrasi berikutnya.
+            Analitik ini menggunakan transaksi yang diagregasikan backend.
+            Rekomendasi keuangan berbasis AI akan diintegrasikan setelah backend
+            dan fitur inti frontend selesai.
           </p>
         </div>
-      </div>
+      </section>
     </section>
   );
 }
