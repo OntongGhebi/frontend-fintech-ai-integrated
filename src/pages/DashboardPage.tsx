@@ -4,6 +4,7 @@ import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./DashboardPage.css";
 import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
+import { CashFlowAnalyticsSection } from "./dashboard/CashFlowAnalyticsSection";
 interface DashboardSummary {
   currency: string;
   totalIncome: string;
@@ -564,9 +565,10 @@ export function DashboardPage() {
             </div>
           </div>
         )}
-        <BudgetPerformanceSection />
-        <RecurringPerformanceSection />
       </section>
+      <BudgetPerformanceSection />
+      <RecurringPerformanceSection />
+      <CashFlowAnalyticsSection />
 
       <section className="dashboard-next-steps">
         <div className="dashboard-next-steps-mark" aria-hidden="true">

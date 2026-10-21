@@ -111,7 +111,7 @@ export function RecurringPerformanceSection() {
   }, []);
 
   useEffect(() => {
-    void loadItems();
+    void Promise.resolve().then(loadItems);
   }, [loadItems, reloadKey]);
 
   const activeItems = items.filter((item) => item.isActive);
@@ -176,11 +176,7 @@ export function RecurringPerformanceSection() {
       {errorMessage && (
         <div className="recurring-error" role="alert">
           <p>{errorMessage}</p>
-          <button
-            type="button"
-            onClick={reloadItems}
-            disabled={isLoading}
-          >
+          <button type="button" onClick={reloadItems} disabled={isLoading}>
             Coba lagi
           </button>
         </div>
