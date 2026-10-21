@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./DashboardPage.css";
-
+import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
 interface DashboardSummary {
   currency: string;
   totalIncome: string;
@@ -563,6 +563,7 @@ export function DashboardPage() {
             </div>
           </div>
         )}
+        <BudgetPerformanceSection />
       </section>
 
       <section className="dashboard-next-steps">
