@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./DashboardPage.css";
 import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
+import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
 interface DashboardSummary {
   currency: string;
   totalIncome: string;
@@ -564,6 +565,7 @@ export function DashboardPage() {
           </div>
         )}
         <BudgetPerformanceSection />
+        <RecurringPerformanceSection />
       </section>
 
       <section className="dashboard-next-steps">
