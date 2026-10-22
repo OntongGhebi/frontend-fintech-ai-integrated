@@ -15,10 +15,16 @@ import {
   WalletMinimal,
   Bell,
   CreditCard,
+  ReceiptText,
 } from "lucide-react";
 
 const navigation = [
-  { label: "Dashboard", icon: <ChartArea size={18} />, to: "/", end: true },
+  {
+    label: "Dashboard",
+    icon: <ChartArea size={18} />,
+    to: "/",
+    end: true,
+  },
   {
     label: "Transactions",
     icon: <HandCoins size={18} />,
@@ -47,6 +53,12 @@ const navigation = [
     label: "Subscription",
     icon: <CreditCard size={18} />,
     to: "/subscription",
+    end: false,
+  },
+  {
+    label: "Payments",
+    icon: <ReceiptText size={18} />,
+    to: "/payments",
     end: false,
   },
 ];
@@ -103,10 +115,31 @@ function getPageHeading(pathname: string) {
     };
   }
 
+  if (pathname === "/payments") {
+    return {
+      title: "Payments",
+      description: "Kelola pembayaran dan lihat riwayat transaksi Midtrans.",
+    };
+  }
+
   if (pathname === "/accounts") {
     return {
       title: "Accounts",
       description: "Kelola rekening dan sumber dana keuanganmu.",
+    };
+  }
+
+  if (pathname.startsWith("/accounts/")) {
+    return {
+      title: "Detail akun",
+      description: "Lihat detail dan aktivitas akun keuangan.",
+    };
+  }
+
+  if (pathname === "/reports") {
+    return {
+      title: "Reports",
+      description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
     };
   }
 
