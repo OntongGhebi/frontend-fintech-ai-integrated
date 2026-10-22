@@ -1,0 +1,307 @@
+.report-transactions {
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 18px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-color, #111827);
+  min-width: 0;
+}
+
+.report-transactions__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.report-transactions__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.report-transactions__header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.report-transactions__header p {
+  margin: 8px 0 0;
+  color: var(--text-muted, #6b7280);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.report-transactions__export {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-color, #111827);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.report-transactions__export:hover:not(:disabled) {
+  background: var(--surface-hover, #f9fafb);
+  border-color: var(--border-strong, #d1d5db);
+}
+
+.report-transactions__export:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.report-transactions__export-error {
+  margin: 0 0 16px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.report-transactions__table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+}
+
+.report-transactions__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.report-transactions__table thead {
+  background: var(--surface-subtle, #f9fafb);
+}
+
+.report-transactions__table th {
+  padding: 14px 16px;
+  color: var(--text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.report-transactions__table td {
+  padding: 15px 16px;
+  border-top: 1px solid var(--border-color, #f0f1f3);
+  vertical-align: middle;
+}
+
+.report-transactions__table tbody tr {
+  transition: background 120ms ease;
+}
+
+.report-transactions__table tbody tr:hover {
+  background: var(--surface-hover, #fafafa);
+}
+
+.report-transactions__date {
+  color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+.report-transactions__description {
+  min-width: 180px;
+}
+
+.report-transactions__description strong,
+.report-transactions__description span {
+  display: block;
+}
+
+.report-transactions__description strong {
+  max-width: 300px;
+  overflow: hidden;
+  color: var(--text-color, #111827);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-transactions__description span {
+  margin-top: 5px;
+  color: var(--text-muted, #9ca3af);
+  font-size: 11px;
+}
+
+.report-transactions__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.report-transactions__type--income {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.report-transactions__type--expense {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.report-transactions__source {
+  color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+.report-transactions__amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.report-transactions__amount--income {
+  color: #047857;
+}
+
+.report-transactions__amount--expense {
+  color: #b91c1c;
+}
+
+.report-transactions__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+}
+
+.report-transactions__count {
+  color: var(--text-muted, #6b7280);
+  font-size: 12px;
+}
+
+.report-transactions__pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.report-transactions__pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 9px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-color, #111827);
+  cursor: pointer;
+}
+
+.report-transactions__pagination button:hover:not(:disabled) {
+  background: var(--surface-hover, #f9fafb);
+}
+
+.report-transactions__pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.report-transactions__state {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--text-muted, #6b7280);
+  text-align: center;
+}
+
+.report-transactions__state strong {
+  color: var(--text-color, #111827);
+  font-size: 14px;
+}
+
+.report-transactions__state span {
+  max-width: 420px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.report-transactions__state--error {
+  color: #b91c1c;
+}
+
+.report-transactions__state button {
+  margin-top: 5px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 9px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-color, #111827);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.report-transactions__spin {
+  animation: report-transactions-spin 1s linear infinite;
+}
+
+@keyframes report-transactions-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .report-transactions {
+    padding: 17px;
+    border-radius: 14px;
+  }
+
+  .report-transactions__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-transactions__export {
+    align-self: flex-start;
+  }
+
+  .report-transactions__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .report-transactions__pagination {
+    align-self: flex-end;
+  }
+}

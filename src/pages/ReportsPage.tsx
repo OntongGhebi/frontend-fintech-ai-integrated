@@ -10,6 +10,11 @@ import {
 } from "lucide-react";
 
 import { ReportAnalytics } from "../components/reports/ReportAnalytics";
+import {
+  ReportTransactionsTable,
+  type ReportTransaction,
+  type ReportTransactionsMeta,
+} from "../components/reports/ReportTransactionsTable";
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./ReportsPage.css";
 
@@ -21,27 +26,6 @@ interface ReportSummary {
   totalExpense: string;
   netCashFlow: string;
   transactionCount: number;
-}
-
-interface ReportPagination {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-interface ReportTransaction {
-  id: string;
-  accountId: string;
-  categoryId: string | null;
-  type: TransactionType;
-  amount: string;
-  currency: string;
-  description: string | null;
-  transactionDate: string;
-  source: string;
 }
 
 interface ReportAnalyticsItem {
@@ -115,7 +99,7 @@ interface FinancialReportResponse {
   cashFlow: unknown;
   transactions: {
     data: ReportTransaction[];
-    meta: ReportPagination;
+    meta: ReportTransactionsMeta;
   };
 }
 
@@ -223,13 +207,70 @@ function getErrorMessage(error: unknown): string {
   return "Terjadi kesalahan saat memuat laporan keuangan.";
 }
 
+function getExportErrorMessage(error: unknown): string {
+  if (error instanceof ApiRequestError) {
+    if (error.status === 401) {
+      return "Sesi Anda berakhir. Silakan login kembali.";
+    }
+
+    if (error.status >= 500) {
+      return "Server sedang mengalami kendala. Ekspor CSV gagal.";
+    }
+
+    return error.message || "CSV tidak dapat diekspor.";
+  }
+
+  if (error instanceof TypeError) {
+    return "Tidak dapat terhubung ke backend untuk mengekspor CSV.";
+  }
+
+  return "Terjadi kesalahan saat mengekspor laporan CSV.";
+}
+
+function createExportFileName(filters: ReportFilters): string {
+  const start = filters.startDate || "awal";
+  const end = filters.endDate || "akhir";
+  const type = filters.type ? `-${filters.type.toLowerCase()}` : "";
+
+  return `laporan-keuangan-${start}-${end}${type}.csv`;
+}
+
+function downloadCsv(content: BlobPart, fileName: string): void {
+  const blob =
+    content instanceof Blob
+      ? content
+      : new Blob([content], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  anchor.style.display = "none";
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+  }, 1000);
+}
+
 export function ReportsPage() {
   const [filters, setFilters] = useState<ReportFilters>(getInitialFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<ReportFilters>(getInitialFilters);
+
   const [report, setReport] = useState<FinancialReportResponse | null>(null);
+
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState("");
+  const [exportError, setExportError] = useState("");
   const [validationError, setValidationError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -255,7 +296,7 @@ export function ReportsPage() {
         params.set("type", appliedFilters.type);
       }
 
-      params.set("page", "1");
+      params.set("page", String(page));
       params.set("limit", "20");
 
       const response = await apiClient.get<FinancialReportResponse>(
@@ -269,7 +310,7 @@ export function ReportsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [appliedFilters]);
+  }, [appliedFilters, page]);
 
   useEffect(() => {
     void loadReport();
@@ -288,6 +329,7 @@ export function ReportsPage() {
       return;
     }
 
+    setPage(1);
     setAppliedFilters({ ...filters });
   }
 
@@ -296,12 +338,69 @@ export function ReportsPage() {
 
     setFilters(defaults);
     setAppliedFilters(defaults);
+    setPage(1);
     setValidationError("");
+    setExportError("");
   }
 
   function handleRetry() {
     setReloadKey((current) => current + 1);
   }
+
+  function handlePageChange(nextPage: number) {
+    if (nextPage < 1 || nextPage === page) {
+      return;
+    }
+
+    if (report) {
+      if (nextPage > report.transactions.meta.totalPages) {
+        return;
+      }
+    }
+
+    setPage(nextPage);
+  }
+
+  const handleExportCsv = useCallback(async () => {
+    setIsExporting(true);
+    setExportError("");
+
+    try {
+      const params = new URLSearchParams();
+
+      if (appliedFilters.startDate) {
+        params.set(
+          "startDate",
+          getDateBoundary(appliedFilters.startDate, "start"),
+        );
+      }
+
+      if (appliedFilters.endDate) {
+        params.set("endDate", getDateBoundary(appliedFilters.endDate, "end"));
+      }
+
+      if (appliedFilters.type) {
+        params.set("type", appliedFilters.type);
+      }
+
+      // apiClient menangani konfigurasi base URL dan autentikasi.
+      // Response Blob dibutuhkan agar isi CSV tidak diparse sebagai JSON.
+      const response = await apiClient.get<Blob>(
+        `reports/financial/export?${params.toString()}`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      downloadCsv(response, createExportFileName(appliedFilters));
+    } catch (exportRequestError) {
+      const message = getExportErrorMessage(exportRequestError);
+      setExportError(message);
+      throw exportRequestError;
+    } finally {
+      setIsExporting(false);
+    }
+  }, [appliedFilters]);
 
   const summary = report?.summary;
   const currency = report?.currency ?? "IDR";
@@ -428,6 +527,7 @@ export function ReportsPage() {
           >
             Reset filter
           </button>
+
           <button
             type="submit"
             className="reports-button-primary"
@@ -548,6 +648,7 @@ export function ReportsPage() {
                 <span>Pemasukan</span>
                 <strong>{formatNumber(report.income.transactionCount)}</strong>
               </div>
+
               <div>
                 <span className="reports-breakdown-dot reports-breakdown-dot--expense" />
                 <span>Pengeluaran</span>
@@ -576,6 +677,35 @@ export function ReportsPage() {
           </div>
         ) : null}
       </section>
+
+      {exportError && (
+        <div className="reports-error" role="alert">
+          <CircleAlert size={21} aria-hidden="true" />
+          <div>
+            <strong>Ekspor CSV gagal</strong>
+            <p>{exportError}</p>
+          </div>
+        </div>
+      )}
+
+      <ReportTransactionsTable
+        transactions={report?.transactions.data ?? []}
+        meta={
+          report?.transactions.meta ?? {
+            page,
+            limit: 20,
+            total: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          }
+        }
+        isLoading={isLoading}
+        error={error || null}
+        onPageChange={handlePageChange}
+        onRetry={handleRetry}
+        onExport={handleExportCsv}
+      />
     </section>
   );
 }
