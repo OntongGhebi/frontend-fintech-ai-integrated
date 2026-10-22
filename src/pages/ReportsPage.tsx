@@ -9,6 +9,7 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { ReportAnalytics } from "../components/reports/ReportAnalytics";
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./ReportsPage.css";
 
@@ -43,6 +44,50 @@ interface ReportTransaction {
   source: string;
 }
 
+interface ReportAnalyticsItem {
+  categoryId?: string | null;
+  categoryName?: string | null;
+  accountId?: string | null;
+  accountName?: string | null;
+  totalAmount: string | number;
+  transactionCount: number;
+  percentage?: number | null;
+}
+
+interface ReportCategoryAnalytics {
+  currency: string;
+  type: TransactionType;
+  categories: ReportAnalyticsItem[];
+  totalAmount: string | number;
+  transactionCount: number;
+}
+
+interface ReportAccountAnalytics {
+  currency: string;
+  type: TransactionType;
+  accounts: ReportAnalyticsItem[];
+  totalAmount: string | number;
+  transactionCount: number;
+}
+
+interface MonthlyFinancialItem {
+  month: string;
+  income: string | number;
+  expense: string | number;
+  netCashFlow: string | number;
+  transactionCount: number;
+  savingsRate: number;
+}
+
+interface MonthlyFinancialSummary {
+  months: MonthlyFinancialItem[];
+  totalIncome: string | number;
+  totalExpense: string | number;
+  netCashFlow: string | number;
+  averageMonthlyIncome: string | number;
+  averageMonthlyExpense: string | number;
+}
+
 interface FinancialReportResponse {
   reportType: "FINANCIAL";
   currency: string;
@@ -62,11 +107,11 @@ interface FinancialReportResponse {
     transactionCount: number;
     averageExpense: string;
   };
-  categoryAnalytics: unknown;
-  accountAnalytics: unknown;
+  categoryAnalytics: ReportCategoryAnalytics;
+  accountAnalytics: ReportAccountAnalytics;
   budgetPerformance: unknown;
   recurringPerformance: unknown;
-  monthlyFinancialSummary: unknown;
+  monthlyFinancialSummary: MonthlyFinancialSummary;
   cashFlow: unknown;
   transactions: {
     data: ReportTransaction[];
@@ -458,6 +503,22 @@ export function ReportsPage() {
           );
         })}
       </div>
+
+      {report && (
+        <ReportAnalytics
+          report={{
+            monthlyFinancialSummary: report.monthlyFinancialSummary,
+            categoryAnalytics: report.categoryAnalytics,
+            accountAnalytics: report.accountAnalytics,
+          }}
+        />
+      )}
+
+      {isLoading && !report && (
+        <div className="reports-loading" role="status">
+          Sedang memuat analitik laporan keuangan...
+        </div>
+      )}
 
       <section className="reports-detail-panel">
         <div className="reports-detail-heading">
