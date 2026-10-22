@@ -255,9 +255,8 @@ function StatusIcon({ status }: { status: PaymentStatus }) {
 }
 
 /**
- * Only allow the official Midtrans web checkout host.
- * Snap web checkout redirects are expected to use app.midtrans.com
- * or app.sandbox.midtrans.com.
+ * Allow only official Midtrans web checkout hosts.
+ * A checkout response does not prove that the payment has been completed.
  */
 function isAllowedMidtransCheckoutUrl(value: string): boolean {
   try {
@@ -265,6 +264,8 @@ function isAllowedMidtransCheckoutUrl(value: string): boolean {
 
     return (
       url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
       ["app.midtrans.com", "app.sandbox.midtrans.com"].includes(url.hostname)
     );
   } catch {
@@ -317,7 +318,6 @@ export function PaymentsPage() {
       setSubscription(subscriptionResult);
     } catch (error) {
       setLoadError(getErrorMessage(error));
-      setPayments([]);
     } finally {
       setIsLoading(false);
     }
@@ -389,8 +389,7 @@ export function PaymentsPage() {
         );
       }
 
-      // Checkout response only creates a pending payment. The payment is
-      // not considered paid until the backend verifies the Midtrans webhook.
+      // Status pembayaran tetap ditentukan backend setelah verifikasi.
       window.location.assign(redirectUrl);
     } catch (error) {
       setCheckoutError(
@@ -503,6 +502,18 @@ export function PaymentsPage() {
         )}
       </section>
 
+      {pendingCount > 0 && !isLoading && !loadError && (
+        <div className="payments-alert" role="status">
+          <Clock3 size={18} aria-hidden="true" />
+          <span>
+            Ada {pendingCount} pembayaran yang masih menunggu konfirmasi pada
+            halaman ini. Muat ulang riwayat untuk memeriksa status terbaru.
+            Status hanya berubah setelah backend menerima atau memverifikasi
+            pembaruan pembayaran.
+          </span>
+        </div>
+      )}
+
       <div className="payments-summary-grid">
         <article className="payments-summary-card">
           <span className="payments-summary-icon payments-summary-icon-paid">
@@ -519,7 +530,7 @@ export function PaymentsPage() {
             <Clock3 size={19} aria-hidden="true" />
           </span>
           <div>
-            <span>Pembayaran menunggu</span>
+            <span>Pembayaran menunggu di halaman ini</span>
             <strong>{pendingCount}</strong>
           </div>
         </article>
