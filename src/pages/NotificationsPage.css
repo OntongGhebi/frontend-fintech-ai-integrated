@@ -1,0 +1,331 @@
+.notifications-page {
+  display: grid;
+  gap: 24px;
+  color: var(--text-primary, #172033);
+}
+
+.notifications-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.notifications-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--text-muted, #788399);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.notifications-heading h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -0.04em;
+}
+
+.notifications-heading p {
+  margin: 8px 0 0;
+  color: var(--text-muted, #788399);
+  line-height: 1.6;
+}
+
+.notifications-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.notifications-unread-count {
+  padding: 8px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.notifications-secondary-button,
+.notifications-mark-all-button,
+.notifications-primary-button,
+.notification-read-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #dce2eb;
+  border-radius: 10px;
+  background: #fff;
+  color: #344054;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.notifications-secondary-button,
+.notifications-mark-all-button {
+  min-height: 40px;
+  padding: 0 13px;
+}
+
+.notifications-secondary-button:hover,
+.notifications-mark-all-button:hover,
+.notification-read-button:hover {
+  border-color: #aab7cb;
+  background: #f8fafc;
+}
+
+.notifications-primary-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-color: #253b72;
+  background: #253b72;
+  color: #fff;
+}
+
+.notifications-primary-button:hover {
+  background: #1b2d5c;
+}
+
+.notifications-secondary-button:disabled,
+.notifications-mark-all-button:disabled,
+.notifications-primary-button:disabled,
+.notification-read-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.notifications-panel {
+  overflow: hidden;
+  border: 1px solid #e3e8f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgb(24 39 75 / 4%);
+}
+
+.notifications-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.notifications-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.notifications-panel-header p {
+  margin: 5px 0 0;
+  color: #7b8497;
+  font-size: 12px;
+}
+
+.notifications-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff1f2;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notifications-state {
+  display: flex;
+  min-height: 270px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 24px;
+  text-align: center;
+}
+
+.notifications-state > strong {
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+.notifications-state p {
+  max-width: 420px;
+  margin: 7px 0 0;
+  color: #7b8497;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.notifications-state-error > svg {
+  color: #c2413a;
+}
+
+.notifications-state-error .notifications-primary-button {
+  margin-top: 18px;
+}
+
+.notifications-empty-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 17px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.notifications-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5eaf2;
+  border-top-color: #253b72;
+  border-radius: 50%;
+  animation: notifications-spin 0.8s linear infinite;
+}
+
+@keyframes notifications-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notifications-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.notification-item:last-child {
+  border-bottom: 0;
+}
+
+.notification-item-unread {
+  background: #fbfcff;
+}
+
+.notification-item-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid #e3e9f3;
+  border-radius: 13px;
+  background: #fff;
+  color: #405a91;
+}
+
+.notification-item-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.notification-item-title-row h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.notification-unread-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #3867d6;
+}
+
+.notification-item-content > p {
+  margin: 6px 0 10px;
+  color: #606b7e;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.notification-timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8a93a5;
+  font-size: 11px;
+}
+
+.notification-read-button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .notifications-heading {
+    flex-direction: column;
+  }
+
+  .notifications-heading-actions {
+    justify-content: flex-start;
+  }
+
+  .notifications-panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .notification-item {
+    flex-wrap: wrap;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .notification-item-content {
+    flex-basis: calc(100% - 56px);
+  }
+
+  .notification-read-button {
+    margin-left: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notifications-spinner {
+    animation-duration: 1.8s;
+  }
+
+  .notifications-secondary-button,
+  .notifications-mark-all-button,
+  .notifications-primary-button,
+  .notification-read-button {
+    transition: none;
+  }
+}

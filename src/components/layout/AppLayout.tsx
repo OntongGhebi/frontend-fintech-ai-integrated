@@ -13,10 +13,16 @@ import {
   FileBarChart,
   HandCoins,
   WalletMinimal,
+  Bell,
 } from "lucide-react";
 
 const navigation = [
-  { label: "Dashboard", icon: <ChartArea size={18} />, to: "/", end: true },
+  {
+    label: "Dashboard",
+    icon: <ChartArea size={18} />,
+    to: "/",
+    end: true,
+  },
   {
     label: "Transactions",
     icon: <HandCoins size={18} />,
@@ -35,9 +41,15 @@ const navigation = [
     to: "/reports",
     end: false,
   },
+  {
+    label: "Notifications",
+    icon: <Bell size={18} />,
+    to: "/notifications",
+    end: false,
+  },
 ];
 
-const upcomingFeatures = ["Budgets", "Recurring", "Notifications"];
+const upcomingFeatures = ["Budgets", "Recurring"];
 
 function getPageHeading(pathname: string) {
   if (pathname === "/transactions/new") {
@@ -72,6 +84,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Transactions",
       description: "Kelola pemasukan, pengeluaran, dan perpindahan dana.",
+    };
+  }
+
+  if (pathname === "/notifications") {
+    return {
+      title: "Notifications",
+      description: "Pantau pembaruan penting dan aktivitas akun Anda.",
     };
   }
 

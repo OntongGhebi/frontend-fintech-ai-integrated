@@ -16,6 +16,7 @@ import { EditTransactionPage } from "../pages/EditTransactionPage";
 import { AccountsPage } from "../pages/AccountsPage";
 import { AccountDetailPage } from "../pages/AccountDetailPage";
 import { ReportsPage } from "../pages/ReportsPage";
+import { NotificationsPage } from "../pages/NotificationsPage";
 
 export const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
           {
             path: "reports",
             element: <ReportsPage />,
+          },
+          {
+            path: "notifications",
+            element: <NotificationsPage />,
           },
         ],
       },
