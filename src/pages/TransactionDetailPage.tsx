@@ -217,6 +217,16 @@ export function TransactionDetailPage() {
       return;
     }
 
+    if (!/^\d+(\.\d{1,4})?$/.test(form.amount.trim())) {
+      setError("Nominal hanya boleh memiliki maksimal 4 angka desimal.");
+      return;
+    }
+
+    if (form.description.length > 500) {
+      setError("Deskripsi maksimal 500 karakter.");
+      return;
+    }
+
     if (!form.transactionDate) {
       setError("Tanggal transaksi wajib diisi.");
       return;
@@ -405,14 +415,14 @@ export function TransactionDetailPage() {
               <h3>Informasi transaksi</h3>
               <p>Rincian transaksi yang tersimpan di akun Anda.</p>
             </div>
-            {!isEditing && isActive && (
+            {!isEditing && isActive && transaction.type !== "TRANSFER" && (
               <button
                 className="transaction-button transaction-button-secondary"
                 type="button"
                 onClick={() => {
-                  setError("");
-                  setNotice("");
-                  setIsEditing(true);
+                  navigate(
+                    `/transactions/${encodeURIComponent(transaction.id)}/edit`,
+                  );
                 }}
               >
                 Edit transaksi
