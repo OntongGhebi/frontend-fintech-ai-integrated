@@ -16,6 +16,7 @@ import {
   Bell,
   CreditCard,
   ReceiptText,
+  Workflow,
 } from "lucide-react";
 
 const navigation = [
@@ -59,6 +60,12 @@ const navigation = [
     label: "Payments",
     icon: <ReceiptText size={18} />,
     to: "/payments",
+    end: false,
+  },
+  {
+    label: "Integrations",
+    icon: <Workflow size={18} />,
+    to: "/integrations",
     end: false,
   },
 ];
@@ -108,20 +115,6 @@ function getPageHeading(pathname: string) {
     };
   }
 
-  if (pathname === "/subscription") {
-    return {
-      title: "Subscription",
-      description: "Kelola paket, masa trial, dan status langganan Anda.",
-    };
-  }
-
-  if (pathname === "/payments") {
-    return {
-      title: "Payments",
-      description: "Kelola pembayaran dan lihat riwayat transaksi Midtrans.",
-    };
-  }
-
   if (pathname === "/accounts") {
     return {
       title: "Accounts",
@@ -132,7 +125,7 @@ function getPageHeading(pathname: string) {
   if (pathname.startsWith("/accounts/")) {
     return {
       title: "Detail akun",
-      description: "Lihat detail dan aktivitas akun keuangan.",
+      description: "Lihat saldo dan informasi akun keuanganmu.",
     };
   }
 
@@ -140,6 +133,27 @@ function getPageHeading(pathname: string) {
     return {
       title: "Reports",
       description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
+    };
+  }
+
+  if (pathname === "/subscription") {
+    return {
+      title: "Subscription",
+      description: "Kelola paket dan status langganan akunmu.",
+    };
+  }
+
+  if (pathname === "/payments") {
+    return {
+      title: "Payments",
+      description: "Lihat riwayat pembayaran dan status transaksi pembayaran.",
+    };
+  }
+
+  if (pathname === "/integrations") {
+    return {
+      title: "Integrations",
+      description: "Kelola panduan integrasi Telegram dan AI Assistant.",
     };
   }
 

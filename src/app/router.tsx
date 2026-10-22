@@ -9,19 +9,18 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
 import { VerifyEmailPage } from "../pages/VerifyEmailPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
-
 import { TransactionsPage } from "../pages/TransactionsPage";
 import { TransactionFormPage } from "../pages/TransactionFormPage";
 import { TransactionDetailPage } from "../pages/TransactionDetailPage";
 import { TransferFormPage } from "../pages/TransferFormPage";
 import { EditTransactionPage } from "../pages/EditTransactionPage";
-
 import { AccountsPage } from "../pages/AccountsPage";
 import { AccountDetailPage } from "../pages/AccountDetailPage";
 import { ReportsPage } from "../pages/ReportsPage";
 import { NotificationsPage } from "../pages/NotificationsPage";
 import { SubscriptionPage } from "../pages/SubscriptionPage";
 import { PaymentsPage } from "../pages/PaymentsPage";
+import { IntegrationsPage } from "../pages/IntegrationsPage";
 
 export const router = createBrowserRouter([
   {
@@ -94,6 +93,10 @@ export const router = createBrowserRouter([
           {
             path: "payments",
             element: <PaymentsPage />,
+          },
+          {
+            path: "integrations",
+            element: <IntegrationsPage />,
           },
         ],
       },
