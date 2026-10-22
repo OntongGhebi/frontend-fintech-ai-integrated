@@ -846,3 +846,53 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.transactions-table-action {
+  min-width: 125px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.transactions-detail-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 8px 11px;
+  border: 1px solid #d7e8da;
+  border-radius: 8px;
+  background: #f1f8f1;
+  color: #287654;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.transactions-detail-link:hover {
+  border-color: #a9d1b3;
+  background: #e5f3e7;
+  color: #1f6043;
+}
+
+.transactions-detail-link:focus-visible {
+  outline: 3px solid rgb(40 118 84 / 25%);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .transactions-table-action {
+    min-width: 115px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transactions-detail-link {
+    transition: none;
+  }
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./TransactionsPage.css";
@@ -594,6 +595,9 @@ export function TransactionsPage() {
                 <th scope="col" className="transactions-table-amount">
                   Jumlah
                 </th>
+                <th scope="col" className="transactions-table-action">
+                  Aksi
+                </th>
               </tr>
             </thead>
 
@@ -604,7 +608,7 @@ export function TransactionsPage() {
                     key={`loading-${index}`}
                     className="transactions-loading-row"
                   >
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <span className="transactions-skeleton" />
                     </td>
                   </tr>
@@ -692,12 +696,26 @@ export function TransactionsPage() {
                         )}
                       </strong>
                     </td>
+
+                    <td className="transactions-table-action">
+                      <Link
+                        to={`/transactions/${encodeURIComponent(transaction.id)}`}
+                        className="transactions-detail-link"
+                        aria-label={`Lihat detail transaksi ${
+                          transaction.description?.trim() ||
+                          getTypeLabel(transaction.type)
+                        }`}
+                        title="Lihat detail transaksi"
+                      >
+                        Lihat detail <span aria-hidden="true">→</span>
+                      </Link>
+                    </td>
                   </tr>
                 ))}
 
               {!isLoading && !error && transactions.length === 0 && (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div className="transactions-empty-state">
                       <span
                         className="transactions-empty-state__icon"
