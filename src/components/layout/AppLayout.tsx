@@ -1,42 +1,55 @@
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 
-const navigation = [{ label: "Dashboard", icon: "▦", to: "/" }];
+const navigation = [
+  { label: "Dashboard", icon: "▦", to: "/" },
+  { label: "Transactions", icon: "↕", to: "/transactions" },
+];
 
 const upcomingFeatures = [
   "Analytics",
-  "Transactions",
   "Accounts",
   "Budgets",
   "Recurring",
   "Notifications",
 ];
 
+function getPageTitle(pathname: string): {
+  title: string;
+  description: string;
+} {
+  if (pathname.startsWith("/transactions")) {
+    return {
+      title: "Transactions",
+      description: "Pantau dan kelola aktivitas keuangan Anda.",
+    };
+  }
+
+  return {
+    title: "Dashboard",
+    description: "Track, assess, and enhance your financial performance.",
+  };
+}
+
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
 
-  function closeMobileNavigation() {
-    setIsMobileNavOpen(false);
-  }
-
   async function handleLogout() {
-    if (isLoggingOut) {
-      return;
-    }
+    if (isLoggingOut) return;
 
     setIsLoggingOut(true);
     setLogoutError("");
 
     try {
       await logout();
-      closeMobileNavigation();
       navigate("/login", { replace: true });
     } catch {
       setLogoutError("Logout mengalami kendala. Silakan coba kembali.");
@@ -47,6 +60,7 @@ export function AppLayout() {
 
   const displayName = user?.name?.trim() || "Pengguna";
   const initial = displayName.charAt(0).toUpperCase();
+  const page = getPageTitle(location.pathname);
 
   return (
     <div className="app-shell">
@@ -55,25 +69,23 @@ export function AppLayout() {
           type="button"
           className="mobile-nav-backdrop"
           aria-label="Tutup navigasi"
-          onClick={closeMobileNavigation}
+          onClick={() => setIsMobileNavOpen(false)}
         />
       )}
 
       <aside
         id="main-sidebar"
         className={`sidebar${isMobileNavOpen ? " sidebar-open" : ""}`}
-        aria-label="Sidebar aplikasi"
       >
         <div className="sidebar-mobile-heading">
           <span>NAVIGASI</span>
-
           <button
             type="button"
             className="sidebar-mobile-close"
             aria-label="Tutup navigasi"
-            onClick={closeMobileNavigation}
+            onClick={() => setIsMobileNavOpen(false)}
           >
-            <span aria-hidden="true">×</span>
+            ×
           </button>
         </div>
 
@@ -81,7 +93,7 @@ export function AppLayout() {
           to="/"
           className="brand"
           aria-label="Fintech AI dashboard"
-          onClick={closeMobileNavigation}
+          onClick={() => setIsMobileNavOpen(false)}
         >
           <span className="brand-mark" aria-hidden="true">
             F
@@ -105,16 +117,15 @@ export function AppLayout() {
             <NavLink
               key={item.to}
               to={item.to}
-              end
+              end={item.to === "/"}
               className={({ isActive }) =>
                 `navigation-link${isActive ? " active" : ""}`
               }
-              onClick={closeMobileNavigation}
+              onClick={() => setIsMobileNavOpen(false)}
             >
               <span className="navigation-icon" aria-hidden="true">
                 {item.icon}
               </span>
-
               <span>{item.label}</span>
             </NavLink>
           ))}
@@ -133,9 +144,7 @@ export function AppLayout() {
               <span className="navigation-icon" aria-hidden="true">
                 ·
               </span>
-
               <span>{feature}</span>
-
               <span className="navigation-soon">Soon</span>
             </div>
           ))}
@@ -184,8 +193,8 @@ export function AppLayout() {
               type="button"
               className="mobile-nav-toggle"
               aria-label={isMobileNavOpen ? "Tutup navigasi" : "Buka navigasi"}
-              aria-expanded={isMobileNavOpen}
               aria-controls="main-sidebar"
+              aria-expanded={isMobileNavOpen}
               onClick={() => setIsMobileNavOpen((open) => !open)}
             >
               <span />
@@ -195,8 +204,8 @@ export function AppLayout() {
 
             <div className="topbar-title">
               <span className="eyebrow">PERSONAL FINANCE</span>
-              <h1>Dashboard</h1>
-              <p>Track, assess, and enhance your financial performance.</p>
+              <h1>{page.title}</h1>
+              <p>{page.description}</p>
             </div>
           </div>
 

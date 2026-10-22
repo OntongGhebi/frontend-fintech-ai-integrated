@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { DashboardPage } from "../pages/DashboardPage";
+import { TransactionsPage } from "../pages/TransactionsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <DashboardPage />,
+          },
+          {
+            path: "transactions",
+            element: <TransactionsPage />,
           },
         ],
       },
