@@ -1,11 +1,17 @@
-import { useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 
 const navigation = [
-  { label: "Dashboard", icon: "▦", to: "/" },
-  { label: "Transactions", icon: "↕", to: "/transactions" },
+  { label: "Dashboard", icon: "▦", to: "/", end: true },
+  { label: "Transactions", icon: "↕", to: "/transactions", end: false },
 ];
 
 const upcomingFeatures = [
@@ -16,14 +22,25 @@ const upcomingFeatures = [
   "Notifications",
 ];
 
-function getPageTitle(pathname: string): {
-  title: string;
-  description: string;
-} {
-  if (pathname.startsWith("/transactions")) {
+function getPageHeading(pathname: string) {
+  if (pathname === "/transactions/new") {
+    return {
+      title: "Tambah transaksi",
+      description: "Catat pemasukan atau pengeluaran keuanganmu.",
+    };
+  }
+
+  if (pathname.startsWith("/transactions/")) {
+    return {
+      title: "Detail transaksi",
+      description: "Lihat informasi dan aktivitas transaksi.",
+    };
+  }
+
+  if (pathname === "/transactions") {
     return {
       title: "Transactions",
-      description: "Pantau dan kelola aktivitas keuangan Anda.",
+      description: "Kelola pemasukan, pengeluaran, dan perpindahan dana.",
     };
   }
 
@@ -41,6 +58,10 @@ export function AppLayout() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
 
   async function handleLogout() {
     if (isLoggingOut) return;
@@ -60,7 +81,9 @@ export function AppLayout() {
 
   const displayName = user?.name?.trim() || "Pengguna";
   const initial = displayName.charAt(0).toUpperCase();
-  const page = getPageTitle(location.pathname);
+  const pageHeading = getPageHeading(location.pathname);
+  const showAddTransactionButton =
+    location.pathname === "/" || location.pathname === "/transactions";
 
   return (
     <div className="app-shell">
@@ -73,10 +96,7 @@ export function AppLayout() {
         />
       )}
 
-      <aside
-        id="main-sidebar"
-        className={`sidebar${isMobileNavOpen ? " sidebar-open" : ""}`}
-      >
+      <aside className={`sidebar${isMobileNavOpen ? " sidebar-open" : ""}`}>
         <div className="sidebar-mobile-heading">
           <span>NAVIGASI</span>
           <button
@@ -117,7 +137,7 @@ export function AppLayout() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === "/"}
+              end={item.end}
               className={({ isActive }) =>
                 `navigation-link${isActive ? " active" : ""}`
               }
@@ -193,7 +213,6 @@ export function AppLayout() {
               type="button"
               className="mobile-nav-toggle"
               aria-label={isMobileNavOpen ? "Tutup navigasi" : "Buka navigasi"}
-              aria-controls="main-sidebar"
               aria-expanded={isMobileNavOpen}
               onClick={() => setIsMobileNavOpen((open) => !open)}
             >
@@ -204,12 +223,23 @@ export function AppLayout() {
 
             <div className="topbar-title">
               <span className="eyebrow">PERSONAL FINANCE</span>
-              <h1>{page.title}</h1>
-              <p>{page.description}</p>
+              <h1>{pageHeading.title}</h1>
+              <p>{pageHeading.description}</p>
             </div>
           </div>
 
           <div className="topbar-actions">
+            {showAddTransactionButton && (
+              <Link
+                to="/transactions/new"
+                className="layout-add-transaction-button"
+                aria-label="Tambah transaksi baru"
+              >
+                <span aria-hidden="true">＋</span>
+                <span>Tambah Transaksi</span>
+              </Link>
+            )}
+
             <span className="topbar-date">
               <span className="topbar-date-dot" />
               IDR · Asia/Jakarta

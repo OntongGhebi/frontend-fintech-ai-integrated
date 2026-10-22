@@ -1709,3 +1709,97 @@ body {
     padding: 13px 15px;
   }
 }
+
+.layout-add-transaction-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid var(--color-primary);
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgb(36 120 91 / 12%);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.layout-add-transaction-button:hover {
+  border-color: var(--color-primary-dark);
+  background: var(--color-primary-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.layout-add-transaction-button:focus-visible {
+  outline: 3px solid rgb(184 229 50 / 70%);
+  outline-offset: 3px;
+}
+
+.layout-add-transaction-button span:first-child {
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    gap: 12px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .topbar-actions {
+    gap: 10px;
+  }
+
+  .topbar-profile-copy,
+  .topbar-date {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    align-items: flex-start;
+    padding: 18px 14px;
+  }
+
+  .topbar-heading-group {
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .topbar-title h1 {
+    font-size: 17px;
+  }
+
+  .topbar-title p {
+    max-width: 210px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .topbar-actions {
+    flex-shrink: 0;
+  }
+
+  .layout-add-transaction-button {
+    min-height: 38px;
+    gap: 4px;
+    padding: 8px 9px;
+    font-size: 10px;
+  }
+
+  .layout-add-transaction-button span:first-child {
+    font-size: 15px;
+  }
+}
