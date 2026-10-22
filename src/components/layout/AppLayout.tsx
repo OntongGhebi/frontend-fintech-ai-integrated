@@ -8,14 +8,36 @@ import {
 } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  ChartArea,
+  FileBarChart,
+  HandCoins,
+  WalletMinimal,
+} from "lucide-react";
 
 const navigation = [
-  { label: "Dashboard", icon: "▦", to: "/", end: true },
-  { label: "Transactions", icon: "↕", to: "/transactions", end: false },
-  { label: "Accounts", icon: "▤", to: "/accounts", end: false },
+  { label: "Dashboard", icon: <ChartArea size={18} />, to: "/", end: true },
+  {
+    label: "Transactions",
+    icon: <HandCoins size={18} />,
+    to: "/transactions",
+    end: false,
+  },
+  {
+    label: "Accounts",
+    icon: <WalletMinimal size={18} />,
+    to: "/accounts",
+    end: false,
+  },
+  {
+    label: "Reports",
+    icon: <FileBarChart size={18} />,
+    to: "/reports",
+    end: false,
+  },
 ];
 
-const upcomingFeatures = ["Analytics", "Budgets", "Recurring", "Notifications"];
+const upcomingFeatures = ["Budgets", "Recurring", "Notifications"];
 
 function getPageHeading(pathname: string) {
   if (pathname === "/transactions/new") {

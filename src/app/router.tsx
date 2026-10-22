@@ -15,6 +15,7 @@ import { TransferFormPage } from "../pages/TransferFormPage";
 import { EditTransactionPage } from "../pages/EditTransactionPage";
 import { AccountsPage } from "../pages/AccountsPage";
 import { AccountDetailPage } from "../pages/AccountDetailPage";
+import { ReportsPage } from "../pages/ReportsPage";
 
 export const router = createBrowserRouter([
   {
@@ -71,6 +72,10 @@ export const router = createBrowserRouter([
           {
             path: "accounts/:id",
             element: <AccountDetailPage />,
+          },
+          {
+            path: "reports",
+            element: <ReportsPage />,
           },
         ],
       },
