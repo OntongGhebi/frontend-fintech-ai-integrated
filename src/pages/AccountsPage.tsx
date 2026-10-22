@@ -8,6 +8,8 @@ import {
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./AccountsPage.css";
+import { Link } from "react-router-dom";
+import { Archive, Eye, Pencil } from "lucide-react";
 
 type AccountType = "CASH" | "BANK" | "E_WALLET" | "CREDIT_CARD" | "OTHER";
 
@@ -570,28 +572,35 @@ export function AccountsPage() {
                       <div className="accounts-row-actions">
                         <button
                           type="button"
-                          className="accounts-row-action"
-                          disabled={!account.isActive}
+                          className="accounts-row-action accounts-row-action-icon"
+                          aria-label={`Edit akun ${account.name}`}
+                          title="Edit akun"
                           onClick={() => openEditForm(account)}
-                          aria-label={`Edit ${account.name}`}
-                          title={
-                            account.isActive
-                              ? "Edit akun"
-                              : "Akun yang diarsipkan tidak dapat diedit"
-                          }
+                          disabled={!account.isActive}
                         >
-                          Edit
+                          <Pencil size={18} strokeWidth={1.8} />
                         </button>
+
                         {account.isActive && (
                           <button
                             type="button"
-                            className="accounts-row-action accounts-row-action-danger"
+                            className="accounts-row-action accounts-row-action-icon accounts-row-action-danger"
+                            aria-label={`Arsipkan akun ${account.name}`}
+                            title="Arsipkan akun"
                             onClick={() => setAccountToArchive(account)}
-                            aria-label={`Arsipkan ${account.name}`}
                           >
-                            Arsipkan
+                            <Archive size={18} strokeWidth={1.8} />
                           </button>
                         )}
+
+                        <Link
+                          to={`/accounts/${encodeURIComponent(account.id)}`}
+                          className="accounts-row-action accounts-row-action-icon accounts-row-action-detail"
+                          aria-label={`Lihat detail akun ${account.name}`}
+                          title="Lihat detail akun"
+                        >
+                          <Eye size={18} strokeWidth={1.8} />
+                        </Link>
                       </div>
                     </td>
                   </tr>
