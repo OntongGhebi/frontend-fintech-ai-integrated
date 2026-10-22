@@ -84,6 +84,8 @@ export function AppLayout() {
   const pageHeading = getPageHeading(location.pathname);
   const showAddTransactionButton =
     location.pathname === "/" || location.pathname === "/transactions";
+  const showTransferButton =
+    location.pathname === "/" || location.pathname === "/transactions";
 
   return (
     <div className="app-shell">
@@ -229,6 +231,16 @@ export function AppLayout() {
           </div>
 
           <div className="topbar-actions">
+            {showTransferButton && (
+              <Link
+                to="/transactions/transfer"
+                className="layout-transfer-button"
+                aria-label="Transfer dana antar rekening"
+              >
+                <span aria-hidden="true">↔</span>
+                <span>Transfer Dana</span>
+              </Link>
+            )}
             {showAddTransactionButton && (
               <Link
                 to="/transactions/new"
