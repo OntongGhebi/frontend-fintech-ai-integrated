@@ -12,21 +12,30 @@ import { useAuth } from "../../contexts/AuthContext";
 const navigation = [
   { label: "Dashboard", icon: "▦", to: "/", end: true },
   { label: "Transactions", icon: "↕", to: "/transactions", end: false },
+  { label: "Accounts", icon: "▤", to: "/accounts", end: false },
 ];
 
-const upcomingFeatures = [
-  "Analytics",
-  "Accounts",
-  "Budgets",
-  "Recurring",
-  "Notifications",
-];
+const upcomingFeatures = ["Analytics", "Budgets", "Recurring", "Notifications"];
 
 function getPageHeading(pathname: string) {
   if (pathname === "/transactions/new") {
     return {
       title: "Tambah transaksi",
       description: "Catat pemasukan atau pengeluaran keuanganmu.",
+    };
+  }
+
+  if (pathname === "/transactions/transfer") {
+    return {
+      title: "Transfer dana",
+      description: "Pindahkan dana antar akun keuanganmu.",
+    };
+  }
+
+  if (pathname.startsWith("/transactions/") && pathname.endsWith("/edit")) {
+    return {
+      title: "Edit transaksi",
+      description: "Perbarui informasi transaksi yang tercatat.",
     };
   }
 
@@ -41,6 +50,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Transactions",
       description: "Kelola pemasukan, pengeluaran, dan perpindahan dana.",
+    };
+  }
+
+  if (pathname === "/accounts") {
+    return {
+      title: "Accounts",
+      description: "Kelola rekening dan sumber dana keuanganmu.",
     };
   }
 
@@ -82,8 +98,10 @@ export function AppLayout() {
   const displayName = user?.name?.trim() || "Pengguna";
   const initial = displayName.charAt(0).toUpperCase();
   const pageHeading = getPageHeading(location.pathname);
+
   const showAddTransactionButton =
     location.pathname === "/" || location.pathname === "/transactions";
+
   const showTransferButton =
     location.pathname === "/" || location.pathname === "/transactions";
 
@@ -241,6 +259,7 @@ export function AppLayout() {
                 <span>Transfer Dana</span>
               </Link>
             )}
+
             {showAddTransactionButton && (
               <Link
                 to="/transactions/new"
