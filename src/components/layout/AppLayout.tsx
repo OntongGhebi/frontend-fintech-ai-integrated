@@ -14,15 +14,11 @@ import {
   HandCoins,
   WalletMinimal,
   Bell,
+  CreditCard,
 } from "lucide-react";
 
 const navigation = [
-  {
-    label: "Dashboard",
-    icon: <ChartArea size={18} />,
-    to: "/",
-    end: true,
-  },
+  { label: "Dashboard", icon: <ChartArea size={18} />, to: "/", end: true },
   {
     label: "Transactions",
     icon: <HandCoins size={18} />,
@@ -45,6 +41,12 @@ const navigation = [
     label: "Notifications",
     icon: <Bell size={18} />,
     to: "/notifications",
+    end: false,
+  },
+  {
+    label: "Subscription",
+    icon: <CreditCard size={18} />,
+    to: "/subscription",
     end: false,
   },
 ];
@@ -91,6 +93,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Notifications",
       description: "Pantau pembaruan penting dan aktivitas akun Anda.",
+    };
+  }
+
+  if (pathname === "/subscription") {
+    return {
+      title: "Subscription",
+      description: "Kelola paket, masa trial, dan status langganan Anda.",
     };
   }
 

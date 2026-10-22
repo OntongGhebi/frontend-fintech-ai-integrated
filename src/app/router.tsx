@@ -17,6 +17,7 @@ import { AccountsPage } from "../pages/AccountsPage";
 import { AccountDetailPage } from "../pages/AccountDetailPage";
 import { ReportsPage } from "../pages/ReportsPage";
 import { NotificationsPage } from "../pages/NotificationsPage";
+import { SubscriptionPage } from "../pages/SubscriptionPage";
 
 export const router = createBrowserRouter([
   {
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
           {
             path: "notifications",
             element: <NotificationsPage />,
+          },
+          {
+            path: "subscription",
+            element: <SubscriptionPage />,
           },
         ],
       },
