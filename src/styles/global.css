@@ -1393,3 +1393,319 @@ a {
     transition: none;
   }
 }
+
+/* =========================================================
+   Fundcy-inspired design system refinement across the app
+   ========================================================= */
+:root {
+  --color-primary: #347b67;
+  --color-primary-dark: #225d4d;
+  --color-accent: #b8df36;
+  --color-text: #202823;
+  --color-muted: #7f8982;
+  --color-border: #e7ece7;
+  --color-background: #f6f8f6;
+  --shadow-card: 0 5px 20px rgb(31 57 43 / 4%);
+}
+
+body {
+  background: #f6f8f6;
+  color: #202823;
+  font-size: 14px;
+}
+.app-shell {
+  grid-template-columns: 260px minmax(0, 1fr);
+  background: #f6f8f6;
+}
+.sidebar {
+  padding: 24px 17px 17px;
+  background: #fff;
+}
+.brand {
+  gap: 12px;
+  padding: 0 5px 27px;
+}
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-radius: 12px;
+  font-size: 22px;
+}
+.brand-copy strong {
+  font-size: 16px;
+}
+.brand-copy span {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.sidebar-search-placeholder {
+  min-height: 42px;
+  margin-bottom: 27px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.navigation {
+  gap: 5px;
+}
+.navigation-heading {
+  padding: 0 11px 10px;
+  font-size: 10px;
+}
+.navigation-heading-spaced {
+  margin-top: 25px;
+}
+.navigation-link {
+  min-height: 43px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.navigation-icon {
+  width: 19px;
+  flex-basis: 19px;
+  font-size: 17px;
+}
+.navigation-soon {
+  font-size: 10px;
+}
+.sidebar-bottom {
+  padding-top: 30px;
+}
+.sidebar-status {
+  padding-bottom: 18px;
+  font-size: 11px;
+}
+.sidebar-user {
+  gap: 10px;
+  padding: 13px 7px 2px;
+}
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  font-size: 13px;
+}
+.sidebar-user-info strong,
+.topbar-profile-copy strong {
+  font-size: 12px;
+}
+.sidebar-user-info span,
+.topbar-profile-copy span {
+  font-size: 10px;
+}
+.logout-button {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+.topbar {
+  min-height: 100px;
+  padding: 21px 32px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.6px;
+}
+.topbar-title h1 {
+  margin-top: 7px;
+  font-size: 23px;
+}
+.topbar-title > p {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.topbar-actions {
+  gap: 24px;
+}
+.topbar-date {
+  font-size: 11px;
+}
+.topbar-profile {
+  gap: 10px;
+  padding-left: 20px;
+}
+.user-avatar-small {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+}
+.page-content {
+  max-width: 1760px;
+  padding: 32px 36px 40px;
+}
+.app-footer {
+  padding: 17px 36px;
+  font-size: 11px;
+}
+.welcome-section h2,
+.not-found h2 {
+  font-size: clamp(30px, 3vw, 40px);
+}
+.welcome-section p,
+.not-found p {
+  font-size: 15px;
+}
+.foundation-grid {
+  gap: 20px;
+}
+.foundation-card {
+  padding: 26px;
+  border-radius: 16px;
+}
+.foundation-card h3 {
+  font-size: 19px;
+}
+.foundation-card p {
+  font-size: 14px;
+}
+.feature-status {
+  font-size: 11px;
+}
+.integration-note {
+  padding: 23px;
+  border-radius: 15px;
+}
+.integration-note strong {
+  font-size: 15px;
+}
+.integration-note p {
+  font-size: 14px;
+}
+.integration-note code {
+  font-size: 12px;
+}
+.not-found {
+  max-width: 720px;
+  margin: 28px auto;
+  padding: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+.not-found h2 {
+  margin-top: 14px;
+}
+.not-found p {
+  line-height: 1.8;
+}
+.primary-link {
+  padding: 13px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+@media (max-width: 1050px) {
+  .app-shell {
+    grid-template-columns: 225px minmax(0, 1fr);
+  }
+  .sidebar {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+  .page-content {
+    padding: 27px 25px 32px;
+  }
+  .topbar {
+    padding-right: 25px;
+    padding-left: 25px;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    max-height: none;
+    padding: 15px 17px 12px;
+    overflow: visible;
+  }
+  .brand {
+    padding: 0 3px 14px;
+  }
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+  .brand-copy strong {
+    font-size: 15px;
+  }
+  .sidebar-search-placeholder,
+  .navigation-heading,
+  .sidebar-bottom {
+    display: none;
+  }
+  .navigation {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 0 3px;
+  }
+  .navigation-link {
+    min-height: 38px;
+    flex: 0 0 auto;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+  .navigation-link-disabled {
+    display: none;
+  }
+  .topbar {
+    min-height: auto;
+    padding: 18px 19px;
+  }
+  .topbar-title h1 {
+    font-size: 20px;
+  }
+  .topbar-title > p {
+    font-size: 11px;
+  }
+  .topbar-actions {
+    gap: 0;
+  }
+  .topbar-date {
+    display: none;
+  }
+  .topbar-profile {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .topbar-profile-copy {
+    display: none;
+  }
+  .page-content {
+    padding: 24px 18px 30px;
+  }
+  .app-footer {
+    padding: 14px 18px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-content {
+    padding: 20px 14px 25px;
+  }
+  .topbar {
+    padding: 16px 15px;
+  }
+  .topbar-title h1 {
+    font-size: 19px;
+  }
+  .not-found {
+    margin: 12px 0;
+    padding: 24px 20px;
+  }
+  .app-footer {
+    flex-direction: column;
+    gap: 5px;
+    padding: 13px 15px;
+  }
+}

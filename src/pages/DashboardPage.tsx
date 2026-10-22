@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
-import "./DashboardPage.css";
 import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
 import { CashFlowAnalyticsSection } from "./dashboard/CashFlowAnalyticsSection";
+import "./DashboardPage.css";
+
 interface DashboardSummary {
   currency: string;
   totalIncome: string;
@@ -58,15 +59,6 @@ interface DashboardOverview {
   categoryAnalytics: CategoryAnalytics;
 }
 
-type SummaryCardConfig = {
-  key: "income" | "expense" | "cashFlow" | "transactions";
-  title: string;
-  value: string;
-  description: string;
-  icon: string;
-  tone: "positive" | "negative" | "neutral" | "accent";
-};
-
 function formatCurrency(value: string | number, currency = "IDR"): string {
   const amount = Number(value);
 
@@ -79,6 +71,37 @@ function formatCurrency(value: string | number, currency = "IDR"): string {
     currency,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function formatCompactCurrency(
+  value: string | number,
+  currency = "IDR",
+): string {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return "—";
+  }
+
+  if (currency === "IDR" && Math.abs(amount) >= 1_000_000_000) {
+    return `Rp ${(amount / 1_000_000_000).toLocaleString("id-ID", {
+      maximumFractionDigits: 1,
+    })} M`;
+  }
+
+  if (currency === "IDR" && Math.abs(amount) >= 1_000_000) {
+    return `Rp ${(amount / 1_000_000).toLocaleString("id-ID", {
+      maximumFractionDigits: 1,
+    })} jt`;
+  }
+
+  if (currency === "IDR" && Math.abs(amount) >= 10_000) {
+    return `Rp ${(amount / 1_000).toLocaleString("id-ID", {
+      maximumFractionDigits: 0,
+    })} rb`;
+  }
+
+  return formatCurrency(amount, currency);
 }
 
 function formatNumber(value: number): string {
@@ -96,45 +119,29 @@ function formatMonth(month: string): string {
 
   return new Intl.DateTimeFormat("id-ID", {
     month: "short",
-    year: "2-digit",
+    timeZone: "Asia/Jakarta",
   }).format(date);
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiRequestError) {
-    if (error.status === 0) {
-      return "Tidak dapat terhubung ke backend. Pastikan server API aktif dan URL API sudah benar.";
-    }
-
-    return error.message || "Dashboard gagal dimuat dari server.";
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Terjadi kesalahan yang tidak diketahui saat memuat dashboard.";
-}
-
-function getPeriodLabel(summary?: MonthlyFinancialSummary): string {
+function formatPeriod(summary?: MonthlyFinancialSummary): string {
   if (!summary?.startDate || !summary.endDate) {
-    return "Ringkasan keuangan";
+    return "Periode analitik";
   }
 
   const start = new Date(summary.startDate);
   const end = new Date(summary.endDate);
 
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return "Ringkasan keuangan";
+    return "Periode analitik";
   }
 
-  const monthYear = new Intl.DateTimeFormat("id-ID", {
+  const formatter = new Intl.DateTimeFormat("id-ID", {
     month: "short",
     year: "numeric",
     timeZone: "Asia/Jakarta",
   });
 
-  return `${monthYear.format(start)} – ${monthYear.format(end)}`;
+  return `${formatter.format(start)} – ${formatter.format(end)}`;
 }
 
 function getPercentage(value: string): number {
@@ -147,11 +154,41 @@ function getPercentage(value: string): number {
   return Math.min(100, Math.max(0, parsed));
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiRequestError) {
+    if (error.status === 0) {
+      return "Backend tidak dapat dijangkau. Pastikan server API aktif dan URL API sudah benar.";
+    }
+
+    return error.message || "Dashboard gagal dimuat.";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Terjadi kesalahan saat memuat data dashboard.";
+}
+
+function getInitials(value?: string | null): string {
+  if (!value?.trim()) {
+    return "U";
+  }
+
+  return value
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
 export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState<"6" | "12">("12");
 
   useEffect(() => {
     let cancelled = false;
@@ -171,7 +208,7 @@ export function DashboardPage() {
           !response.categoryAnalytics
         ) {
           throw new Error(
-            "Respons dashboard tidak memiliki data analitik yang diperlukan.",
+            "Respons dashboard belum memiliki struktur analitik yang diperlukan.",
           );
         }
 
@@ -200,43 +237,24 @@ export function DashboardPage() {
   const monthlySummary = overview?.monthlyFinancialSummary;
   const categoryAnalytics = overview?.categoryAnalytics;
   const currency = overview?.currency ?? "IDR";
-  const months = monthlySummary?.months ?? [];
-  const categories = categoryAnalytics?.categories ?? [];
 
-  const cards: SummaryCardConfig[] = [
-    {
-      key: "income",
-      title: "Total pemasukan",
-      value: summary ? formatCurrency(summary.totalIncome, currency) : "—",
-      description: "Pemasukan dari transaksi yang tercatat",
-      icon: "↗",
-      tone: "positive",
-    },
-    {
-      key: "expense",
-      title: "Total pengeluaran",
-      value: summary ? formatCurrency(summary.totalExpense, currency) : "—",
-      description: "Pengeluaran dari transaksi yang tercatat",
-      icon: "↘",
-      tone: "negative",
-    },
-    {
-      key: "cashFlow",
-      title: "Arus kas bersih",
-      value: summary ? formatCurrency(summary.netCashFlow, currency) : "—",
-      description: "Pemasukan dikurangi pengeluaran",
-      icon: "⇄",
-      tone: "accent",
-    },
-    {
-      key: "transactions",
-      title: "Total transaksi",
-      value: summary ? formatNumber(summary.transactionCount) : "—",
-      description: "Transaksi dalam periode ringkasan",
-      icon: "#",
-      tone: "neutral",
-    },
-  ];
+  const allMonths = monthlySummary?.months ?? [];
+
+  const months = useMemo(
+    () => allMonths.slice(-Number(selectedPeriod)),
+    [allMonths, selectedPeriod],
+  );
+
+  const categories = useMemo(
+    () =>
+      [...(categoryAnalytics?.categories ?? [])]
+        .filter((item) => Number(item.totalAmount) > 0)
+        .sort(
+          (first, second) =>
+            Number(second.totalAmount) - Number(first.totalAmount),
+        ),
+    [categoryAnalytics?.categories],
+  );
 
   const maxMonthlyAmount = Math.max(
     1,
@@ -247,31 +265,62 @@ export function DashboardPage() {
   );
 
   const hasMonthlyTransactions = months.some(
-    (month) =>
-      (Number(month.income) || 0) > 0 || (Number(month.expense) || 0) > 0,
+    (month) => Number(month.income) > 0 || Number(month.expense) > 0,
   );
 
-  const hasCategoryTransactions = categories.some(
-    (category) => (Number(category.totalAmount) || 0) > 0,
-  );
+  const hasCategoryTransactions = categories.length > 0;
+
+  const income = Number(summary?.totalIncome ?? 0);
+  const expense = Number(summary?.totalExpense ?? 0);
+  const cashFlow = Number(summary?.netCashFlow ?? 0);
+
+  const savingsRate =
+    income > 0 ? Math.max(0, Math.min(100, (cashFlow / income) * 100)) : 0;
+
+  const cards = [
+    {
+      key: "balance",
+      label: "Arus kas bersih",
+      value: summary ? formatCurrency(summary.netCashFlow, currency) : "—",
+      note: "Pemasukan dikurangi pengeluaran",
+      icon: "↗",
+      tone: "emerald",
+    },
+    {
+      key: "income",
+      label: "Total pemasukan",
+      value: summary ? formatCurrency(summary.totalIncome, currency) : "—",
+      note: "Pemasukan yang tercatat",
+      icon: "＋",
+      tone: "lime",
+    },
+    {
+      key: "expense",
+      label: "Total pengeluaran",
+      value: summary ? formatCurrency(summary.totalExpense, currency) : "—",
+      note: "Pengeluaran yang tercatat",
+      icon: "↘",
+      tone: "coral",
+    },
+  ] as const;
 
   return (
-    <section className="dashboard-page">
-      <div className="dashboard-heading">
+    <main className="dashboard-page">
+      <header className="dashboard-top-heading">
         <div className="dashboard-heading-copy">
-          <span className="eyebrow">OVERVIEW</span>
-          <h1>Ringkasan keuangan</h1>
+          <span className="dashboard-eyebrow">FINANCIAL OVERVIEW</span>
+          <h1>Dashboard</h1>
           <p>
-            Pantau pemasukan, pengeluaran, dan pola keuangan Anda dari satu
+            Pantau, kelola, dan tingkatkan kondisi keuangan Anda dari satu
             tempat.
           </p>
         </div>
 
         <div className="dashboard-heading-actions">
-          <span className="dashboard-period">
-            <span className="period-dot" aria-hidden="true" />
-            {getPeriodLabel(monthlySummary)}
-          </span>
+          <div className="dashboard-period-pill">
+            <span className="dashboard-live-dot" aria-hidden="true" />
+            {formatPeriod(monthlySummary)}
+          </div>
 
           <button
             className="dashboard-refresh-button"
@@ -280,309 +329,429 @@ export function DashboardPage() {
             disabled={isLoading}
           >
             <span aria-hidden="true">{isLoading ? "…" : "↻"}</span>
-            {isLoading ? "Memuat..." : "Perbarui"}
+            <span>{isLoading ? "Memuat" : "Perbarui"}</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {errorMessage && (
         <div className="dashboard-error" role="alert">
-          <div className="dashboard-error-icon" aria-hidden="true">
+          <div className="dashboard-error-symbol" aria-hidden="true">
             !
           </div>
-
-          <div className="dashboard-error-content">
+          <div className="dashboard-error-copy">
             <strong>Data dashboard belum tersedia</strong>
             <p>{errorMessage}</p>
-            <button
-              type="button"
-              onClick={() => setReloadKey((current) => current + 1)}
-              disabled={isLoading}
-            >
-              Coba lagi
-            </button>
           </div>
+          <button
+            type="button"
+            onClick={() => setReloadKey((current) => current + 1)}
+            disabled={isLoading}
+          >
+            Coba lagi
+          </button>
         </div>
       )}
 
-      <div
-        className="financial-summary-grid"
+      <section
+        className="dashboard-summary-layout"
         aria-label="Ringkasan keuangan"
-        aria-busy={isLoading}
       >
-        {cards.map((card) => (
-          <article
-            className={`financial-summary-card financial-summary-card--${card.tone}`}
-            key={card.key}
-          >
-            <div className="financial-summary-card-top">
-              <span className="financial-summary-title">{card.title}</span>
-              <span className="financial-summary-icon" aria-hidden="true">
-                {card.icon}
-              </span>
+        <article className="dashboard-balance-card">
+          <div className="dashboard-balance-card-heading">
+            <div>
+              <span className="dashboard-card-overline">YOUR CASH FLOW</span>
+              <h2>Ringkasan saldo bersih</h2>
             </div>
-
-            <div className="financial-summary-value">
-              {isLoading && !overview ? (
-                <span
-                  className="financial-summary-skeleton"
-                  aria-label="Memuat nilai"
-                />
-              ) : (
-                card.value
-              )}
-            </div>
-
-            <p className="financial-summary-description">{card.description}</p>
-          </article>
-        ))}
-      </div>
-
-      <div className="dashboard-section-heading">
-        <div>
-          <span className="eyebrow">ANALYTICS</span>
-          <h2>Analisis arus kas</h2>
-        </div>
-        <span className="analytics-period-label">{months.length} bulan</span>
-      </div>
-
-      <section className="analytics-panel" aria-labelledby="cash-flow-title">
-        <div className="analytics-panel-heading">
-          <div>
-            <h3 id="cash-flow-title">Pemasukan vs. pengeluaran</h3>
-            <p>Perbandingan aktivitas keuangan dari bulan ke bulan.</p>
+            <span className="dashboard-card-icon dashboard-card-icon--light">
+              ↗
+            </span>
           </div>
 
-          <div className="chart-legend" aria-label="Legenda grafik">
+          <div className="dashboard-balance-value" aria-busy={isLoading}>
+            {isLoading && !overview ? (
+              <span className="dashboard-skeleton dashboard-skeleton--balance" />
+            ) : (
+              formatCurrency(summary?.netCashFlow ?? 0, currency)
+            )}
+          </div>
+
+          <p className="dashboard-balance-description">
+            Total pemasukan dikurangi pengeluaran pada periode ringkasan.
+          </p>
+
+          <div className="dashboard-balance-footer">
+            <span className="dashboard-balance-footer-icon" aria-hidden="true">
+              ✓
+            </span>
             <span>
-              <i className="legend-dot legend-dot--income" />
+              {cashFlow >= 0
+                ? "Arus kas bersih positif"
+                : "Pengeluaran melebihi pemasukan"}
+            </span>
+          </div>
+        </article>
+
+        <div className="dashboard-stat-stack">
+          {cards.slice(1).map((card) => (
+            <article
+              className={`dashboard-stat-card dashboard-stat-card--${card.tone}`}
+              key={card.key}
+            >
+              <div className="dashboard-stat-card-heading">
+                <span>{card.label}</span>
+                <span className="dashboard-stat-icon" aria-hidden="true">
+                  {card.icon}
+                </span>
+              </div>
+
+              <strong className="dashboard-stat-value" aria-busy={isLoading}>
+                {isLoading && !overview ? (
+                  <span className="dashboard-skeleton" />
+                ) : (
+                  card.value
+                )}
+              </strong>
+
+              <p>{card.note}</p>
+            </article>
+          ))}
+        </div>
+
+        <article className="dashboard-expense-card">
+          <div className="dashboard-expense-card-heading">
+            <div>
+              <span className="dashboard-card-overline">ACTIVITY</span>
+              <h2>Aktivitas keuangan</h2>
+            </div>
+            <span className="dashboard-expense-icon" aria-hidden="true">
+              ◷
+            </span>
+          </div>
+
+          <div className="dashboard-transaction-count">
+            <strong>
+              {isLoading && !overview
+                ? "—"
+                : formatNumber(summary?.transactionCount ?? 0)}
+            </strong>
+            <span>transaksi tercatat</span>
+          </div>
+
+          <div className="dashboard-activity-meter">
+            <div className="dashboard-activity-meter-track">
+              <span
+                style={{
+                  width: `${savingsRate}%`,
+                }}
+              />
+            </div>
+            <div className="dashboard-activity-meter-labels">
+              <span>Arus kas tersisa</span>
+              <strong>
+                {savingsRate.toLocaleString("id-ID", {
+                  maximumFractionDigits: 1,
+                })}
+                %
+              </strong>
+            </div>
+          </div>
+
+          <p className="dashboard-expense-card-note">
+            Persentase dihitung dari arus kas bersih dibandingkan pemasukan.
+          </p>
+        </article>
+      </section>
+
+      <div className="dashboard-section-title">
+        <div>
+          <span className="dashboard-eyebrow">YOUR FINANCIAL PERFORMANCE</span>
+          <h2>Analitik keuangan</h2>
+        </div>
+        <span className="dashboard-section-period">
+          {formatPeriod(monthlySummary)}
+        </span>
+      </div>
+
+      <section className="dashboard-primary-grid">
+        <article
+          className="dashboard-panel dashboard-money-flow"
+          aria-labelledby="dashboard-money-flow-title"
+        >
+          <div className="dashboard-panel-heading">
+            <div>
+              <h3 id="dashboard-money-flow-title">Money flow</h3>
+              <p>Perbandingan pemasukan dan pengeluaran bulanan.</p>
+            </div>
+
+            <label className="dashboard-period-select">
+              <span className="sr-only">Periode grafik</span>
+              <select
+                value={selectedPeriod}
+                onChange={(event) =>
+                  setSelectedPeriod(event.target.value as "6" | "12")
+                }
+              >
+                <option value="6">6 bulan</option>
+                <option value="12">12 bulan</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="dashboard-chart-legend">
+            <span>
+              <i className="dashboard-legend-dot dashboard-legend-dot--income" />
               Pemasukan
             </span>
             <span>
-              <i className="legend-dot legend-dot--expense" />
+              <i className="dashboard-legend-dot dashboard-legend-dot--expense" />
               Pengeluaran
             </span>
           </div>
-        </div>
 
-        {isLoading && !overview ? (
-          <div className="analytics-loading" role="status">
-            <span className="analytics-loading-bar" />
-            <span className="analytics-loading-bar" />
-            <span className="analytics-loading-bar" />
-            <span className="analytics-loading-bar" />
-          </div>
-        ) : !hasMonthlyTransactions ? (
-          <div className="analytics-empty-state">
-            <span className="analytics-empty-icon" aria-hidden="true">
-              ↗
-            </span>
-            <strong>Belum ada aktivitas keuangan</strong>
-            <p>
-              Grafik akan menampilkan perbandingan pemasukan dan pengeluaran
-              setelah transaksi tersedia pada periode ini.
-            </p>
-          </div>
-        ) : (
-          <div className="monthly-chart">
-            <div className="monthly-chart-axis-labels" aria-hidden="true">
-              <span>{formatCurrency(maxMonthlyAmount, currency)}</span>
-              <span>{formatCurrency(maxMonthlyAmount / 2, currency)}</span>
-              <span>Rp0</span>
+          {isLoading && !overview ? (
+            <div className="dashboard-chart-loading" role="status">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
             </div>
-
-            <div
-              className="monthly-chart-plot"
-              role="img"
-              aria-label="Grafik batang pemasukan dan pengeluaran per bulan. Rincian angka tersedia pada daftar data di bawah grafik."
-            >
-              <div className="monthly-chart-gridline monthly-chart-gridline--top" />
-              <div className="monthly-chart-gridline monthly-chart-gridline--middle" />
-              <div className="monthly-chart-gridline monthly-chart-gridline--bottom" />
-
-              <div className="monthly-chart-columns">
-                {months.map((month) => {
-                  const income = Math.max(0, Number(month.income) || 0);
-                  const expense = Math.max(0, Number(month.expense) || 0);
-                  const incomeHeight = (income / maxMonthlyAmount) * 100;
-                  const expenseHeight = (expense / maxMonthlyAmount) * 100;
-
-                  return (
-                    <div className="monthly-chart-column" key={month.month}>
-                      <div className="monthly-chart-bars">
-                        <div
-                          className="monthly-chart-bar monthly-chart-bar--income"
-                          style={{
-                            height: `${incomeHeight}%`,
-                          }}
-                          title={`${formatMonth(month.month)} — Pemasukan: ${formatCurrency(income, currency)}`}
-                        />
-                        <div
-                          className="monthly-chart-bar monthly-chart-bar--expense"
-                          style={{
-                            height: `${expenseHeight}%`,
-                          }}
-                          title={`${formatMonth(month.month)} — Pengeluaran: ${formatCurrency(expense, currency)}`}
-                        />
-                      </div>
-                      <span className="monthly-chart-month">
-                        {formatMonth(month.month)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+          ) : !hasMonthlyTransactions ? (
+            <div className="dashboard-empty-state">
+              <span className="dashboard-empty-state-icon" aria-hidden="true">
+                ↗
+              </span>
+              <strong>Belum ada aktivitas keuangan</strong>
+              <p>
+                Grafik akan muncul setelah transaksi tersedia pada periode yang
+                dipilih.
+              </p>
             </div>
-
-            <div className="monthly-chart-data">
-              {months.map((month) => (
-                <div className="monthly-chart-data-row" key={month.month}>
-                  <strong>{formatMonth(month.month)}</strong>
-                  <span className="chart-data-income">
-                    Masuk: {formatCurrency(month.income, currency)}
-                  </span>
-                  <span className="chart-data-expense">
-                    Keluar: {formatCurrency(month.expense, currency)}
+          ) : (
+            <>
+              <div className="dashboard-chart">
+                <div className="dashboard-chart-axis" aria-hidden="true">
+                  <span>
+                    {formatCompactCurrency(maxMonthlyAmount, currency)}
                   </span>
                   <span>
-                    Bersih: {formatCurrency(month.netCashFlow, currency)}
+                    {formatCompactCurrency(maxMonthlyAmount / 2, currency)}
                   </span>
+                  <span>{formatCompactCurrency(0, currency)}</span>
                 </div>
-              ))}
+
+                <div
+                  className="dashboard-chart-plot"
+                  role="img"
+                  aria-label="Grafik batang pemasukan dan pengeluaran per bulan"
+                >
+                  <div className="dashboard-chart-gridline dashboard-chart-gridline--one" />
+                  <div className="dashboard-chart-gridline dashboard-chart-gridline--two" />
+                  <div className="dashboard-chart-gridline dashboard-chart-gridline--three" />
+
+                  <div
+                    className="dashboard-chart-columns"
+                    style={{
+                      gridTemplateColumns: `repeat(${Math.max(months.length, 1)}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {months.map((month) => {
+                      const monthlyIncome = Math.max(
+                        0,
+                        Number(month.income) || 0,
+                      );
+                      const monthlyExpense = Math.max(
+                        0,
+                        Number(month.expense) || 0,
+                      );
+
+                      const incomeHeight =
+                        (monthlyIncome / maxMonthlyAmount) * 100;
+                      const expenseHeight =
+                        (monthlyExpense / maxMonthlyAmount) * 100;
+
+                      return (
+                        <div
+                          className="dashboard-chart-column"
+                          key={month.month}
+                        >
+                          <div className="dashboard-chart-bars">
+                            <div
+                              className="dashboard-chart-bar dashboard-chart-bar--income"
+                              style={{ height: `${incomeHeight}%` }}
+                              title={`Pemasukan ${formatMonth(month.month)}: ${formatCurrency(monthlyIncome, currency)}`}
+                            />
+                            <div
+                              className="dashboard-chart-bar dashboard-chart-bar--expense"
+                              style={{ height: `${expenseHeight}%` }}
+                              title={`Pengeluaran ${formatMonth(month.month)}: ${formatCurrency(monthlyExpense, currency)}`}
+                            />
+                          </div>
+                          <span>{formatMonth(month.month)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="dashboard-chart-summary">
+                <div>
+                  <span>Total pemasukan</span>
+                  <strong className="dashboard-positive-value">
+                    {formatCurrency(
+                      months.reduce(
+                        (total, month) => total + Number(month.income || 0),
+                        0,
+                      ),
+                      currency,
+                    )}
+                  </strong>
+                </div>
+                <div>
+                  <span>Total pengeluaran</span>
+                  <strong className="dashboard-negative-value">
+                    {formatCurrency(
+                      months.reduce(
+                        (total, month) => total + Number(month.expense || 0),
+                        0,
+                      ),
+                      currency,
+                    )}
+                  </strong>
+                </div>
+              </div>
+            </>
+          )}
+        </article>
+
+        <article
+          className="dashboard-panel dashboard-spending-panel"
+          aria-labelledby="dashboard-spending-title"
+        >
+          <div className="dashboard-panel-heading">
+            <div>
+              <h3 id="dashboard-spending-title">Spending breakdown</h3>
+              <p>Distribusi pengeluaran per kategori.</p>
             </div>
-          </div>
-        )}
-      </section>
-
-      <div className="dashboard-section-heading">
-        <div>
-          <span className="eyebrow">SPENDING BREAKDOWN</span>
-          <h2>Pengeluaran per kategori</h2>
-        </div>
-        <span className="analytics-period-label">Berdasarkan nilai</span>
-      </div>
-
-      <section
-        className="analytics-panel category-analytics-panel"
-        aria-labelledby="category-analytics-title"
-      >
-        <div className="analytics-panel-heading">
-          <div>
-            <h3 id="category-analytics-title">Distribusi pengeluaran</h3>
-            <p>
-              Kategori dengan nilai pengeluaran terbesar ditampilkan lebih
-              dahulu.
-            </p>
-          </div>
-        </div>
-
-        {isLoading && !overview ? (
-          <div className="category-loading-list" role="status">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-        ) : !hasCategoryTransactions ? (
-          <div className="analytics-empty-state">
-            <span className="analytics-empty-icon" aria-hidden="true">
+            <span className="dashboard-panel-heading-icon" aria-hidden="true">
               ◌
             </span>
-            <strong>Belum ada data pengeluaran per kategori</strong>
-            <p>
-              Tambahkan transaksi pengeluaran berkategori untuk melihat
-              distribusi pengeluaran Anda.
-            </p>
           </div>
-        ) : (
-          <div className="category-analytics-content">
-            <div className="category-total">
-              <span>Total pengeluaran per kategori</span>
-              <strong>
-                {formatCurrency(
-                  categoryAnalytics?.totalAmount ?? "0",
-                  categoryAnalytics?.currency ?? currency,
-                )}
-              </strong>
-              <small>
-                {formatNumber(categoryAnalytics?.transactionCount ?? 0)}{" "}
-                transaksi
-              </small>
+
+          <div className="dashboard-spending-total">
+            <span>Total pengeluaran kategori</span>
+            <strong>
+              {formatCurrency(categoryAnalytics?.totalAmount ?? 0, currency)}
+            </strong>
+            <small>
+              {formatNumber(categoryAnalytics?.transactionCount ?? 0)} transaksi
+            </small>
+          </div>
+
+          {isLoading && !overview ? (
+            <div className="dashboard-category-loading" role="status">
+              <span />
+              <span />
+              <span />
             </div>
+          ) : !hasCategoryTransactions ? (
+            <div className="dashboard-empty-state dashboard-empty-state--compact">
+              <strong>Belum ada data kategori</strong>
+              <p>Pengeluaran berkategori akan ditampilkan di bagian ini.</p>
+            </div>
+          ) : (
+            <div className="dashboard-category-list">
+              {categories.slice(0, 5).map((category, index) => {
+                const percentage = getPercentage(category.percentage);
 
-            <div className="category-analytics-list">
-              {categories
-                .filter((category) => Number(category.totalAmount) > 0)
-                .map((category, index) => {
-                  const percentage = getPercentage(category.percentage);
-
-                  return (
-                    <article
-                      className="category-analytics-item"
-                      key={category.categoryId}
-                    >
-                      <div className="category-analytics-item-heading">
-                        <div className="category-name-group">
-                          <span
-                            className={`category-color-dot category-color-dot--${index % 5}`}
-                            aria-hidden="true"
-                          />
-                          <strong>{category.categoryName}</strong>
-                        </div>
-                        <strong className="category-amount">
-                          {formatCurrency(category.totalAmount, currency)}
-                        </strong>
-                      </div>
-
-                      <div
-                        className="category-progress-track"
-                        role="progressbar"
-                        aria-label={`Persentase pengeluaran kategori ${category.categoryName}`}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={percentage}
-                      >
-                        <div
-                          className={`category-progress-fill category-progress-fill--${index % 5}`}
-                          style={{ width: `${percentage}%` }}
+                return (
+                  <div
+                    className="dashboard-category-item"
+                    key={category.categoryId}
+                  >
+                    <div className="dashboard-category-heading">
+                      <div className="dashboard-category-name">
+                        <span
+                          className={`dashboard-category-dot dashboard-category-dot--${index % 5}`}
+                          aria-hidden="true"
                         />
+                        <strong>{category.categoryName}</strong>
                       </div>
+                      <span className="dashboard-category-percentage">
+                        {percentage.toLocaleString("id-ID", {
+                          maximumFractionDigits: 1,
+                        })}
+                        %
+                      </span>
+                    </div>
 
-                      <div className="category-analytics-meta">
-                        <span>
-                          {percentage.toLocaleString("id-ID", {
-                            maximumFractionDigits: 1,
-                          })}
-                          % dari total
-                        </span>
-                        <span>
-                          {formatNumber(category.transactionCount)} transaksi
-                        </span>
-                      </div>
-                    </article>
-                  );
-                })}
+                    <div
+                      className="dashboard-category-track"
+                      role="progressbar"
+                      aria-label={`Persentase kategori ${category.categoryName}`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={percentage}
+                    >
+                      <span
+                        className={`dashboard-category-fill dashboard-category-fill--${index % 5}`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+
+                    <div className="dashboard-category-meta">
+                      <span>
+                        {formatNumber(category.transactionCount)} transaksi
+                      </span>
+                      <strong>
+                        {formatCurrency(category.totalAmount, currency)}
+                      </strong>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        )}
+          )}
+        </article>
       </section>
-      <BudgetPerformanceSection />
-      <RecurringPerformanceSection />
-      <CashFlowAnalyticsSection />
 
-      <section className="dashboard-next-steps">
-        <div className="dashboard-next-steps-mark" aria-hidden="true">
-          <span>✳</span>
-        </div>
-        <div className="dashboard-next-steps-copy">
-          <h3>Insight keuangan berbasis data</h3>
+      <section
+        className="dashboard-module-section"
+        aria-label="Performa anggaran"
+      >
+        <BudgetPerformanceSection />
+      </section>
+
+      <section
+        className="dashboard-module-section"
+        aria-label="Transaksi berulang"
+      >
+        <RecurringPerformanceSection />
+      </section>
+
+      <section
+        className="dashboard-module-section"
+        aria-label="Analitik arus kas"
+      >
+        <CashFlowAnalyticsSection />
+      </section>
+
+      <footer className="dashboard-footer">
+        <span className="dashboard-footer-mark" aria-hidden="true">
+          ✳
+        </span>
+        <div>
+          <strong>Keuangan lebih terarah, keputusan lebih baik.</strong>
           <p>
-            Analitik ini menggunakan transaksi yang diagregasikan backend.
-            Rekomendasi keuangan berbasis AI akan diintegrasikan setelah backend
-            dan fitur inti frontend selesai.
+            Angka dan analitik mengikuti data yang dikembalikan oleh backend
+            Anda.
           </p>
         </div>
-      </section>
-    </section>
+        <span className="dashboard-footer-currency">{currency}</span>
+      </footer>
+    </main>
   );
 }
