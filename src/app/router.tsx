@@ -1,15 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { AppLayout } from "../components/layout/AppLayout";
+import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 import { DashboardPage } from "../pages/DashboardPage";
 import { LoginPage } from "../pages/LoginPage";
-import { NotFoundPage } from "../pages/NotFoundPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
-import { TransactionDetailPage } from "../pages/TransactionDetailPage";
-import { TransactionsPage } from "../pages/TransactionsPage";
 import { VerifyEmailPage } from "../pages/VerifyEmailPage";
+import { NotFoundPage } from "../pages/NotFoundPage";
+import { TransactionsPage } from "../pages/TransactionsPage";
+import { TransactionDetailPage } from "../pages/TransactionDetailPage";
+import { TransactionFormPage } from "../pages/TransactionFormPage";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ export const router = createBrowserRouter([
           {
             path: "transactions",
             element: <TransactionsPage />,
+          },
+          {
+            path: "transactions/new",
+            element: <TransactionFormPage />,
           },
           {
             path: "transactions/:id",
