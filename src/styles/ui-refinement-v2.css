@@ -1,0 +1,401 @@
+/* =========================================================
+   Phase 15.3.6 — Responsive navigation refinement
+   ========================================================= */
+
+.sidebar-mobile-heading,
+.mobile-nav-toggle,
+.mobile-nav-backdrop {
+  display: none;
+}
+
+.topbar-heading-group {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar-title {
+  min-width: 0;
+}
+
+/* =========================================================
+   Shared styling for dashboard modules
+   ========================================================= */
+
+.budget-performance,
+.recurring-performance,
+.cash-flow-section {
+  min-width: 0;
+  gap: 22px;
+}
+
+.budget-performance-heading h2,
+.recurring-performance-heading h2 {
+  font-size: clamp(22px, 2vw, 26px);
+  font-weight: 750;
+  letter-spacing: -0.75px;
+}
+
+.budget-performance-heading p,
+.recurring-performance-heading p,
+.cash-flow-section__subtitle {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.budget-summary-card,
+.recurring-summary-card,
+.cash-flow-summary__card {
+  min-width: 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgb(31 57 43 / 3%);
+}
+
+.budget-summary-card > span,
+.recurring-summary-card > span,
+.cash-flow-summary__label {
+  font-size: 13px;
+}
+
+.budget-summary-card > small,
+.recurring-summary-card > small {
+  font-size: 12px;
+}
+
+.budget-item-name strong,
+.recurring-list-heading h3 {
+  font-size: 15px;
+}
+
+.budget-item-name > span {
+  font-size: 13px;
+}
+
+.budget-status {
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.recurring-item {
+  gap: 15px;
+  padding: 19px 21px;
+}
+
+.cash-flow-section__eyebrow {
+  font-size: 11px;
+}
+
+.cash-flow-section__header h2 {
+  font-size: clamp(25px, 2.2vw, 29px);
+}
+
+.cash-flow-section__date {
+  font-size: 12px;
+}
+
+/* Prevent long content from expanding the viewport. */
+
+.budget-performance *,
+.recurring-performance *,
+.cash-flow-section * {
+  min-width: 0;
+}
+
+.budget-item-name,
+.recurring-list-heading {
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   Mobile sidebar drawer
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .app-shell {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: fixed;
+    z-index: 1001;
+    inset: 0 auto 0 0;
+    display: flex;
+    width: min(320px, 86vw);
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    flex-direction: column;
+    padding: 22px 17px 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 0;
+    background: #fff;
+    box-shadow: 12px 0 35px rgb(20 35 27 / 10%);
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition:
+      transform 220ms ease,
+      visibility 220ms ease;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .mobile-nav-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: rgb(20 31 24 / 42%);
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+  }
+
+  .sidebar-mobile-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 3px 16px;
+    color: #8b938d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+  }
+
+  .sidebar-mobile-close {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--color-text);
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .sidebar-mobile-close:hover {
+    background: #f4f8f2;
+  }
+
+  .sidebar .brand {
+    flex: 0 0 auto;
+    padding: 0 5px 22px;
+  }
+
+  .sidebar .sidebar-search-placeholder {
+    display: flex;
+    flex: 0 0 auto;
+    margin-bottom: 22px;
+  }
+
+  .sidebar .navigation {
+    display: grid;
+    flex: 0 0 auto;
+    gap: 5px;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .sidebar .navigation-heading {
+    display: block;
+  }
+
+  .sidebar .navigation-heading-spaced {
+    margin-top: 18px;
+  }
+
+  .sidebar .navigation-link {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    flex: initial;
+    align-items: center;
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+
+  .sidebar .navigation-link-disabled {
+    display: flex;
+  }
+
+  .sidebar .sidebar-bottom {
+    display: block;
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+
+  .main-column {
+    min-height: 100vh;
+    min-width: 0;
+  }
+
+  .topbar {
+    min-height: 78px;
+    padding: 15px 18px;
+    gap: 12px;
+  }
+
+  .topbar-heading-group {
+    flex: 1;
+    gap: 12px;
+  }
+
+  .mobile-nav-toggle {
+    display: flex;
+    width: 39px;
+    height: 39px;
+    flex: 0 0 39px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0;
+    border: 1px solid #e7ece7;
+    border-radius: 11px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .mobile-nav-toggle:hover {
+    background: #f5f8f4;
+  }
+
+  .mobile-nav-toggle:focus-visible,
+  .sidebar-mobile-close:focus-visible {
+    outline: 3px solid rgb(36 120 91 / 25%);
+    outline-offset: 2px;
+  }
+
+  .mobile-nav-toggle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    border-radius: 99px;
+    background: #356d53;
+  }
+
+  .topbar-title {
+    min-width: 0;
+  }
+
+  .topbar-title h1 {
+    font-size: 19px;
+  }
+
+  .topbar-title > p {
+    display: none;
+  }
+
+  .topbar-actions {
+    flex: 0 0 auto;
+    gap: 0;
+  }
+
+  .topbar-date {
+    display: none;
+  }
+
+  .topbar-profile {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .topbar-profile-copy {
+    display: none;
+  }
+
+  .page-content {
+    width: 100%;
+    padding: 22px 18px 30px;
+  }
+
+  .app-footer {
+    padding: 14px 18px;
+  }
+}
+
+/* =========================================================
+   Small mobile devices
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 13px 14px;
+  }
+
+  .topbar-heading-group {
+    gap: 9px;
+  }
+
+  .mobile-nav-toggle {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .topbar-title h1 {
+    font-size: 18px;
+  }
+
+  .topbar-title .eyebrow {
+    font-size: 9px;
+  }
+
+  .page-content {
+    padding: 20px 14px 26px;
+  }
+
+  .budget-performance-heading,
+  .recurring-performance-heading,
+  .cash-flow-section__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .budget-summary-grid,
+  .recurring-summary-grid,
+  .cash-flow-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .budget-summary-card,
+  .recurring-summary-card,
+  .cash-flow-summary__card {
+    padding: 17px;
+  }
+
+  .recurring-item {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* =========================================================
+   Accessibility
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}
