@@ -170,19 +170,6 @@ function getErrorMessage(error: unknown): string {
   return "Terjadi kesalahan saat memuat data dashboard.";
 }
 
-function getInitials(value?: string | null): string {
-  if (!value?.trim()) {
-    return "U";
-  }
-
-  return value
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -271,7 +258,6 @@ export function DashboardPage() {
   const hasCategoryTransactions = categories.length > 0;
 
   const income = Number(summary?.totalIncome ?? 0);
-  const expense = Number(summary?.totalExpense ?? 0);
   const cashFlow = Number(summary?.netCashFlow ?? 0);
 
   const savingsRate =

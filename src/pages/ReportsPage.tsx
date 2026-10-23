@@ -268,7 +268,7 @@ export function ReportsPage() {
 
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
+  const [, setIsExporting] = useState(false);
   const [error, setError] = useState("");
   const [exportError, setExportError] = useState("");
   const [validationError, setValidationError] = useState("");
@@ -384,12 +384,8 @@ export function ReportsPage() {
       }
 
       // apiClient menangani konfigurasi base URL dan autentikasi.
-      // Response Blob dibutuhkan agar isi CSV tidak diparse sebagai JSON.
       const response = await apiClient.get<Blob>(
         `reports/financial/export?${params.toString()}`,
-        {
-          responseType: "blob",
-        },
       );
 
       downloadCsv(response, createExportFileName(appliedFilters));
