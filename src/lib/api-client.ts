@@ -11,6 +11,8 @@ const REFRESH_EXCLUDED_ENDPOINTS = new Set([
   "auth/verify-email",
 ]);
 
+type ApiResponseType = "json" | "blob";
+
 let accessToken: string | null = null;
 let refreshPromise: Promise<boolean> | null = null;
 
@@ -29,6 +31,7 @@ export class ApiRequestError extends Error {
 interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
   skipRefresh?: boolean;
+  responseType?: ApiResponseType;
 }
 
 interface TokenResponse {
@@ -185,8 +188,8 @@ async function refreshSession(): Promise<boolean> {
 
       return true;
     } catch {
-      // Keep the refresh token after a network failure so a later
-      // request or page reload can retry session initialization.
+      // Keep the refresh token after a network failure so the session
+      // can be retried when the backend becomes available again.
       return false;
     } finally {
       refreshPromise = null;
@@ -202,11 +205,16 @@ async function executeRequest<T>(
   canRefresh: boolean,
 ): Promise<T> {
   const normalizedPath = path.replace(/^\/+/, "");
-  const headers = new Headers(options.headers);
+  const { body, skipRefresh, responseType = "json", ...fetchOptions } = options;
 
-  headers.set("Accept", "application/json");
+  const headers = new Headers(fetchOptions.headers);
 
-  if (options.body !== undefined && !headers.has("Content-Type")) {
+  headers.set(
+    "Accept",
+    responseType === "blob" ? "text/csv, application/json" : "application/json",
+  );
+
+  if (body !== undefined && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -215,17 +223,23 @@ async function executeRequest<T>(
   }
 
   const response = await fetch(`${API_BASE_URL}/${normalizedPath}`, {
-    ...options,
+    ...fetchOptions,
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const payload = await readPayload(response);
+  // Successful file responses must remain binary Blob objects.
+  // Error responses are parsed normally so ApiRequestError retains
+  // the backend's JSON message whenever one is available.
+  const payload =
+    response.ok && responseType === "blob"
+      ? await response.blob()
+      : await readPayload(response);
 
   const mayRefresh =
     response.status === 401 &&
     canRefresh &&
-    !options.skipRefresh &&
+    !skipRefresh &&
     !shouldSkipAutomaticRefresh(normalizedPath);
 
   if (mayRefresh) {
