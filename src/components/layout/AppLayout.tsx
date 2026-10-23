@@ -18,6 +18,7 @@ import {
   ReceiptText,
   Workflow,
   Settings,
+  Tags,
 } from "lucide-react";
 
 const navigation = [
@@ -43,6 +44,12 @@ const navigation = [
     label: "Reports",
     icon: <FileBarChart size={18} />,
     to: "/reports",
+    end: false,
+  },
+  {
+    label: "Categories",
+    icon: <Tags size={18} />,
+    to: "/categories",
     end: false,
   },
   {
@@ -140,6 +147,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Reports",
       description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
+    };
+  }
+
+  if (pathname === "/categories") {
+    return {
+      title: "Categories",
+      description: "Kelola kategori pemasukan dan pengeluaran transaksi.",
     };
   }
 

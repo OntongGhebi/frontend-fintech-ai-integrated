@@ -22,6 +22,7 @@ import { SubscriptionPage } from "../pages/SubscriptionPage";
 import { PaymentsPage } from "../pages/PaymentsPage";
 import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { CategoriesPage } from "../pages/CategoriesPage";
 
 export const router = createBrowserRouter([
   {
@@ -102,6 +103,10 @@ export const router = createBrowserRouter([
           {
             path: "settings",
             element: <SettingsPage />,
+          },
+          {
+            path: "categories",
+            element: <CategoriesPage />,
           },
         ],
       },
