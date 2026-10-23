@@ -4,6 +4,13 @@ const API_BASE_URL = (
 
 const REFRESH_TOKEN_KEY = "fintech.refreshToken";
 
+const REFRESH_EXCLUDED_ENDPOINTS = new Set([
+  "auth/login",
+  "auth/register",
+  "auth/refresh",
+  "auth/verify-email",
+]);
+
 let accessToken: string | null = null;
 let refreshPromise: Promise<boolean> | null = null;
 
@@ -93,6 +100,11 @@ export function getApiBaseUrl(): string {
   return API_BASE_URL;
 }
 
+function shouldSkipAutomaticRefresh(path: string): boolean {
+  const normalizedPath = path.replace(/^\/+|\/+$/g, "");
+  return REFRESH_EXCLUDED_ENDPOINTS.has(normalizedPath);
+}
+
 async function readPayload(response: Response): Promise<unknown> {
   if (response.status === 204) {
     return undefined;
@@ -173,8 +185,8 @@ async function refreshSession(): Promise<boolean> {
 
       return true;
     } catch {
-      // A network failure does not necessarily mean the refresh token
-      // has been revoked. Keep it so the user can retry later.
+      // Keep the refresh token after a network failure so a later
+      // request or page reload can retry session initialization.
       return false;
     } finally {
       refreshPromise = null;
@@ -210,12 +222,13 @@ async function executeRequest<T>(
 
   const payload = await readPayload(response);
 
-  if (
+  const mayRefresh =
     response.status === 401 &&
     canRefresh &&
     !options.skipRefresh &&
-    !normalizedPath.startsWith("auth/")
-  ) {
+    !shouldSkipAutomaticRefresh(normalizedPath);
+
+  if (mayRefresh) {
     const refreshed = await refreshSession();
 
     if (refreshed) {
