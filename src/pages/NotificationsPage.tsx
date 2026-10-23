@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import { NotificationPreferencesCard } from "./NotificationPreferencesCard";
 import "./NotificationsPage.css";
 
 type NotificationChannel = "IN_APP" | "EMAIL" | "TELEGRAM" | string;
@@ -83,8 +84,6 @@ function normalizeNotifications(
       const status = item.status?.toUpperCase();
       const channel = item.channel?.toUpperCase() ?? "UNKNOWN";
 
-      // Backend menggunakan status READ/UNREAD.
-      // isRead tetap didukung untuk kompatibilitas dengan respons lama.
       const isRead =
         status === "READ" || Boolean(item.readAt) || item.isRead === true;
 
@@ -230,8 +229,6 @@ export function NotificationsPage() {
 
       const readAt = new Date().toISOString();
 
-      // Backend hanya menandai notifikasi IN_APP sebagai READ.
-      // Jangan mengubah status EMAIL atau TELEGRAM di UI.
       setNotifications((current) =>
         current.map((item) =>
           isInAppNotification(item) && !item.isRead
@@ -281,6 +278,8 @@ export function NotificationsPage() {
           <span>{actionError}</span>
         </div>
       )}
+
+      <NotificationPreferencesCard />
 
       <div className="notifications-panel">
         <div className="notifications-panel-header">
