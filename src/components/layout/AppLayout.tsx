@@ -17,6 +17,7 @@ import {
   CreditCard,
   ReceiptText,
   Workflow,
+  Settings,
 } from "lucide-react";
 
 const navigation = [
@@ -66,6 +67,12 @@ const navigation = [
     label: "Integrations",
     icon: <Workflow size={18} />,
     to: "/integrations",
+    end: false,
+  },
+  {
+    label: "Settings",
+    icon: <Settings size={18} />,
+    to: "/settings",
     end: false,
   },
 ];
@@ -154,6 +161,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Integrations",
       description: "Kelola panduan integrasi Telegram dan AI Assistant.",
+    };
+  }
+
+  if (pathname === "/settings") {
+    return {
+      title: "Settings",
+      description: "Kelola profil, preferensi, dan keamanan akun Anda.",
     };
   }
 
@@ -373,7 +387,12 @@ export function AppLayout() {
               IDR · Asia/Jakarta
             </span>
 
-            <div className="topbar-profile">
+            <NavLink
+              to="/settings"
+              className="topbar-profile"
+              aria-label="Buka pengaturan akun"
+              title="Pengaturan akun"
+            >
               <div className="user-avatar user-avatar-small" aria-hidden="true">
                 {initial}
               </div>
@@ -382,7 +401,7 @@ export function AppLayout() {
                 <strong>{displayName}</strong>
                 <span>{user?.email}</span>
               </div>
-            </div>
+            </NavLink>
           </div>
         </header>
 

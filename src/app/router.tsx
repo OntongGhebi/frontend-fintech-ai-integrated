@@ -21,6 +21,7 @@ import { NotificationsPage } from "../pages/NotificationsPage";
 import { SubscriptionPage } from "../pages/SubscriptionPage";
 import { PaymentsPage } from "../pages/PaymentsPage";
 import { IntegrationsPage } from "../pages/IntegrationsPage";
+import { SettingsPage } from "../pages/SettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -97,6 +98,10 @@ export const router = createBrowserRouter([
           {
             path: "integrations",
             element: <IntegrationsPage />,
+          },
+          {
+            path: "settings",
+            element: <SettingsPage />,
           },
         ],
       },
