@@ -19,6 +19,7 @@ import {
   type BudgetFormValues,
 } from "./budgets/BudgetFormModal";
 import "./BudgetsPage.css";
+import { BudgetAlertsPanel } from "./budgets/BudgetAlertsPanel";
 
 type BudgetStatus = "ACTIVE" | "PAUSED" | "COMPLETED";
 type BudgetPeriod = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM";
@@ -665,6 +666,10 @@ export function BudgetsPage() {
                       <span>Archive</span>
                     </button>
                   </div>
+                  <BudgetAlertsPanel
+                    budgetId={budget.id}
+                    budgetName={budget.name}
+                  />
                 </article>
               );
             })}
