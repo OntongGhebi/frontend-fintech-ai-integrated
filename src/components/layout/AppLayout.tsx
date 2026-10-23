@@ -19,6 +19,7 @@ import {
   Workflow,
   Settings,
   Tags,
+  PiggyBank,
 } from "lucide-react";
 
 const navigation = [
@@ -38,6 +39,12 @@ const navigation = [
     label: "Accounts",
     icon: <WalletMinimal size={18} />,
     to: "/accounts",
+    end: false,
+  },
+  {
+    label: "Budgets",
+    icon: <PiggyBank size={18} />,
+    to: "/budgets",
     end: false,
   },
   {
@@ -84,7 +91,7 @@ const navigation = [
   },
 ];
 
-const upcomingFeatures = ["Budgets", "Recurring"];
+const upcomingFeatures = ["Recurring"];
 
 function getPageHeading(pathname: string) {
   if (pathname === "/transactions/new") {
@@ -140,6 +147,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Detail akun",
       description: "Lihat saldo dan informasi akun keuanganmu.",
+    };
+  }
+
+  if (pathname === "/budgets") {
+    return {
+      title: "Budgets",
+      description: "Kelola batas pengeluaran dan pantau pemakaian anggaran.",
     };
   }
 

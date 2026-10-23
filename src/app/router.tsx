@@ -23,6 +23,7 @@ import { PaymentsPage } from "../pages/PaymentsPage";
 import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
+import { BudgetsPage } from "../pages/BudgetsPage";
 
 export const router = createBrowserRouter([
   {
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
           {
             path: "accounts/:id",
             element: <AccountDetailPage />,
+          },
+          {
+            path: "budgets",
+            element: <BudgetsPage />,
           },
           {
             path: "reports",
