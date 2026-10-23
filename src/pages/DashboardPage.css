@@ -1366,7 +1366,7 @@
 }
 .dashboard-chart-bar--expense {
   z-index: 2;
-  width: min(68%, 35px);
+  width: min(100%, 51px);
   background: #b8df36;
   box-shadow: 0 0 0 1px rgb(255 255 255 / 12%);
 }

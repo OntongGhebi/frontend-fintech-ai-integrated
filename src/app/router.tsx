@@ -24,6 +24,7 @@ import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { BudgetsPage } from "../pages/BudgetsPage";
+import { RecurringTransactionsPage } from "../pages/RecurringTransactionsPage";
 
 export const router = createBrowserRouter([
   {
@@ -92,6 +93,10 @@ export const router = createBrowserRouter([
           {
             path: "notifications",
             element: <NotificationsPage />,
+          },
+          {
+            path: "recurring-transactions",
+            element: <RecurringTransactionsPage />,
           },
           {
             path: "subscription",

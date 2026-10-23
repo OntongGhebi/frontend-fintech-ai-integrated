@@ -20,6 +20,7 @@ import {
   Settings,
   Tags,
   PiggyBank,
+  Repeat,
 } from "lucide-react";
 
 const navigation = [
@@ -66,6 +67,12 @@ const navigation = [
     end: false,
   },
   {
+    label: "Recurring",
+    icon: <Repeat size={18} />,
+    to: "/recurring-transactions",
+    end: false,
+  },
+  {
     label: "Subscription",
     icon: <CreditCard size={18} />,
     to: "/subscription",
@@ -90,8 +97,6 @@ const navigation = [
     end: false,
   },
 ];
-
-const upcomingFeatures = ["Recurring"];
 
 function getPageHeading(pathname: string) {
   if (pathname === "/transactions/new") {
@@ -196,6 +201,17 @@ function getPageHeading(pathname: string) {
     return {
       title: "Settings",
       description: "Kelola profil, preferensi, dan keamanan akun Anda.",
+    };
+  }
+
+  if (
+    pathname === "/recurring-transactions" ||
+    pathname.startsWith("/recurring-transactions/")
+  ) {
+    return {
+      title: "Recurring Transactions",
+      description:
+        "Kelola transaksi terjadwal untuk pemasukan dan pengeluaran rutin.",
     };
   }
 
@@ -312,21 +328,6 @@ export function AppLayout() {
           <span className="navigation-heading navigation-heading-spaced">
             YOUR FINANCES
           </span>
-
-          {upcomingFeatures.map((feature) => (
-            <div
-              key={feature}
-              className="navigation-link navigation-link-disabled"
-              aria-disabled="true"
-              title={`${feature} belum tersedia`}
-            >
-              <span className="navigation-icon" aria-hidden="true">
-                ·
-              </span>
-              <span>{feature}</span>
-              <span className="navigation-soon">Soon</span>
-            </div>
-          ))}
         </nav>
 
         <div className="sidebar-bottom">
