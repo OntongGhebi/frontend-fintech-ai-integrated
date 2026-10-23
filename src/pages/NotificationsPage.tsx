@@ -12,22 +12,38 @@ import {
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./NotificationsPage.css";
 
+type NotificationChannel = "IN_APP" | "EMAIL" | "TELEGRAM" | string;
+
 type NotificationRecord = {
   id: string;
   title: string;
   message: string;
   type?: string;
+  channel: NotificationChannel;
+  status?: string;
   isRead: boolean;
   readAt?: string | null;
   createdAt: string;
 };
 
+type RawNotificationRecord = {
+  id: string;
+  title?: string;
+  message?: string;
+  type?: string;
+  channel?: string;
+  status?: string;
+  isRead?: boolean;
+  readAt?: string | null;
+  createdAt?: string;
+};
+
 type NotificationsPayload =
-  | NotificationRecord[]
+  | RawNotificationRecord[]
   | {
-      data?: NotificationRecord[];
-      items?: NotificationRecord[];
-      notifications?: NotificationRecord[];
+      data?: RawNotificationRecord[];
+      items?: RawNotificationRecord[];
+      notifications?: RawNotificationRecord[];
       meta?: { total?: number; unreadCount?: number };
       unreadCount?: number;
     };
@@ -42,7 +58,7 @@ function getErrorMessage(error: unknown): string {
       return "Server sedang mengalami kendala. Silakan coba lagi.";
     }
 
-    return error.message || "Notifikasi tidak dapat dimuat.";
+    return error.message || "Notifikasi tidak dapat diproses.";
   }
 
   if (error instanceof TypeError) {
@@ -60,19 +76,37 @@ function normalizeNotifications(
     : (payload.data ?? payload.items ?? payload.notifications ?? []);
 
   return records
-    .filter((item): item is NotificationRecord =>
+    .filter((item): item is RawNotificationRecord =>
       Boolean(item && typeof item.id === "string"),
     )
-    .map((item) => ({
-      ...item,
-      title:
-        typeof item.title === "string" && item.title.trim()
-          ? item.title
-          : "Notifikasi",
-      message: typeof item.message === "string" ? item.message : "",
-      isRead: Boolean(item.isRead),
-      createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
-    }));
+    .map((item) => {
+      const status = item.status?.toUpperCase();
+      const channel = item.channel?.toUpperCase() ?? "UNKNOWN";
+
+      // Backend menggunakan status READ/UNREAD.
+      // isRead tetap didukung untuk kompatibilitas dengan respons lama.
+      const isRead =
+        status === "READ" || Boolean(item.readAt) || item.isRead === true;
+
+      return {
+        id: item.id,
+        title:
+          typeof item.title === "string" && item.title.trim()
+            ? item.title
+            : "Notifikasi",
+        message: typeof item.message === "string" ? item.message : "",
+        type: item.type,
+        channel,
+        status,
+        isRead,
+        readAt: item.readAt ?? null,
+        createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
+      };
+    });
+}
+
+function isInAppNotification(notification: NotificationRecord): boolean {
+  return notification.channel === "IN_APP";
 }
 
 function formatDateTime(value: string): string {
@@ -115,7 +149,11 @@ export function NotificationsPage() {
   const [reloadKey, setReloadKey] = useState(0);
 
   const unreadCount = useMemo(
-    () => notifications.filter((notification) => !notification.isRead).length,
+    () =>
+      notifications.filter(
+        (notification) =>
+          isInAppNotification(notification) && !notification.isRead,
+      ).length,
     [notifications],
   );
 
@@ -142,7 +180,11 @@ export function NotificationsPage() {
 
   const handleMarkRead = useCallback(
     async (notification: NotificationRecord) => {
-      if (notification.isRead || markingIds.includes(notification.id)) {
+      if (
+        !isInAppNotification(notification) ||
+        notification.isRead ||
+        markingIds.includes(notification.id)
+      ) {
         return;
       }
 
@@ -150,20 +192,24 @@ export function NotificationsPage() {
       setMarkingIds((current) => [...current, notification.id]);
 
       try {
-        await apiClient.patch(
+        const response = await apiClient.patch<RawNotificationRecord>(
           `notifications/${encodeURIComponent(notification.id)}/read`,
         );
 
         setNotifications((current) =>
-          current.map((item) =>
-            item.id === notification.id
-              ? {
-                  ...item,
-                  isRead: true,
-                  readAt: new Date().toISOString(),
-                }
-              : item,
-          ),
+          current.map((item) => {
+            if (item.id !== notification.id) return item;
+
+            const returnedStatus = response?.status?.toUpperCase();
+
+            return {
+              ...item,
+              status: returnedStatus ?? "READ",
+              isRead:
+                returnedStatus === "READ" || Boolean(response?.readAt) || true,
+              readAt: response?.readAt ?? new Date().toISOString(),
+            };
+          }),
         );
       } catch (requestError) {
         setActionError(getErrorMessage(requestError));
@@ -187,9 +233,13 @@ export function NotificationsPage() {
 
       const readAt = new Date().toISOString();
 
+      // Backend hanya menandai notifikasi IN_APP sebagai READ.
+      // Jangan mengubah status EMAIL atau TELEGRAM di UI.
       setNotifications((current) =>
         current.map((item) =>
-          item.isRead ? item : { ...item, isRead: true, readAt },
+          isInAppNotification(item) && !item.isRead
+            ? { ...item, isRead: true, status: "READ", readAt }
+            : item,
         ),
       );
     } catch (requestError) {
@@ -286,13 +336,15 @@ export function NotificationsPage() {
             {notifications.map((notification) => {
               const NotificationIcon = getNotificationIcon(notification.type);
               const isMarking = markingIds.includes(notification.id);
+              const isUnreadInApp =
+                isInAppNotification(notification) && !notification.isRead;
 
               return (
                 <li
                   className={`notification-item${
-                    notification.isRead
-                      ? " notification-item-read"
-                      : " notification-item-unread"
+                    isUnreadInApp
+                      ? " notification-item-unread"
+                      : " notification-item-read"
                   }`}
                   key={notification.id}
                 >
@@ -304,7 +356,7 @@ export function NotificationsPage() {
                     <div className="notification-item-title-row">
                       <h4>{notification.title}</h4>
 
-                      {!notification.isRead && (
+                      {isUnreadInApp && (
                         <span
                           className="notification-unread-dot"
                           aria-label="Belum dibaca"
@@ -322,7 +374,7 @@ export function NotificationsPage() {
                     </span>
                   </div>
 
-                  {!notification.isRead && (
+                  {isUnreadInApp && (
                     <button
                       type="button"
                       className="notification-read-button"
