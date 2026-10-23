@@ -18,6 +18,10 @@ import {
   Tag,
   X,
 } from "lucide-react";
+import {
+  CATEGORY_ICON_MAP,
+  CategoryIconPicker,
+} from "../components/categories/CategoryIconPicker";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./CategoriesPage.css";
@@ -279,8 +283,8 @@ export function CategoriesPage() {
       const payload = {
         name,
         type: form.type,
-        icon: icon || undefined,
-        color: color || undefined,
+        icon: icon || "Tag",
+        color: color || "#24785B",
       };
 
       if (formMode === "create") {
@@ -523,22 +527,32 @@ export function CategoriesPage() {
                     <td>
                       <div className="categories-name-cell">
                         <span
-                          className="categories-color-dot"
+                          className="categories-real-icon"
                           style={{
-                            backgroundColor:
+                            color:
                               category.color &&
                               /^#[0-9A-Fa-f]{6}$/.test(category.color)
                                 ? category.color
                                 : "#24785B",
                           }}
                           aria-hidden="true"
-                        />
+                        >
+                          {(() => {
+                            const Icon =
+                              CATEGORY_ICON_MAP[category.icon ?? ""] ??
+                              CATEGORY_ICON_MAP.Tag ??
+                              Tag;
+
+                            return <Icon size={20} strokeWidth={1.8} />;
+                          })()}
+                        </span>
+
                         <div>
                           <strong>{category.name}</strong>
                           <span>
-                            {category.icon
+                            {CATEGORY_ICON_MAP[category.icon ?? ""]
                               ? `Ikon: ${category.icon}`
-                              : "Tanpa ikon khusus"}
+                              : "Ikon kategori umum"}
                           </span>
                         </div>
                       </div>
@@ -696,21 +710,22 @@ export function CategoriesPage() {
                 )}
               </label>
 
-              <label className="categories-form-field">
+              <div className="categories-form-field">
                 <span>
                   Identitas ikon <small>(opsional)</small>
                 </span>
-                <input
-                  value={form.icon}
-                  onChange={(event) => updateForm("icon", event.target.value)}
-                  maxLength={50}
-                  placeholder="Contoh: utensils"
+
+                <CategoryIconPicker
+                  value={form.icon || "Tag"}
+                  onChange={(iconName) => updateForm("icon", iconName)}
                 />
+
                 <small>
-                  Masukkan nama ikon sebagai teks. Kolom ini tidak mengunggah
-                  file gambar.
+                  Pilih ikon yang paling sesuai dengan kategori. Ikon akan
+                  ditampilkan pada daftar kategori dan disimpan sebagai nama
+                  ikon.
                 </small>
-              </label>
+              </div>
 
               <label className="categories-form-field">
                 <span>Warna kategori</span>

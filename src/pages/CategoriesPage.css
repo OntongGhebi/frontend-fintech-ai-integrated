@@ -719,3 +719,24 @@
     transition: none;
   }
 }
+
+.categories-real-icon {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: #f0f6f2;
+}
+
+.categories-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 155px;
+}
+
+.categories-real-icon svg {
+  display: block;
+}
