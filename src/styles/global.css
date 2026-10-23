@@ -8,21 +8,21 @@
     "Segoe UI",
     sans-serif;
 
-  color: #202522;
-  background: #f7f8f7;
+  color: #202823;
+  background: #f6f8f6;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-primary: #24785b;
-  --color-primary-dark: #195c44;
-  --color-accent: #b8e532;
-  --color-text: #202522;
-  --color-muted: #858b87;
-  --color-border: #e9ebe9;
+  --color-primary: #347b67;
+  --color-primary-dark: #225d4d;
+  --color-accent: #b8df36;
+  --color-text: #202823;
+  --color-muted: #7f8982;
+  --color-border: #e7ece7;
   --color-surface: #ffffff;
-  --color-background: #f7f8f7;
+  --color-background: #f6f8f6;
   --color-success: #26976c;
   --color-warning: #d99b31;
   --color-danger: #d95353;
@@ -31,7 +31,7 @@
   --radius-md: 12px;
   --radius-lg: 17px;
 
-  --shadow-card: 0 2px 12px rgb(25 45 35 / 3%);
+  --shadow-card: 0 5px 20px rgb(31 57 43 / 4%);
 }
 
 * {
@@ -1841,5 +1841,364 @@ body {
 
   .layout-add-transaction-button span:first-child {
     font-size: 15px;
+  }
+}
+
+/* =========================================================
+   Phase 15.11 — Final responsive topbar correction
+   ========================================================= */
+
+/* Ensure grid and flex children can shrink without overflow */
+
+.topbar,
+.topbar-heading-group,
+.topbar-title,
+.topbar-actions,
+.topbar-profile,
+.topbar-date {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.topbar-title h1,
+.topbar-title > p {
+  overflow-wrap: anywhere;
+}
+
+/* Tablet: heading, date/location, and profile on row one.
+   Transfer and add-transaction buttons share row two equally. */
+
+@media (min-width: 761px) and (max-width: 1050px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      "heading heading date profile"
+      "transfer transfer add add";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 10px;
+    min-width: 0;
+    padding: 15px 20px;
+  }
+
+  .topbar-heading-group {
+    grid-area: heading;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar-title {
+    min-width: 0;
+  }
+
+  .topbar-title h1 {
+    margin-top: 4px;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .topbar-title > p {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  /* Place action elements directly into the topbar grid. */
+  .topbar-actions {
+    display: contents;
+  }
+
+  .topbar-date {
+    display: flex;
+    grid-area: date;
+    align-items: center;
+    justify-self: stretch;
+    gap: 5px;
+    min-width: 0;
+    font-size: 9px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .topbar-profile {
+    display: flex;
+    grid-area: profile;
+    justify-self: end;
+    align-self: center;
+    gap: 7px;
+    min-width: 0;
+    max-width: 100%;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .topbar-profile .user-avatar {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  /* Hide the text portion when space is limited.
+     The profile avatar remains in the top-right corner. */
+  .topbar-profile-copy {
+    display: none;
+  }
+
+  .layout-transfer-button {
+    grid-area: transfer;
+  }
+
+  .layout-add-transaction-button {
+    grid-area: add;
+  }
+
+  .layout-transfer-button,
+  .layout-add-transaction-button {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 9px;
+    border-radius: 8px;
+    font-size: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .layout-transfer-button > span:first-child,
+  .layout-add-transaction-button > span:first-child {
+    flex: 0 0 auto;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .layout-transfer-button > span:not(:first-child),
+  .layout-add-transaction-button > span:not(:first-child) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Slightly tighter spacing for narrower tablets */
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .topbar {
+    column-gap: 8px;
+    row-gap: 8px;
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .topbar-title h1 {
+    font-size: 16px;
+  }
+
+  .topbar-title > p {
+    font-size: 9px;
+  }
+
+  .topbar-date {
+    gap: 4px;
+    font-size: 8px;
+  }
+
+  .layout-transfer-button,
+  .layout-add-transaction-button {
+    min-height: 34px;
+    padding: 6px 7px;
+    font-size: 9px;
+  }
+}
+
+/* Mobile: profile at top-right, action buttons side by side */
+
+@media (max-width: 760px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "heading profile"
+      "transfer add";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 10px;
+    min-width: 0;
+    padding: 13px 15px;
+  }
+
+  .topbar-heading-group {
+    grid-area: heading;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar-title {
+    min-width: 0;
+  }
+
+  .topbar-title h1 {
+    margin-top: 4px;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+
+  .topbar-title > p {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .topbar-actions {
+    display: contents;
+  }
+
+  .topbar-profile {
+    display: flex;
+    grid-area: profile;
+    justify-self: end;
+    align-self: start;
+    min-width: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .topbar-profile .user-avatar {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  .topbar-profile-copy {
+    display: none;
+  }
+
+  .topbar-date {
+    display: none;
+  }
+
+  .layout-transfer-button {
+    grid-area: transfer;
+  }
+
+  .layout-add-transaction-button {
+    grid-area: add;
+  }
+
+  .layout-transfer-button,
+  .layout-add-transaction-button {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .layout-transfer-button > span:first-child,
+  .layout-add-transaction-button > span:first-child {
+    flex: 0 0 auto;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .layout-transfer-button > span:not(:first-child),
+  .layout-add-transaction-button > span:not(:first-child) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Small phones */
+
+@media (max-width: 400px) {
+  .topbar {
+    column-gap: 8px;
+    row-gap: 9px;
+    padding: 12px 10px;
+  }
+
+  .topbar-heading-group {
+    gap: 6px;
+  }
+
+  .topbar-title h1 {
+    font-size: 16px;
+  }
+
+  .topbar-title > p {
+    font-size: 9px;
+  }
+
+  .layout-transfer-button,
+  .layout-add-transaction-button {
+    min-height: 33px;
+    gap: 4px;
+    padding: 6px 5px;
+    font-size: 9px;
+  }
+}
+
+/* Very narrow phones: stack the buttons vertically */
+
+@media (max-width: 360px) {
+  .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "heading profile"
+      "transfer transfer"
+      "add add";
+    column-gap: 8px;
+    row-gap: 8px;
+    padding: 11px 10px;
+  }
+
+  .topbar-heading-group {
+    gap: 6px;
+  }
+
+  .topbar-title h1 {
+    font-size: 15px;
+  }
+
+  .topbar-title > p {
+    font-size: 9px;
+  }
+
+  .topbar-profile {
+    justify-self: end;
+    align-self: start;
+  }
+
+  .layout-transfer-button,
+  .layout-add-transaction-button {
+    width: 100%;
+    min-height: 32px;
+    gap: 5px;
+    padding: 6px 9px;
+    font-size: 10px;
   }
 }
