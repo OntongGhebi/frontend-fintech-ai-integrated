@@ -659,3 +659,119 @@
     transition: none;
   }
 }
+
+.budgets-primary-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0 15px;
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.budgets-primary-button:hover {
+  opacity: 0.9;
+}
+
+.budgets-primary-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .budgets-primary-button {
+    width: 100%;
+  }
+}
+
+.budgets-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.budgets-primary-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0 15px;
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.budgets-primary-button:hover {
+  opacity: 0.9;
+}
+
+.budgets-primary-button:focus-visible,
+.budgets-edit-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.budgets-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.budgets-edit-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  padding: 0 11px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.budgets-edit-button:hover {
+  background: rgb(148 163 184 / 10%);
+}
+
+@media (max-width: 640px) {
+  .budgets-page-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .budgets-page-actions > button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .budgets-page-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .budgets-page-actions > button {
+    width: 100%;
+  }
+}

@@ -7,14 +7,19 @@ import {
   RefreshCw,
   Search,
   Wallet,
+  Plus,
+  Pencil,
 } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import {
+  BudgetFormModal,
+  type BudgetFormValues,
+} from "./budgets/BudgetFormModal";
 import "./BudgetsPage.css";
 
 type BudgetStatus = "ACTIVE" | "PAUSED" | "COMPLETED";
 type BudgetPeriod = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM";
-
 type PerformanceStatus = "ON_TRACK" | "NEAR_LIMIT" | "OVER_BUDGET";
 
 interface BudgetCategory {
@@ -192,6 +197,10 @@ function parsePerformance(response: unknown): BudgetPerformance[] {
 export function BudgetsPage() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [performance, setPerformance] = useState<BudgetPerformance[]>([]);
+  const [isBudgetFormOpen, setIsBudgetFormOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<BudgetFormValues | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pageError, setPageError] = useState("");
@@ -296,6 +305,37 @@ export function BudgetsPage() {
     0,
   );
 
+  const openCreateForm = () => {
+    setEditingBudget(null);
+    setIsBudgetFormOpen(true);
+  };
+
+  const openEditForm = (budget: Budget) => {
+    setEditingBudget({
+      id: budget.id,
+      name: budget.name,
+      amount: String(budget.amount),
+      period: budget.period,
+      startDate: budget.startDate,
+      endDate: budget.endDate ?? null,
+      categoryId: budget.categoryId ?? budget.category?.id ?? null,
+      status: budget.status,
+      category: budget.category ?? null,
+    });
+
+    setIsBudgetFormOpen(true);
+  };
+
+  const closeBudgetForm = () => {
+    setIsBudgetFormOpen(false);
+    setEditingBudget(null);
+  };
+
+  const handleBudgetSaved = async () => {
+    closeBudgetForm();
+    await loadBudgets();
+  };
+
   return (
     <main className="budgets-page">
       <header className="budgets-page-header">
@@ -308,15 +348,29 @@ export function BudgetsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="budgets-refresh-button"
-          onClick={() => setReloadKey((value) => value + 1)}
-          disabled={isRefreshing}
-        >
-          <RefreshCw size={17} className={isRefreshing ? "budgets-spin" : ""} />
-          {isRefreshing ? "Memperbarui..." : "Perbarui data"}
-        </button>
+        <div className="budgets-page-actions">
+          <button
+            type="button"
+            className="budgets-refresh-button"
+            onClick={() => setReloadKey((value) => value + 1)}
+            disabled={isRefreshing}
+          >
+            <RefreshCw
+              size={17}
+              className={isRefreshing ? "budgets-spin" : ""}
+            />
+            {isRefreshing ? "Memperbarui..." : "Perbarui data"}
+          </button>
+
+          <button
+            type="button"
+            className="budgets-primary-button"
+            onClick={openCreateForm}
+          >
+            <Plus size={17} />
+            <span>Buat budget</span>
+          </button>
+        </div>
       </header>
 
       {pageError && (
@@ -545,12 +599,32 @@ export function BudgetsPage() {
                       <span>{item.transactionCount} transaksi terhitung</span>
                     </div>
                   )}
+
+                  <div className="budgets-item-actions">
+                    <button
+                      type="button"
+                      className="budgets-edit-button"
+                      aria-label={`Edit budget ${budget.name}`}
+                      onClick={() => openEditForm(budget)}
+                    >
+                      <Pencil size={15} />
+                      <span>Edit</span>
+                    </button>
+                  </div>
                 </article>
               );
             })}
           </div>
         )}
       </section>
+
+      {isBudgetFormOpen && (
+        <BudgetFormModal
+          budget={editingBudget}
+          onClose={closeBudgetForm}
+          onSaved={handleBudgetSaved}
+        />
+      )}
     </main>
   );
 }
