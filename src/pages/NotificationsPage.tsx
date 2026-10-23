@@ -181,35 +181,32 @@ export function NotificationsPage() {
   const handleMarkRead = useCallback(
     async (notification: NotificationRecord) => {
       if (
-        !isInAppNotification(notification) ||
+        notification.channel !== "IN_APP" ||
         notification.isRead ||
         markingIds.includes(notification.id)
       ) {
         return;
       }
 
-      setActionError("");
       setMarkingIds((current) => [...current, notification.id]);
+      setActionError("");
 
       try {
-        const response = await apiClient.patch<RawNotificationRecord>(
+        await apiClient.patch(
           `notifications/${encodeURIComponent(notification.id)}/read`,
         );
 
         setNotifications((current) =>
-          current.map((item) => {
-            if (item.id !== notification.id) return item;
-
-            const returnedStatus = response?.status?.toUpperCase();
-
-            return {
-              ...item,
-              status: returnedStatus ?? "READ",
-              isRead:
-                returnedStatus === "READ" || Boolean(response?.readAt) || true,
-              readAt: response?.readAt ?? new Date().toISOString(),
-            };
-          }),
+          current.map((item) =>
+            item.id === notification.id
+              ? {
+                  ...item,
+                  status: "READ",
+                  isRead: true,
+                  readAt: new Date().toISOString(),
+                }
+              : item,
+          ),
         );
       } catch (requestError) {
         setActionError(getErrorMessage(requestError));
