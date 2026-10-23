@@ -9,6 +9,8 @@ import {
   Wallet,
   Plus,
   Pencil,
+  Archive,
+  X,
 } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
@@ -197,10 +199,16 @@ function parsePerformance(response: unknown): BudgetPerformance[] {
 export function BudgetsPage() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [performance, setPerformance] = useState<BudgetPerformance[]>([]);
+
   const [isBudgetFormOpen, setIsBudgetFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetFormValues | null>(
     null,
   );
+
+  const [budgetToArchive, setBudgetToArchive] = useState<Budget | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState("");
+
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pageError, setPageError] = useState("");
@@ -214,42 +222,44 @@ export function BudgetsPage() {
     setPerformanceError("");
     setIsRefreshing(true);
 
-    const [budgetResult, performanceResult] = await Promise.allSettled([
-      apiClient.get<unknown>("/budgets"),
-      apiClient.get<unknown>("/dashboard/budgets/performance"),
-    ]);
+    try {
+      const [budgetResult, performanceResult] = await Promise.allSettled([
+        apiClient.get<unknown>("/budgets"),
+        apiClient.get<unknown>("/dashboard/budgets/performance"),
+      ]);
 
-    if (budgetResult.status === "fulfilled") {
-      try {
-        const items = parseBudgets(budgetResult.value).filter(
-          (item) =>
-            typeof item.id === "string" &&
-            typeof item.name === "string" &&
-            typeof item.amount !== "undefined",
-        );
+      if (budgetResult.status === "fulfilled") {
+        try {
+          const items = parseBudgets(budgetResult.value).filter(
+            (item) =>
+              typeof item.id === "string" &&
+              typeof item.name === "string" &&
+              typeof item.amount !== "undefined",
+          );
 
-        setBudgets(items);
-      } catch (error) {
-        setPageError(getErrorMessage(error));
+          setBudgets(items);
+        } catch (error) {
+          setPageError(getErrorMessage(error));
+        }
+      } else {
+        setPageError(getErrorMessage(budgetResult.reason));
       }
-    } else {
-      setPageError(getErrorMessage(budgetResult.reason));
-    }
 
-    if (performanceResult.status === "fulfilled") {
-      try {
-        setPerformance(parsePerformance(performanceResult.value));
-      } catch (error) {
+      if (performanceResult.status === "fulfilled") {
+        try {
+          setPerformance(parsePerformance(performanceResult.value));
+        } catch (error) {
+          setPerformance([]);
+          setPerformanceError(getErrorMessage(error));
+        }
+      } else {
         setPerformance([]);
-        setPerformanceError(getErrorMessage(error));
+        setPerformanceError(getErrorMessage(performanceResult.reason));
       }
-    } else {
-      setPerformance([]);
-      setPerformanceError(getErrorMessage(performanceResult.reason));
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-
-    setIsLoading(false);
-    setIsRefreshing(false);
   }, []);
 
   useEffect(() => {
@@ -334,6 +344,39 @@ export function BudgetsPage() {
   const handleBudgetSaved = async () => {
     closeBudgetForm();
     await loadBudgets();
+  };
+
+  const openArchiveConfirmation = (budget: Budget) => {
+    setArchiveError("");
+    setBudgetToArchive(budget);
+  };
+
+  const closeArchiveConfirmation = () => {
+    if (isArchiving) return;
+
+    setBudgetToArchive(null);
+    setArchiveError("");
+  };
+
+  const handleArchiveBudget = async () => {
+    if (!budgetToArchive || isArchiving) return;
+
+    setIsArchiving(true);
+    setArchiveError("");
+
+    try {
+      await apiClient.delete(
+        `/budgets/${encodeURIComponent(budgetToArchive.id)}`,
+      );
+
+      setBudgetToArchive(null);
+      setArchiveError("");
+      await loadBudgets();
+    } catch (error: unknown) {
+      setArchiveError(getErrorMessage(error));
+    } finally {
+      setIsArchiving(false);
+    }
   };
 
   return (
@@ -610,6 +653,17 @@ export function BudgetsPage() {
                       <Pencil size={15} />
                       <span>Edit</span>
                     </button>
+
+                    <button
+                      type="button"
+                      className="budgets-archive-button"
+                      aria-label={`Archive budget ${budget.name}`}
+                      onClick={() => openArchiveConfirmation(budget)}
+                      disabled={isArchiving}
+                    >
+                      <Archive size={15} />
+                      <span>Archive</span>
+                    </button>
                   </div>
                 </article>
               );
@@ -624,6 +678,86 @@ export function BudgetsPage() {
           onClose={closeBudgetForm}
           onSaved={handleBudgetSaved}
         />
+      )}
+
+      {budgetToArchive && (
+        <div
+          className="budget-archive-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !isArchiving) {
+              closeArchiveConfirmation();
+            }
+          }}
+        >
+          <section
+            className="budget-archive-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="budget-archive-title"
+            aria-describedby="budget-archive-description"
+          >
+            <div className="budget-archive-heading">
+              <div className="budget-archive-icon">
+                <Archive size={20} />
+              </div>
+
+              <button
+                type="button"
+                className="budget-archive-close"
+                onClick={closeArchiveConfirmation}
+                disabled={isArchiving}
+                aria-label="Tutup dialog"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <h2 id="budget-archive-title">Arsipkan budget?</h2>
+
+            <p id="budget-archive-description">
+              Kamu akan mengarsipkan budget{" "}
+              <strong>{budgetToArchive.name}</strong>. Tindakan ini tidak
+              menghapus data secara permanen. Pastikan kamu ingin melanjutkan.
+            </p>
+
+            {archiveError && (
+              <div className="budget-archive-error" role="alert">
+                <AlertTriangle size={17} />
+                <span>{archiveError}</span>
+              </div>
+            )}
+
+            <div className="budget-archive-actions">
+              <button
+                type="button"
+                className="budget-archive-cancel"
+                onClick={closeArchiveConfirmation}
+                disabled={isArchiving}
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                className="budget-archive-confirm"
+                onClick={() => void handleArchiveBudget()}
+                disabled={isArchiving}
+              >
+                {isArchiving ? (
+                  <>
+                    <span className="budget-archive-spinner" />
+                    Mengarsipkan...
+                  </>
+                ) : (
+                  <>
+                    <Archive size={16} />
+                    Arsipkan budget
+                  </>
+                )}
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </main>
   );
