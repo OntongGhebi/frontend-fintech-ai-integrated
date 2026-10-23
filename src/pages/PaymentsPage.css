@@ -538,3 +538,246 @@
     transition: none;
   }
 }
+
+/* Phase 15.11 — Responsive Midtrans checkout action */
+
+/* Keep checkout content inside its card */
+.payments-checkout-panel {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.payments-checkout-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The checkout button wrapper must also be responsive */
+.payments-checkout-action {
+  display: flex;
+  flex: 0 1 260px;
+  width: 260px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+/* The actual button inside the wrapper */
+.payments-checkout-action .payments-primary-button {
+  display: inline-flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Allow the button label to wrap instead of forcing overflow */
+.payments-checkout-action .payments-primary-button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The subscription link uses a different JSX branch */
+.payments-checkout-panel > .payments-link-button {
+  box-sizing: border-box;
+  flex: 0 1 260px;
+  width: 260px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* Tablet and mobile */
+@media (max-width: 650px) {
+  .payments-checkout-panel {
+    align-items: stretch;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .payments-checkout-action {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .payments-checkout-action .payments-primary-button {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+  }
+
+  .payments-checkout-panel > .payments-link-button {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+  }
+}
+
+/* Narrow phones */
+@media (max-width: 380px) {
+  .payments-checkout-panel {
+    padding: 14px;
+  }
+
+  .payments-checkout-action .payments-primary-button,
+  .payments-checkout-panel > .payments-link-button {
+    padding: 11px 10px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .payments-checkout-action .payments-primary-button svg,
+  .payments-checkout-panel > .payments-link-button svg {
+    flex: 0 0 auto;
+  }
+}
+
+/* Phase 15.11 — Fix checkout button overflow and mobile responsiveness */
+
+section.payments-checkout-panel {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+section.payments-checkout-panel > .payments-checkout-copy {
+  flex: 1 1 240px;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+section.payments-checkout-panel > .payments-checkout-action {
+  display: flex;
+  flex: 0 1 260px;
+  width: 260px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+section.payments-checkout-panel
+  > .payments-checkout-action
+  > button.payments-primary-button {
+  display: flex !important;
+  flex: 1 1 0% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 46px;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+section.payments-checkout-panel
+  > .payments-checkout-action
+  > button.payments-primary-button
+  > span {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+section.payments-checkout-panel > a.payments-link-button {
+  display: flex;
+  flex: 0 1 260px;
+  width: 260px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+@media (max-width: 1000px) {
+  section.payments-checkout-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  section.payments-checkout-panel > .payments-checkout-copy {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  section.payments-checkout-panel > .payments-checkout-action {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  section.payments-checkout-panel
+    > .payments-checkout-action
+    > button.payments-primary-button {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  section.payments-checkout-panel > a.payments-link-button {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  section.payments-checkout-panel {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  section.payments-checkout-panel
+    > .payments-checkout-action
+    > button.payments-primary-button,
+  section.payments-checkout-panel > a.payments-link-button {
+    padding: 11px 10px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  section.payments-checkout-panel
+    > .payments-checkout-action
+    > button.payments-primary-button
+    > svg,
+  section.payments-checkout-panel > a.payments-link-button > svg {
+    flex-shrink: 0;
+  }
+}

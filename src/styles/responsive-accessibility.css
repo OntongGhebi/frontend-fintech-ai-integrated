@@ -1,0 +1,658 @@
+/*
+ * Phase 15.11
+ * Responsive UI, accessibility and shared interaction states.
+ *
+ * Loaded after global.css so these rules can enhance existing components
+ * without replacing the established design system.
+ */
+
+/* -------------------------------------------------------
+   Accessibility: focus visibility
+------------------------------------------------------- */
+
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 3px solid var(--focus-ring, #3978e8);
+  outline-offset: 3px;
+}
+
+:where(button, a, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+
+:where(button, a, input, select, textarea):focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Preserve a visible keyboard focus for custom button classes. */
+:where(
+  .payments-primary-button,
+  .payments-secondary-button,
+  .subscription-primary-button,
+  .subscription-secondary-button,
+  .subscription-danger-button,
+  .integration-primary-button,
+  .integration-secondary-button,
+  .copy-prompt-button,
+  .logout-button,
+  .mobile-nav-toggle,
+  .sidebar-mobile-close
+):focus-visible {
+  outline: 3px solid var(--focus-ring, #3978e8);
+  outline-offset: 3px;
+}
+
+/* -------------------------------------------------------
+   General responsive safeguards
+------------------------------------------------------- */
+
+:where(.payments-page, .subscription-page, .integrations-page, .page-content) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+:where(.payments-page, .subscription-page, .integrations-page) img,
+:where(.payments-page, .subscription-page, .integrations-page) svg {
+  flex-shrink: 0;
+}
+
+:where(.payments-page, .subscription-page, .integrations-page) button,
+:where(.payments-page, .subscription-page, .integrations-page) a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(.payments-page, .subscription-page, .integrations-page) p {
+  overflow-wrap: anywhere;
+}
+
+/* -------------------------------------------------------
+   Payment history: keep the table usable on small screens
+------------------------------------------------------- */
+
+.payments-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payments-table th,
+.payments-table td {
+  vertical-align: middle;
+}
+
+.payments-table th {
+  white-space: nowrap;
+}
+
+.payments-table td {
+  overflow-wrap: anywhere;
+}
+
+.payments-id-cell {
+  min-width: 0;
+}
+
+.payments-id-cell > div {
+  min-width: 0;
+}
+
+.payments-id-cell span {
+  overflow-wrap: anywhere;
+}
+
+.payments-status {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.payments-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.payments-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.payments-checkout-panel,
+.payments-checkout-copy,
+.payments-summary-card,
+.payments-history-header {
+  min-width: 0;
+}
+
+.payments-checkout-copy {
+  overflow-wrap: anywhere;
+}
+
+.payments-summary-card > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* -------------------------------------------------------
+   Subscription cards and current plan
+------------------------------------------------------- */
+
+.subscription-current-panel,
+.subscription-current-main,
+.subscription-current-copy,
+.subscription-current-details,
+.subscription-section-heading,
+.subscription-plan-card {
+  min-width: 0;
+}
+
+.subscription-detail-grid {
+  min-width: 0;
+}
+
+.subscription-detail-grid > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.subscription-plans-grid {
+  min-width: 0;
+}
+
+.subscription-plan-card {
+  overflow-wrap: anywhere;
+}
+
+.subscription-plan-price {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.subscription-feature-list {
+  padding-inline-start: 0;
+}
+
+.subscription-feature-list li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.subscription-current-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.subscription-current-actions > button {
+  max-width: 100%;
+}
+
+/* -------------------------------------------------------
+   Integrations page
+------------------------------------------------------- */
+
+.integration-status-grid {
+  min-width: 0;
+}
+
+.integration-status-card,
+.integration-panel,
+.integration-section-heading,
+.integration-detail-row {
+  min-width: 0;
+}
+
+.integration-detail-row {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.integration-detail-row > :first-child {
+  min-width: 0;
+}
+
+.integration-detail-row > :last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: end;
+}
+
+.telegram-setup-item {
+  min-width: 0;
+}
+
+.telegram-setup-item > div {
+  min-width: 0;
+}
+
+.sample-prompt {
+  min-width: 0;
+}
+
+.sample-prompt p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.copy-prompt-button {
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------
+   Error, feedback and empty states
+------------------------------------------------------- */
+
+:where(
+  .payments-alert,
+  .subscription-feedback,
+  .subscription-empty-plans,
+  .payments-state,
+  .subscription-loading,
+  .integration-security-note
+) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+:where(.payments-alert, .subscription-feedback, .integration-security-note)
+  > svg {
+  flex-shrink: 0;
+}
+
+:where(.payments-state, .subscription-loading) button {
+  max-width: 100%;
+}
+
+/* -------------------------------------------------------
+   Medium screens
+------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .payments-checkout-panel {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .payments-checkout-copy {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .payments-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .subscription-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* -------------------------------------------------------
+   Mobile screens
+------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  :where(.payments-page, .subscription-page, .integrations-page) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  :where(.payments-page-heading, .subscription-page-heading) {
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  :where(.payments-page-heading, .subscription-page-heading) > button {
+    max-width: 100%;
+  }
+
+  .payments-checkout-panel {
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .payments-checkout-copy {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .payments-checkout-copy > div {
+    min-width: 0;
+  }
+
+  .payments-checkout-panel > button,
+  .payments-checkout-panel > a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .payments-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .payments-summary-card {
+    min-width: 0;
+  }
+
+  .payments-history-header {
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .payments-table {
+    min-width: 680px;
+  }
+
+  .payments-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .payments-pagination > div {
+    width: 100%;
+  }
+
+  .payments-pagination > div > button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .subscription-current-panel {
+    gap: 18px;
+  }
+
+  .subscription-current-main {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .subscription-current-details {
+    width: 100%;
+  }
+
+  .subscription-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscription-current-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .subscription-current-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .subscription-section-heading {
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .subscription-plans-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscription-plan-action > button {
+    min-height: 44px;
+  }
+
+  .integration-status-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .integration-detail-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .integration-detail-row > :last-child {
+    text-align: start;
+  }
+
+  .telegram-setup-item {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sample-prompt {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .copy-prompt-button {
+    min-height: 40px;
+  }
+
+  :where(
+    .payments-primary-button,
+    .payments-secondary-button,
+    .subscription-primary-button,
+    .subscription-secondary-button,
+    .subscription-danger-button,
+    .integration-primary-button,
+    .integration-secondary-button
+  ) {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .payments-table {
+    min-width: 620px;
+  }
+
+  .payments-pagination > div {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .payments-pagination > div > button {
+    width: 100%;
+  }
+
+  .subscription-plan-price strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* -------------------------------------------------------
+   Motion preferences
+------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Phase 15.11 — Payments button responsiveness */
+
+.payments-primary-button,
+.payments-secondary-button {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+
+.payments-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.payments-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.payments-primary-button:disabled,
+.payments-secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Checkout panel */
+.payments-checkout-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.payments-checkout-panel .payments-primary-button {
+  width: 100%;
+}
+
+/* Pagination */
+.payments-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.payments-pagination button {
+  max-width: 100%;
+}
+
+/* Tablet and mobile */
+@media (max-width: 640px) {
+  .payments-primary-button,
+  .payments-secondary-button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+
+  .payments-checkout-panel .payments-primary-button {
+    width: 100%;
+  }
+
+  .payments-pagination {
+    justify-content: center;
+  }
+
+  .payments-pagination .payments-secondary-button {
+    flex: 1 1 120px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 380px) {
+  .payments-primary-button,
+  .payments-secondary-button {
+    width: 100%;
+  }
+
+  .payments-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .payments-pagination .payments-secondary-button {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+}
+
+/* Phase 15.11 — Fix Midtrans checkout button on mobile */
+
+.payments-checkout-action {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+.payments-checkout-action > button,
+.payments-checkout-action > a {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  flex: 1 1 auto;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.4;
+}
+
+/* Prevent checkout cards and grid children from forcing overflow */
+.payments-checkout-panel,
+.payments-checkout-panel * {
+  box-sizing: border-box;
+}
+
+.payments-checkout-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .payments-checkout-action {
+    width: 100%;
+  }
+
+  .payments-checkout-action > button,
+  .payments-checkout-action > a {
+    width: 100%;
+    max-width: 100%;
+    min-height: 46px;
+    padding: 0.8rem 0.875rem;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .payments-checkout-action > button,
+  .payments-checkout-action > a {
+    padding: 0.75rem 0.625rem;
+    font-size: 0.875rem;
+  }
+}

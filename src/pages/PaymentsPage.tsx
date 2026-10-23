@@ -472,25 +472,29 @@ export function PaymentsPage() {
         </div>
 
         {currentSubscriptionCanBePaid ? (
-          <button
-            type="button"
-            className="payments-primary-button"
-            onClick={() => void handleCheckout()}
-            disabled={isCheckingOut}
-          >
-            {isCheckingOut ? (
-              <LoaderCircle
-                size={17}
-                className="payments-spin"
-                aria-hidden="true"
-              />
-            ) : (
-              <ExternalLink size={17} aria-hidden="true" />
-            )}
-            <span>
-              {isCheckingOut ? "Menyiapkan checkout..." : "Lanjut ke Midtrans"}
-            </span>
-          </button>
+          <div className="payments-checkout-action">
+            <button
+              type="button"
+              className="payments-primary-button"
+              onClick={() => void handleCheckout()}
+              disabled={isCheckingOut}
+            >
+              {isCheckingOut ? (
+                <LoaderCircle
+                  size={17}
+                  className="payments-spin"
+                  aria-hidden="true"
+                />
+              ) : (
+                <ExternalLink size={17} aria-hidden="true" />
+              )}
+              <span>
+                {isCheckingOut
+                  ? "Menyiapkan checkout..."
+                  : "Lanjut ke Midtrans"}
+              </span>
+            </button>
+          </div>
         ) : (
           <Link
             to="/subscription"
