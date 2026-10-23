@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   CheckCircle2,
+  Eye,
+  EyeOff,
   KeyRound,
   LoaderCircle,
   MonitorSmartphone,
@@ -118,6 +120,9 @@ export function SettingsPage() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
@@ -706,38 +711,80 @@ export function SettingsPage() {
                     >
                       <label className="settings-field">
                         <span>Password saat ini</span>
-                        <input
-                          type="password"
-                          value={passwordForm.currentPassword}
-                          onChange={(event) =>
-                            setPasswordForm((current) => ({
-                              ...current,
-                              currentPassword: event.target.value,
-                            }))
-                          }
-                          minLength={8}
-                          maxLength={128}
-                          autoComplete="current-password"
-                          required
-                        />
+                        <div className="settings-password-control">
+                          <input
+                            type={showCurrentPassword ? "text" : "password"}
+                            value={passwordForm.currentPassword}
+                            onChange={(event) =>
+                              setPasswordForm((current) => ({
+                                ...current,
+                                currentPassword: event.target.value,
+                              }))
+                            }
+                            minLength={8}
+                            maxLength={128}
+                            autoComplete="current-password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="settings-password-toggle"
+                            onClick={() =>
+                              setShowCurrentPassword((visible) => !visible)
+                            }
+                            aria-label={
+                              showCurrentPassword
+                                ? "Sembunyikan password saat ini"
+                                : "Tampilkan password saat ini"
+                            }
+                            aria-pressed={showCurrentPassword}
+                          >
+                            {showCurrentPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
                       </label>
 
                       <label className="settings-field">
                         <span>Password baru</span>
-                        <input
-                          type="password"
-                          value={passwordForm.newPassword}
-                          onChange={(event) =>
-                            setPasswordForm((current) => ({
-                              ...current,
-                              newPassword: event.target.value,
-                            }))
-                          }
-                          minLength={8}
-                          maxLength={128}
-                          autoComplete="new-password"
-                          required
-                        />
+                        <div className="settings-password-control">
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={passwordForm.newPassword}
+                            onChange={(event) =>
+                              setPasswordForm((current) => ({
+                                ...current,
+                                newPassword: event.target.value,
+                              }))
+                            }
+                            minLength={8}
+                            maxLength={128}
+                            autoComplete="new-password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="settings-password-toggle"
+                            onClick={() =>
+                              setShowNewPassword((visible) => !visible)
+                            }
+                            aria-label={
+                              showNewPassword
+                                ? "Sembunyikan password baru"
+                                : "Tampilkan password baru"
+                            }
+                            aria-pressed={showNewPassword}
+                          >
+                            {showNewPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
                         <small>
                           Gunakan minimal 8 karakter dan maksimal 128 karakter.
                         </small>
@@ -745,20 +792,41 @@ export function SettingsPage() {
 
                       <label className="settings-field">
                         <span>Konfirmasi password baru</span>
-                        <input
-                          type="password"
-                          value={passwordForm.confirmPassword}
-                          onChange={(event) =>
-                            setPasswordForm((current) => ({
-                              ...current,
-                              confirmPassword: event.target.value,
-                            }))
-                          }
-                          minLength={8}
-                          maxLength={128}
-                          autoComplete="new-password"
-                          required
-                        />
+                        <div className="settings-password-control">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={passwordForm.confirmPassword}
+                            onChange={(event) =>
+                              setPasswordForm((current) => ({
+                                ...current,
+                                confirmPassword: event.target.value,
+                              }))
+                            }
+                            minLength={8}
+                            maxLength={128}
+                            autoComplete="new-password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="settings-password-toggle"
+                            onClick={() =>
+                              setShowConfirmPassword((visible) => !visible)
+                            }
+                            aria-label={
+                              showConfirmPassword
+                                ? "Sembunyikan konfirmasi password"
+                                : "Tampilkan konfirmasi password"
+                            }
+                            aria-pressed={showConfirmPassword}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
+                          </button>
+                        </div>
                       </label>
 
                       <div className="settings-actions">

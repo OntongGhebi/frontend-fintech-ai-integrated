@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 import { AuthLayout } from "../components/auth/AuthLayout";
-import { useAuth } from "../contexts/AuthContext"; 
+import { useAuth } from "../contexts/AuthContext";
 import { ApiRequestError } from "../lib/api-client";
 
 export function LoginPage() {
@@ -12,6 +13,7 @@ export function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -84,19 +86,33 @@ export function LoginPage() {
         />
 
         <label htmlFor="login-password">Password</label>
-        <input
-          id="login-password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="Masukkan password"
-          required
-          minLength={8}
-          maxLength={128}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          aria-invalid={Boolean(error)}
-        />
+        <div className="auth-v2-password-control">
+          <input
+            id="login-password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            placeholder="Masukkan password"
+            required
+            minLength={8}
+            maxLength={128}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            aria-invalid={Boolean(error)}
+          />
+
+          <button
+            type="button"
+            className="auth-v2-password-toggle"
+            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label={
+              showPassword ? "Sembunyikan password" : "Tampilkan password"
+            }
+            aria-pressed={showPassword}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         {error && (
           <p className="auth-v2-error" role="alert">

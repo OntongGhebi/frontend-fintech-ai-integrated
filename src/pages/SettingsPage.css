@@ -484,3 +484,45 @@
     align-self: flex-end;
   }
 }
+
+.settings-password-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.settings-field .settings-password-control input {
+  width: 100%;
+  min-width: 0;
+  padding-right: 48px;
+}
+
+.settings-password-toggle {
+  position: absolute;
+  right: 5px;
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-muted, #858b87);
+  cursor: pointer;
+}
+
+.settings-password-toggle:hover {
+  background: #eef5f0;
+  color: var(--color-primary, #24785b);
+}
+
+.settings-password-toggle:focus-visible {
+  outline: 2px solid var(--color-primary, #24785b);
+  outline-offset: 1px;
+}
+
+.settings-password-toggle svg {
+  display: block;
+  pointer-events: none;
+}

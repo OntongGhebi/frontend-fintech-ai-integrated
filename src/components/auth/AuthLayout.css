@@ -816,3 +816,65 @@
     font-size: 28px;
   }
 }
+
+/* Password visibility controls: Login and Register */
+.auth-v2-password-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-v2-password-control input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-right: 48px;
+}
+
+.auth-v2-form .auth-v2-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  display: grid;
+  width: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  height: 38px;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--auth-v2-muted, #858b87);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+/* Override the auth form's general button styling */
+.auth-v2-form .auth-v2-password-toggle:hover {
+  transform: translateY(-50%);
+  border-color: transparent;
+  background: #eef5f0;
+  color: var(--auth-v2-green, #24785b);
+}
+
+.auth-v2-form .auth-v2-password-toggle:active {
+  transform: translateY(-50%);
+}
+
+.auth-v2-form .auth-v2-password-toggle:focus-visible {
+  outline: 2px solid var(--auth-v2-green, #24785b);
+  outline-offset: 1px;
+}
+
+.auth-v2-password-toggle svg {
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+}
