@@ -354,11 +354,17 @@ export function DashboardPage() {
             </span>
           </div>
 
-          <div className="dashboard-balance-value" aria-busy={isLoading}>
+          <div
+            className="dashboard-balance-value"
+            aria-busy={isLoading && !overview}
+            aria-live="polite"
+          >
             {isLoading && !overview ? (
               <span className="dashboard-skeleton dashboard-skeleton--balance" />
+            ) : summary ? (
+              formatCurrency(summary.netCashFlow, currency)
             ) : (
-              formatCurrency(summary?.netCashFlow ?? 0, currency)
+              "—"
             )}
           </div>
 
@@ -366,14 +372,18 @@ export function DashboardPage() {
             Total pemasukan dikurangi pengeluaran pada periode ringkasan.
           </p>
 
-          <div className="dashboard-balance-footer">
+          <div className="dashboard-balance-footer" aria-live="polite">
             <span className="dashboard-balance-footer-icon" aria-hidden="true">
-              ✓
+              {summary ? (cashFlow >= 0 ? "✓" : "!") : "…"}
             </span>
             <span>
-              {cashFlow >= 0
-                ? "Arus kas bersih positif"
-                : "Pengeluaran melebihi pemasukan"}
+              {summary
+                ? cashFlow >= 0
+                  ? "Arus kas bersih positif"
+                  : "Pengeluaran melebihi pemasukan"
+                : isLoading
+                  ? "Memuat arus kas…"
+                  : "Arus kas belum tersedia"}
             </span>
           </div>
         </article>
@@ -419,7 +429,9 @@ export function DashboardPage() {
             <strong>
               {isLoading && !overview
                 ? "—"
-                : formatNumber(summary?.transactionCount ?? 0)}
+                : summary
+                  ? formatNumber(summary.transactionCount)
+                  : "—"}
             </strong>
             <span>transaksi tercatat</span>
           </div>
@@ -435,10 +447,11 @@ export function DashboardPage() {
             <div className="dashboard-activity-meter-labels">
               <span>Arus kas tersisa</span>
               <strong>
-                {savingsRate.toLocaleString("id-ID", {
-                  maximumFractionDigits: 1,
-                })}
-                %
+                {summary
+                  ? `${savingsRate.toLocaleString("id-ID", {
+                      maximumFractionDigits: 1,
+                    })}%`
+                  : "—"}
               </strong>
             </div>
           </div>
@@ -503,6 +516,11 @@ export function DashboardPage() {
               <span />
               <span />
               <span />
+            </div>
+          ) : !overview && errorMessage ? (
+            <div className="dashboard-empty-state" role="status">
+              <strong>Grafik belum tersedia</strong>
+              <p>Data grafik belum berhasil dimuat. Coba perbarui dashboard.</p>
             </div>
           ) : !hasMonthlyTransactions ? (
             <div className="dashboard-empty-state">
@@ -630,10 +648,14 @@ export function DashboardPage() {
           <div className="dashboard-spending-total">
             <span>Total pengeluaran kategori</span>
             <strong>
-              {formatCurrency(categoryAnalytics?.totalAmount ?? 0, currency)}
+              {categoryAnalytics
+                ? formatCurrency(categoryAnalytics.totalAmount, currency)
+                : "—"}
             </strong>
             <small>
-              {formatNumber(categoryAnalytics?.transactionCount ?? 0)} transaksi
+              {categoryAnalytics
+                ? `${formatNumber(categoryAnalytics.transactionCount)} transaksi`
+                : "Data belum tersedia"}
             </small>
           </div>
 
@@ -642,6 +664,14 @@ export function DashboardPage() {
               <span />
               <span />
               <span />
+            </div>
+          ) : !overview && errorMessage ? (
+            <div
+              className="dashboard-empty-state dashboard-empty-state--compact"
+              role="status"
+            >
+              <strong>Data kategori belum tersedia</strong>
+              <p>Data belum berhasil dimuat. Coba perbarui dashboard.</p>
             </div>
           ) : !hasCategoryTransactions ? (
             <div className="dashboard-empty-state dashboard-empty-state--compact">

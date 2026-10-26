@@ -1342,7 +1342,7 @@
   font-size: 11px;
 }
 .dashboard-chart-columns {
-  gap: clamp(4px, 0.7vw, 10px);
+  gap: clamp(4px, 0.7vw, 1px);
 }
 .dashboard-chart-bars {
   position: relative;
