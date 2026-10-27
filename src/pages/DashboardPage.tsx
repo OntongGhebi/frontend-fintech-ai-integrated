@@ -96,8 +96,6 @@ interface Comparison {
   percentage: number | null;
 }
 
-type ComparisonType = "income" | "expense";
-
 function toAmount(value: string | number | null | undefined): number {
   if (value === null || value === undefined || value === "") {
     return 0;
@@ -318,9 +316,8 @@ function getBudgetItems(
 }
 
 /**
- * Indikator singkat di header kartu:
- * kenaikan = hijau, penurunan = merah, tetap = netral.
- * Aturan warna mengikuti arah perubahan untuk pemasukan maupun pengeluaran.
+ * Warna mengikuti arah perubahan, bukan jenis transaksi.
+ * Naik hijau, turun merah, tetap netral.
  */
 function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
   if (!comparison) {
@@ -338,7 +335,6 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
   const increased = comparison.difference > 0;
   const decreased = comparison.difference < 0;
   const tone = increased ? "positive" : decreased ? "negative" : "neutral";
-
   const arrow = increased ? "↗" : decreased ? "↘" : "→";
 
   return (
@@ -363,10 +359,6 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
   );
 }
 
-/**
- * Detail perubahan nominal di bawah nilai utama kartu.
- * Komponen ini terpisah dari header agar persentase tetap sejajar dengan judul.
- */
 function ComparisonDetail({
   comparison,
   currency,
@@ -407,6 +399,74 @@ function ComparisonDetail({
       </span>
       <span>vs bulan lalu</span>
     </p>
+  );
+}
+
+/**
+ * Progress segmented dengan 20 segmen.
+ * 0–50% hijau, 55–75% kuning bertahap, 80–100% merah bertahap.
+ * Penggunaan di atas 100% tetap dibatasi visualnya hingga 100%.
+ */
+function getBudgetSegmentColor(index: number): string {
+  const colors = [
+    "#27845a",
+    "#328b59",
+    "#459451",
+    "#5da047",
+    "#79ad3e",
+    "#98b936",
+    "#b9c331",
+    "#d2c52e",
+    "#e0b92c",
+    "#e3a52c",
+    "#e6922c",
+    "#e47d2d",
+    "#df692e",
+    "#d95332",
+    "#d44236",
+    "#cc383a",
+    "#c62f3d",
+    "#bd293e",
+    "#b5223d",
+    "#ad1f3b",
+  ];
+
+  return colors[index] ?? colors[colors.length - 1];
+}
+
+function SegmentedBudgetProgress({ percentage }: { percentage: number }) {
+  const boundedPercentage = Math.max(0, Math.min(100, percentage));
+  const filledSegments = Math.ceil(boundedPercentage / 5);
+
+  return (
+    <div
+      className="dashboard-segmented-progress"
+      role="progressbar"
+      aria-label="Penggunaan total anggaran bulanan"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(boundedPercentage)}
+      aria-valuetext={`${formatPercent(percentage)} anggaran terpakai`}
+    >
+      {Array.from({ length: 20 }, (_, index) => {
+        const filled = index < filledSegments;
+
+        return (
+          <span
+            key={index}
+            className={`dashboard-segmented-progress-item${filled ? " dashboard-segmented-progress-item--filled" : ""}`}
+            style={
+              filled
+                ? ({
+                    "--budget-segment-color": getBudgetSegmentColor(index),
+                  } as React.CSSProperties)
+                : undefined
+            }
+            aria-hidden="true"
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -663,7 +723,6 @@ export function DashboardPage() {
         </article>
 
         <div className="dashboard-stat-stack">
-          {/* KARTU TOTAL PEMASUKAN */}
           <article className="dashboard-stat-card dashboard-stat-card--lime">
             <div className="dashboard-stat-card-heading">
               <span>Total pemasukan</span>
@@ -695,13 +754,6 @@ export function DashboardPage() {
             />
 
             <div className="dashboard-income-categories">
-              <div className="dashboard-income-categories-heading">
-                <span>Kategori pemasukan terbesar</span>
-                <span className="dashboard-income-category-caption">
-                  Maks. 3
-                </span>
-              </div>
-
               {isLoading && !incomeAnalytics ? (
                 <div className="dashboard-empty-state dashboard-empty-state--compact">
                   <p>Memuat kategori pemasukan…</p>
@@ -748,7 +800,6 @@ export function DashboardPage() {
             </div>
           </article>
 
-          {/* KARTU TOTAL PENGELUARAN */}
           <article className="dashboard-stat-card dashboard-stat-card--coral">
             <div className="dashboard-stat-card-heading">
               <span>Total pengeluaran</span>
@@ -791,31 +842,9 @@ export function DashboardPage() {
 
               {budgetLoaded && budgetTotals.totalBudget > 0 ? (
                 <>
-                  <div
-                    className="dashboard-budget-track"
-                    role="progressbar"
-                    aria-label="Penggunaan total anggaran bulanan"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={Math.min(
-                      100,
-                      Math.max(0, budgetTotals.usagePercentage ?? 0),
-                    )}
-                  >
-                    <span
-                      className={
-                        (budgetTotals.usagePercentage ?? 0) > 100
-                          ? "dashboard-budget-fill dashboard-budget-fill--over"
-                          : "dashboard-budget-fill"
-                      }
-                      style={{
-                        width: `${Math.min(
-                          100,
-                          Math.max(0, budgetTotals.usagePercentage ?? 0),
-                        )}%`,
-                      }}
-                    />
-                  </div>
+                  <SegmentedBudgetProgress
+                    percentage={budgetTotals.usagePercentage ?? 0}
+                  />
 
                   <div className="dashboard-budget-progress-details">
                     <span>

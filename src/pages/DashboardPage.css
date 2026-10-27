@@ -2189,8 +2189,10 @@
   }
 }
 
+/* =========================================================
+   DASHBOARD SUMMARY — COMPARISON INDICATORS
+   ========================================================= */
 
-/* Header kartu: label di kiri, persentase dan ikon di kanan */
 .dashboard-stat-card-heading {
   display: flex;
   align-items: center;
@@ -2200,14 +2202,16 @@
 
 .dashboard-stat-heading-right {
   display: inline-flex;
+  min-width: 0;
+  flex-shrink: 0;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .dashboard-comparison-header {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 3px;
@@ -2223,16 +2227,16 @@
 }
 
 .dashboard-comparison-header--positive {
-  color: #16834a;
+  color: var(--dashboard-positive);
 }
 
 .dashboard-comparison-header--negative {
-  color: #d64545;
+  color: var(--dashboard-negative);
 }
 
 .dashboard-comparison-header--neutral,
 .dashboard-comparison-header--muted {
-  color: #7a8492;
+  color: var(--dashboard-muted);
 }
 
 .dashboard-comparison-header--muted {
@@ -2242,56 +2246,57 @@
 
 .dashboard-comparison-detail {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
-  gap: 5px;
-  margin: 5px 0 12px;
-  font-size: 0.75rem;
+  flex-wrap: wrap;
+  gap: 4px 5px;
+  margin: 5px 0 0;
+  font-size: 0.72rem;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
 }
 
+.dashboard-comparison-detail strong {
+  font: inherit;
+  font-weight: 750;
+}
+
 .dashboard-comparison-detail--positive {
-  color: #16834a;
+  color: var(--dashboard-positive);
 }
 
 .dashboard-comparison-detail--negative {
-  color: #d64545;
+  color: var(--dashboard-negative);
 }
 
 .dashboard-comparison-detail--neutral,
 .dashboard-comparison-detail--muted {
-  color: #7a8492;
+  color: var(--dashboard-muted);
 }
 
-/* Kategori pemasukan kini berada di dalam kartu Total Pemasukan */
+/* =========================================================
+   INCOME CATEGORY CARDS — COMPACT VERSION
+   ========================================================= */
+
 .dashboard-stat-card--lime .dashboard-income-categories {
-  margin-top: 12px;
-  padding-top: 12px;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 9px;
+  padding-top: 9px;
   border-top: 1px solid rgb(30 41 59 / 10%);
 }
 
 .dashboard-stat-card--lime .dashboard-income-categories-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 9px;
-  font-size: 0.76rem;
-  font-weight: 600;
-}
-
-.dashboard-income-category-caption {
-  color: #748071;
-  font-size: 0.68rem;
-  font-weight: 500;
-  white-space: nowrap;
+  display: none;
 }
 
 .dashboard-stat-card--lime .dashboard-income-category-grid {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .dashboard-stat-card--lime .dashboard-income-category-card {
@@ -2299,7 +2304,7 @@
   min-width: 0;
   flex-direction: column;
   gap: 5px;
-  padding: 9px;
+  padding: 7px 6px;
   border: 1px solid rgb(30 41 59 / 9%);
   border-radius: 10px;
   background: rgb(255 255 255 / 62%);
@@ -2310,7 +2315,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 5px;
-  color: #687568;
+  color: var(--dashboard-text);
   font-size: 0.68rem;
 }
 
@@ -2318,15 +2323,17 @@
   display: inline-flex;
   width: 25px;
   height: 25px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-radius: 7px;
   background: rgb(22 131 74 / 10%);
-  color: #16834a;
+  color: var(--dashboard-positive);
   font-size: 0.9rem;
 }
 
 .dashboard-stat-card--lime .dashboard-income-category-name {
+  display: block;
   overflow: hidden;
   color: #475467;
   font-size: 0.72rem;
@@ -2335,12 +2342,14 @@
 }
 
 .dashboard-stat-card--lime .dashboard-income-category-amount {
+  display: block;
   overflow: hidden;
-  color: #202b25;
+  color: var(--dashboard-text);
   font-size: clamp(0.72rem, 1vw, 0.88rem);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .dashboard-stat-card--lime .dashboard-income-category-count {
@@ -2348,8 +2357,20 @@
   font-size: 0.66rem;
 }
 
-/* Pastikan kartu pengeluaran juga tetap ringkas */
+.dashboard-stat-card--lime .dashboard-empty-state--compact {
+  min-height: 55px;
+  padding: 8px;
+}
+
+/* =========================================================
+   BUDGET USAGE — 20 SEGMENTS
+   ========================================================= */
+
 .dashboard-stat-card--coral .dashboard-budget-progress {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
   margin-top: 10px;
 }
 
@@ -2360,7 +2381,63 @@
   gap: 10px;
 }
 
-@media (max-width: 600px) {
+.dashboard-segmented-progress {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 4px;
+  margin: 3px 0;
+}
+
+.dashboard-segmented-progress-item {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 9px;
+  border-radius: 3px;
+  background-color: #e8ede8;
+  transition: background-color 180ms ease;
+}
+
+.dashboard-segmented-progress-item--filled {
+  background-color: var(--budget-segment-color, var(--dashboard-emerald));
+}
+
+.dashboard-budget-progress-details {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: var(--dashboard-text);
+  font-size: 10px;
+}
+
+.dashboard-budget-remaining {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: var(--dashboard-text);
+  font-size: 10px;
+}
+
+.dashboard-budget-remaining strong {
+  color: var(--dashboard-text);
+  font-size: 10px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   RESPONSIVE OVERRIDES
+   ========================================================= */
+
+@media (max-width: 640px) {
   .dashboard-stat-heading-right {
     gap: 6px;
   }
@@ -2369,24 +2446,25 @@
     font-size: 0.72rem;
   }
 
+  .dashboard-comparison-detail {
+    font-size: 0.68rem;
+  }
+
   .dashboard-stat-card--lime .dashboard-income-category-grid {
     gap: 5px;
   }
 
   .dashboard-stat-card--lime .dashboard-income-category-card {
-    padding: 7px 6px;
+    padding: 7px 5px;
   }
 
-  .dashboard-stat-card--lime .dashboard-income-category-name {
-    font-size: 0.66rem;
+  .dashboard-segmented-progress {
+    gap: 3px;
   }
 
-  .dashboard-stat-card--lime .dashboard-income-category-amount {
-    font-size: 0.7rem;
-  }
-
-  .dashboard-stat-card--lime .dashboard-income-category-count {
-    font-size: 0.6rem;
+  .dashboard-segmented-progress-item {
+    height: 8px;
+    border-radius: 2px;
   }
 }
 
@@ -2403,5 +2481,11 @@
 
   .dashboard-stat-card--lime .dashboard-income-category-topline {
     grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-segmented-progress-item {
+    transition: none;
   }
 }
