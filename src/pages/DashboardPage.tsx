@@ -105,15 +105,19 @@ interface SpendingCategory {
   isOther?: boolean;
 }
 
+/**
+ * Palet kategori mengikuti identitas visual aplikasi:
+ * green, lime, dan variasi warna turunannya.
+ */
 const CATEGORY_COLORS = [
-  "#6f63e8",
-  "#37a987",
-  "#f0a34a",
-  "#e66e78",
-  "#4c91d9",
+  "#347b67",
+  "#b8df36",
+  "#5b9b7f",
+  "#8fbd65",
+  "#24634f",
 ] as const;
 
-const OTHER_CATEGORY_COLOR = "#9ba3b4";
+const OTHER_CATEGORY_COLOR = "#a5b8ad";
 
 function toAmount(value: string | number | null | undefined): number {
   if (value === null || value === undefined || value === "") {
@@ -495,17 +499,18 @@ function getDonutGradient(categories: SpendingCategory[]): string {
 
   let currentStop = 0;
 
-  const segments = categories
-    .filter((category) => category.amount > 0)
-    .map((category, index, positiveCategories) => {
-      const start = currentStop;
-      currentStop += (category.amount / total) * 100;
+  const positiveCategories = categories.filter(
+    (category) => category.amount > 0,
+  );
 
-      // Pastikan ujung segmen terakhir berhenti tepat di 100%.
-      const end = index === positiveCategories.length - 1 ? 100 : currentStop;
+  const segments = positiveCategories.map((category, index) => {
+    const start = currentStop;
+    currentStop += (category.amount / total) * 100;
 
-      return `${category.color} ${start}% ${end}%`;
-    });
+    const end = index === positiveCategories.length - 1 ? 100 : currentStop;
+
+    return `${category.color} ${start}% ${end}%`;
+  });
 
   return `conic-gradient(${segments.join(", ")})`;
 }
@@ -521,13 +526,15 @@ function buildSpendingCategories(
     .filter((category) => category.amount > 0)
     .sort((first, second) => second.amount - first.amount);
 
-  const topFive = sorted.slice(0, 5).map((category, index) => ({
-    id: category.categoryId,
-    name: category.categoryName,
-    amount: category.amount,
-    transactionCount: category.transactionCount,
-    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-  }));
+  const topFive: SpendingCategory[] = sorted
+    .slice(0, 5)
+    .map((category, index) => ({
+      id: category.categoryId,
+      name: category.categoryName,
+      amount: category.amount,
+      transactionCount: category.transactionCount,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    }));
 
   const remaining = sorted.slice(5);
 
@@ -701,12 +708,27 @@ export function DashboardPage() {
     };
   }, [budgetItems]);
 
+  const currentMonthKey = getCurrentMonthKey();
+
+  const currentMonthBudgetTarget =
+    budgetLoaded && budgetTotals.totalBudget > 0
+      ? budgetTotals.totalBudget
+      : null;
+
   const maxMonthlyAmount = Math.max(
     1,
-    ...months.flatMap((month) => [
-      toAmount(month.income),
-      toAmount(month.expense),
-    ]),
+    ...months.flatMap((month) => {
+      const amounts = [toAmount(month.income), toAmount(month.expense)];
+
+      if (
+        month.month === currentMonthKey &&
+        currentMonthBudgetTarget !== null
+      ) {
+        amounts.push(currentMonthBudgetTarget);
+      }
+
+      return amounts;
+    }),
   );
 
   const hasMonthlyTransactions = months.some(
@@ -1010,34 +1032,54 @@ export function DashboardPage() {
           className="dashboard-panel dashboard-money-flow"
           aria-labelledby="dashboard-money-flow-title"
         >
-          <div className="dashboard-panel-heading">
-            <div>
+          <div className="dashboard-panel-heading dashboard-panel-heading--money-flow">
+            <div className="dashboard-money-flow-title">
               <h3 id="dashboard-money-flow-title">Money flow</h3>
             </div>
 
-            <label className="dashboard-period-select">
-              <span className="sr-only">Periode grafik</span>
-              <select
-                value={selectedPeriod}
-                onChange={(event) =>
-                  setSelectedPeriod(event.target.value as "6" | "12")
-                }
+            <div className="dashboard-money-flow-header-actions">
+              <div
+                className="dashboard-chart-legend dashboard-chart-legend--inline"
+                aria-label="Keterangan grafik"
               >
-                <option value="6">6 bulan</option>
-                <option value="12">12 bulan</option>
-              </select>
-            </label>
-          </div>
+                <span>
+                  <i
+                    className="dashboard-legend-dot dashboard-legend-dot--target"
+                    aria-hidden="true"
+                  />
+                  Target anggaran
+                </span>
 
-          <div className="dashboard-chart-legend">
-            <span>
-              <i className="dashboard-legend-dot dashboard-legend-dot--income" />
-              Pemasukan
-            </span>
-            <span>
-              <i className="dashboard-legend-dot dashboard-legend-dot--expense" />
-              Pengeluaran
-            </span>
+                <span>
+                  <i
+                    className="dashboard-legend-dot dashboard-legend-dot--income"
+                    aria-hidden="true"
+                  />
+                  Pemasukan
+                </span>
+
+                <span>
+                  <i
+                    className="dashboard-legend-dot dashboard-legend-dot--expense"
+                    aria-hidden="true"
+                  />
+                  Pengeluaran
+                </span>
+              </div>
+
+              <label className="dashboard-period-select">
+                <span className="sr-only">Periode grafik</span>
+                <select
+                  value={selectedPeriod}
+                  onChange={(event) =>
+                    setSelectedPeriod(event.target.value as "6" | "12")
+                  }
+                >
+                  <option value="6">6 bulan</option>
+                  <option value="12">12 bulan</option>
+                </select>
+              </label>
+            </div>
           </div>
 
           {isLoading && !overview ? (
@@ -1066,7 +1108,7 @@ export function DashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="dashboard-chart dashboard-chart--overlapped">
+            <div className="dashboard-chart">
               <div className="dashboard-chart-axis" aria-hidden="true">
                 <span>{formatCompactCurrency(maxMonthlyAmount, currency)}</span>
                 <span>
@@ -1078,7 +1120,7 @@ export function DashboardPage() {
               <div
                 className="dashboard-chart-plot"
                 role="img"
-                aria-label={`Grafik batang tumpang tindih pemasukan dan pengeluaran untuk ${months.length} bulan`}
+                aria-label={`Grafik batang pemasukan dan pengeluaran selama ${months.length} bulan. Target anggaran hanya ditampilkan untuk bulan berjalan jika tersedia.`}
               >
                 <div className="dashboard-chart-gridline dashboard-chart-gridline--one" />
                 <div className="dashboard-chart-gridline dashboard-chart-gridline--two" />
@@ -1093,30 +1135,62 @@ export function DashboardPage() {
                   {months.map((month) => {
                     const monthlyIncome = Math.max(0, toAmount(month.income));
                     const monthlyExpense = Math.max(0, toAmount(month.expense));
+
+                    const monthlyBudgetTarget =
+                      month.month === currentMonthKey
+                        ? currentMonthBudgetTarget
+                        : null;
+
                     const incomeHeight =
                       (monthlyIncome / maxMonthlyAmount) * 100;
                     const expenseHeight =
                       (monthlyExpense / maxMonthlyAmount) * 100;
 
+                    const targetHeight =
+                      monthlyBudgetTarget !== null
+                        ? (monthlyBudgetTarget / maxMonthlyAmount) * 100
+                        : 0;
+
+                    const monthTitle = formatMonth(month.month);
+
                     return (
                       <div className="dashboard-chart-column" key={month.month}>
                         <div
-                          className="dashboard-chart-bars dashboard-chart-bars--overlapped"
-                          title={`${formatMonth(month.month)} — Pemasukan: ${formatCurrency(monthlyIncome, currency)}; Pengeluaran: ${formatCurrency(monthlyExpense, currency)}`}
+                          className="dashboard-chart-bars dashboard-chart-bars--grouped"
+                          title={[
+                            monthTitle,
+                            ...(monthlyBudgetTarget !== null
+                              ? [
+                                  `Target anggaran: ${formatCurrency(monthlyBudgetTarget, currency)}`,
+                                ]
+                              : []),
+                            `Pemasukan: ${formatCurrency(monthlyIncome, currency)}`,
+                            `Pengeluaran: ${formatCurrency(monthlyExpense, currency)}`,
+                          ].join(" — ")}
                         >
+                          {monthlyBudgetTarget !== null && (
+                            <div
+                              className="dashboard-chart-bar dashboard-chart-bar--target"
+                              style={{ height: `${targetHeight}%` }}
+                              aria-hidden="true"
+                            />
+                          )}
+
                           <div
                             className="dashboard-chart-bar dashboard-chart-bar--income"
                             style={{ height: `${incomeHeight}%` }}
                             aria-hidden="true"
                           />
+
                           <div
                             className="dashboard-chart-bar dashboard-chart-bar--expense"
                             style={{ height: `${expenseHeight}%` }}
                             aria-hidden="true"
                           />
                         </div>
+
                         <span className="dashboard-chart-month">
-                          {formatMonth(month.month)}
+                          {monthTitle}
                         </span>
                       </div>
                     );

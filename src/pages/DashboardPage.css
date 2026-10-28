@@ -3115,3 +3115,212 @@
     transition: none !important;
   }
 }
+
+/* Phase 15.3.2.7 — Money Flow Chart Refinement */
+
+.dashboard-page .dashboard-money-flow > .dashboard-panel-heading p,
+.dashboard-page .dashboard-money-flow .dashboard-panel-heading > div > p {
+  display: none;
+}
+
+.dashboard-page .dashboard-money-flow,
+.dashboard-page .dashboard-spending-panel {
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart {
+  margin-top: 14px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+.dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+.dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+  height: 192px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars--grouped {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(1px, 0.2vw, 4px);
+  isolation: isolate;
+  height: calc(100% - 27px);
+}
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-bars--grouped
+  .dashboard-chart-bar {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  display: block;
+  width: clamp(4px, 22%, 13px);
+  min-width: 0;
+  max-width: 13px;
+  flex: 1 1 0;
+  transform: none;
+  border-radius: 4px 4px 1px 1px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--target,
+.dashboard-page .dashboard-money-flow .dashboard-legend-dot--target {
+  background: var(--dashboard-chart-target, #dce2dc);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income,
+.dashboard-page .dashboard-money-flow .dashboard-legend-dot--income {
+  background: var(--dashboard-chart-income, #347b67);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense,
+.dashboard-page .dashboard-money-flow .dashboard-legend-dot--expense {
+  background: var(--dashboard-chart-expense, #b8df36);
+}
+
+@media (max-width: 900px) {
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 190px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 175px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-bars--grouped {
+    gap: 2px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 25%;
+    max-width: 10px;
+  }
+}
+
+/* Phase 15.3.2.7 — Brand-consistent analytics */
+
+.dashboard-page .dashboard-panel-heading--money-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-page .dashboard-money-flow-title {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.dashboard-page .dashboard-money-flow-title h3 {
+  margin: 0;
+}
+
+.dashboard-page .dashboard-money-flow-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-width: 0;
+}
+
+.dashboard-page .dashboard-chart-legend--inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0;
+}
+
+.dashboard-page .dashboard-chart-legend--inline > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--target {
+  background: var(--dashboard-chart-target, #dce2dc);
+}
+
+.dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--income {
+  background: var(--dashboard-chart-income, #347b67);
+}
+
+.dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--expense {
+  background: var(--dashboard-chart-expense, #b8df36);
+}
+
+/* Keep the donut chart within the project's green-lime identity. */
+.dashboard-page .dashboard-donut {
+  --dashboard-donut-fallback: #347b67;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-page .dashboard-panel-heading--money-flow {
+    align-items: flex-start;
+  }
+
+  .dashboard-page .dashboard-money-flow-header-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dashboard-page .dashboard-chart-legend--inline {
+    gap: 7px 10px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-page .dashboard-panel-heading--money-flow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .dashboard-page .dashboard-money-flow-header-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .dashboard-page .dashboard-chart-legend--inline {
+    justify-content: flex-start;
+    gap: 8px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-page .dashboard-money-flow-header-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-page .dashboard-chart-legend--inline {
+    justify-content: flex-start;
+  }
+}
