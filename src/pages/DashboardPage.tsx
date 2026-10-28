@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
@@ -95,6 +95,25 @@ interface Comparison {
   difference: number;
   percentage: number | null;
 }
+
+interface SpendingCategory {
+  id: string;
+  name: string;
+  amount: number;
+  transactionCount: number;
+  color: string;
+  isOther?: boolean;
+}
+
+const CATEGORY_COLORS = [
+  "#6f63e8",
+  "#37a987",
+  "#f0a34a",
+  "#e66e78",
+  "#4c91d9",
+] as const;
+
+const OTHER_CATEGORY_COLOR = "#9ba3b4";
 
 function toAmount(value: string | number | null | undefined): number {
   if (value === null || value === undefined || value === "") {
@@ -315,10 +334,6 @@ function getBudgetItems(
   return [];
 }
 
-/**
- * Warna mengikuti arah perubahan, bukan jenis transaksi.
- * Naik hijau, turun merah, tetap netral.
- */
 function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
   if (!comparison) {
     return (
@@ -402,11 +417,6 @@ function ComparisonDetail({
   );
 }
 
-/**
- * Progress segmented dengan 20 segmen.
- * 0–50% hijau, 55–75% kuning bertahap, 80–100% merah bertahap.
- * Penggunaan di atas 100% tetap dibatasi visualnya hingga 100%.
- */
 function getBudgetSegmentColor(index: number): string {
   const colors = [
     "#27845a",
@@ -459,7 +469,7 @@ function SegmentedBudgetProgress({ percentage }: { percentage: number }) {
               filled
                 ? ({
                     "--budget-segment-color": getBudgetSegmentColor(index),
-                  } as React.CSSProperties)
+                  } as CSSProperties)
                 : undefined
             }
             aria-hidden="true"
@@ -468,6 +478,83 @@ function SegmentedBudgetProgress({ percentage }: { percentage: number }) {
       })}
     </div>
   );
+}
+
+/**
+ * Menghasilkan gradient berdasarkan proporsi nominal setiap kategori.
+ */
+function getDonutGradient(categories: SpendingCategory[]): string {
+  const total = categories.reduce(
+    (sum, category) => sum + Math.max(0, category.amount),
+    0,
+  );
+
+  if (total <= 0) {
+    return "conic-gradient(#e8eaf0 0% 100%)";
+  }
+
+  let currentStop = 0;
+
+  const segments = categories
+    .filter((category) => category.amount > 0)
+    .map((category, index, positiveCategories) => {
+      const start = currentStop;
+      currentStop += (category.amount / total) * 100;
+
+      // Pastikan ujung segmen terakhir berhenti tepat di 100%.
+      const end = index === positiveCategories.length - 1 ? 100 : currentStop;
+
+      return `${category.color} ${start}% ${end}%`;
+    });
+
+  return `conic-gradient(${segments.join(", ")})`;
+}
+
+function buildSpendingCategories(
+  categories: CategoryAnalyticsItem[],
+): SpendingCategory[] {
+  const sorted = [...categories]
+    .map((category) => ({
+      ...category,
+      amount: Math.max(0, toAmount(category.totalAmount)),
+    }))
+    .filter((category) => category.amount > 0)
+    .sort((first, second) => second.amount - first.amount);
+
+  const topFive = sorted.slice(0, 5).map((category, index) => ({
+    id: category.categoryId,
+    name: category.categoryName,
+    amount: category.amount,
+    transactionCount: category.transactionCount,
+    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+  }));
+
+  const remaining = sorted.slice(5);
+
+  if (remaining.length > 0) {
+    const remainingAmount = remaining.reduce(
+      (sum, category) => sum + category.amount,
+      0,
+    );
+
+    const remainingTransactions = remaining.reduce(
+      (sum, category) => sum + category.transactionCount,
+      0,
+    );
+
+    if (remainingAmount > 0) {
+      topFive.push({
+        id: "__other_expense_categories__",
+        name: "Lainnya",
+        amount: remainingAmount,
+        transactionCount: remainingTransactions,
+        color: OTHER_CATEGORY_COLOR,
+        isOther: true,
+      });
+    }
+  }
+
+  return topFive;
 }
 
 export function DashboardPage() {
@@ -567,6 +654,11 @@ export function DashboardPage() {
     [categoryAnalytics?.categories],
   );
 
+  const spendingCategories = useMemo(
+    () => buildSpendingCategories(expenseCategories),
+    [expenseCategories],
+  );
+
   const topIncomeCategories = useMemo(
     () =>
       [...(incomeAnalytics?.categories ?? [])]
@@ -621,8 +713,22 @@ export function DashboardPage() {
     (month) => toAmount(month.income) > 0 || toAmount(month.expense) > 0,
   );
 
-  const hasExpenseCategories = expenseCategories.length > 0;
+  const hasExpenseCategories = spendingCategories.length > 0;
   const hasIncomeCategories = topIncomeCategories.length > 0;
+
+  const donutGradient = useMemo(
+    () => getDonutGradient(spendingCategories),
+    [spendingCategories],
+  );
+
+  const donutTotal = useMemo(
+    () =>
+      spendingCategories.reduce(
+        (total, category) => total + Math.max(0, category.amount),
+        0,
+      ),
+    [spendingCategories],
+  );
 
   const income = toAmount(summary?.totalIncome);
   const cashFlow = toAmount(summary?.netCashFlow);
@@ -907,7 +1013,6 @@ export function DashboardPage() {
           <div className="dashboard-panel-heading">
             <div>
               <h3 id="dashboard-money-flow-title">Money flow</h3>
-              <p>Perbandingan pemasukan dan pengeluaran bulanan.</p>
             </div>
 
             <label className="dashboard-period-select">
@@ -961,96 +1066,64 @@ export function DashboardPage() {
               </p>
             </div>
           ) : (
-            <>
-              <div className="dashboard-chart">
-                <div className="dashboard-chart-axis" aria-hidden="true">
-                  <span>
-                    {formatCompactCurrency(maxMonthlyAmount, currency)}
-                  </span>
-                  <span>
-                    {formatCompactCurrency(maxMonthlyAmount / 2, currency)}
-                  </span>
-                  <span>{formatCompactCurrency(0, currency)}</span>
-                </div>
+            <div className="dashboard-chart dashboard-chart--overlapped">
+              <div className="dashboard-chart-axis" aria-hidden="true">
+                <span>{formatCompactCurrency(maxMonthlyAmount, currency)}</span>
+                <span>
+                  {formatCompactCurrency(maxMonthlyAmount / 2, currency)}
+                </span>
+                <span>{formatCompactCurrency(0, currency)}</span>
+              </div>
+
+              <div
+                className="dashboard-chart-plot"
+                role="img"
+                aria-label={`Grafik batang tumpang tindih pemasukan dan pengeluaran untuk ${months.length} bulan`}
+              >
+                <div className="dashboard-chart-gridline dashboard-chart-gridline--one" />
+                <div className="dashboard-chart-gridline dashboard-chart-gridline--two" />
+                <div className="dashboard-chart-gridline dashboard-chart-gridline--three" />
 
                 <div
-                  className="dashboard-chart-plot"
-                  role="img"
-                  aria-label="Grafik batang pemasukan dan pengeluaran per bulan"
+                  className="dashboard-chart-columns"
+                  style={{
+                    gridTemplateColumns: `repeat(${Math.max(months.length, 1)}, minmax(0, 1fr))`,
+                  }}
                 >
-                  <div className="dashboard-chart-gridline dashboard-chart-gridline--one" />
-                  <div className="dashboard-chart-gridline dashboard-chart-gridline--two" />
-                  <div className="dashboard-chart-gridline dashboard-chart-gridline--three" />
+                  {months.map((month) => {
+                    const monthlyIncome = Math.max(0, toAmount(month.income));
+                    const monthlyExpense = Math.max(0, toAmount(month.expense));
+                    const incomeHeight =
+                      (monthlyIncome / maxMonthlyAmount) * 100;
+                    const expenseHeight =
+                      (monthlyExpense / maxMonthlyAmount) * 100;
 
-                  <div
-                    className="dashboard-chart-columns"
-                    style={{
-                      gridTemplateColumns: `repeat(${Math.max(months.length, 1)}, minmax(0, 1fr))`,
-                    }}
-                  >
-                    {months.map((month) => {
-                      const monthlyIncome = Math.max(0, toAmount(month.income));
-                      const monthlyExpense = Math.max(
-                        0,
-                        toAmount(month.expense),
-                      );
-
-                      return (
+                    return (
+                      <div className="dashboard-chart-column" key={month.month}>
                         <div
-                          className="dashboard-chart-column"
-                          key={month.month}
+                          className="dashboard-chart-bars dashboard-chart-bars--overlapped"
+                          title={`${formatMonth(month.month)} — Pemasukan: ${formatCurrency(monthlyIncome, currency)}; Pengeluaran: ${formatCurrency(monthlyExpense, currency)}`}
                         >
-                          <div className="dashboard-chart-bars">
-                            <div
-                              className="dashboard-chart-bar dashboard-chart-bar--income"
-                              style={{
-                                height: `${(monthlyIncome / maxMonthlyAmount) * 100}%`,
-                              }}
-                              title={`Pemasukan ${formatMonth(month.month)}: ${formatCurrency(monthlyIncome, currency)}`}
-                            />
-                            <div
-                              className="dashboard-chart-bar dashboard-chart-bar--expense"
-                              style={{
-                                height: `${(monthlyExpense / maxMonthlyAmount) * 100}%`,
-                              }}
-                              title={`Pengeluaran ${formatMonth(month.month)}: ${formatCurrency(monthlyExpense, currency)}`}
-                            />
-                          </div>
-                          <span>{formatMonth(month.month)}</span>
+                          <div
+                            className="dashboard-chart-bar dashboard-chart-bar--income"
+                            style={{ height: `${incomeHeight}%` }}
+                            aria-hidden="true"
+                          />
+                          <div
+                            className="dashboard-chart-bar dashboard-chart-bar--expense"
+                            style={{ height: `${expenseHeight}%` }}
+                            aria-hidden="true"
+                          />
                         </div>
-                      );
-                    })}
-                  </div>
+                        <span className="dashboard-chart-month">
+                          {formatMonth(month.month)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-
-              <div className="dashboard-chart-summary">
-                <div>
-                  <span>Total pemasukan</span>
-                  <strong className="dashboard-positive-value">
-                    {formatCurrency(
-                      months.reduce(
-                        (total, month) => total + toAmount(month.income),
-                        0,
-                      ),
-                      currency,
-                    )}
-                  </strong>
-                </div>
-                <div>
-                  <span>Total pengeluaran</span>
-                  <strong className="dashboard-negative-value">
-                    {formatCurrency(
-                      months.reduce(
-                        (total, month) => total + toAmount(month.expense),
-                        0,
-                      ),
-                      currency,
-                    )}
-                  </strong>
-                </div>
-              </div>
-            </>
+            </div>
           )}
         </article>
 
@@ -1066,20 +1139,6 @@ export function DashboardPage() {
             <span className="dashboard-panel-heading-icon" aria-hidden="true">
               ◌
             </span>
-          </div>
-
-          <div className="dashboard-spending-total">
-            <span>Total pengeluaran kategori</span>
-            <strong>
-              {categoryAnalytics
-                ? formatCurrency(categoryAnalytics.totalAmount, currency)
-                : "—"}
-            </strong>
-            <small>
-              {categoryAnalytics
-                ? `${formatNumber(categoryAnalytics.transactionCount)} transaksi`
-                : "Data belum tersedia"}
-            </small>
           </div>
 
           {isLoading && !overview ? (
@@ -1102,54 +1161,106 @@ export function DashboardPage() {
               <p>Pengeluaran berkategori akan ditampilkan di bagian ini.</p>
             </div>
           ) : (
-            <div className="dashboard-category-list">
-              {expenseCategories.slice(0, 5).map((category, index) => {
-                const percentage = getPercentage(category.percentage);
+            <>
+              <div className="dashboard-spending-total">
+                <span>Total pengeluaran kategori</span>
+                <strong>
+                  {formatCurrency(
+                    categoryAnalytics?.totalAmount ??
+                      spendingCategories.reduce(
+                        (total, category) => total + category.amount,
+                        0,
+                      ),
+                    currency,
+                  )}
+                </strong>
+                <small>
+                  {categoryAnalytics
+                    ? `${formatNumber(categoryAnalytics.transactionCount)} transaksi`
+                    : "Data belum tersedia"}
+                </small>
+              </div>
 
-                return (
+              <div className="dashboard-spending-breakdown">
+                <div className="dashboard-donut-layout">
                   <div
-                    className="dashboard-category-item"
-                    key={category.categoryId}
+                    className="dashboard-donut"
+                    role="img"
+                    aria-label={`Diagram donat kategori pengeluaran. Total yang divisualisasikan ${formatCurrency(donutTotal, currency)}.`}
+                    style={
+                      {
+                        "--dashboard-donut-gradient": donutGradient,
+                      } as CSSProperties
+                    }
                   >
-                    <div className="dashboard-category-heading">
-                      <div className="dashboard-category-name">
-                        <span
-                          className={`dashboard-category-dot dashboard-category-dot--${index % 5}`}
-                          aria-hidden="true"
-                        />
-                        <strong>{category.categoryName}</strong>
-                      </div>
-                      <span className="dashboard-category-percentage">
-                        {formatPercent(percentage)}
-                      </span>
-                    </div>
-
-                    <div
-                      className="dashboard-category-track"
-                      role="progressbar"
-                      aria-label={`Persentase kategori ${category.categoryName}`}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={percentage}
-                    >
-                      <span
-                        className={`dashboard-category-fill dashboard-category-fill--${index % 5}`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-
-                    <div className="dashboard-category-meta">
-                      <span>
-                        {formatNumber(category.transactionCount)} transaksi
-                      </span>
+                    <div className="dashboard-donut-center">
+                      <span>Total pengeluaran</span>
                       <strong>
-                        {formatCompactCurrency(category.totalAmount, currency)}
+                        {formatCompactCurrency(donutTotal, currency)}
                       </strong>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+
+                <div className="dashboard-category-list">
+                  {spendingCategories.map((category) => {
+                    const share =
+                      donutTotal > 0 ? (category.amount / donutTotal) * 100 : 0;
+
+                    return (
+                      <div
+                        className="dashboard-category-item"
+                        key={category.id}
+                      >
+                        <div className="dashboard-category-heading">
+                          <div className="dashboard-category-name">
+                            <span
+                              className="dashboard-category-dot"
+                              style={{ backgroundColor: category.color }}
+                              aria-hidden="true"
+                            />
+                            <strong>{category.name}</strong>
+                          </div>
+                          <span className="dashboard-category-percentage">
+                            {formatPercent(share)}
+                          </span>
+                        </div>
+
+                        <div
+                          className="dashboard-category-track"
+                          role="progressbar"
+                          aria-label={`Proporsi pengeluaran ${category.name}`}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={Number(share.toFixed(1))}
+                        >
+                          <span
+                            className="dashboard-category-fill"
+                            style={{
+                              width: `${share}%`,
+                              backgroundColor: category.color,
+                            }}
+                          />
+                        </div>
+
+                        <div className="dashboard-category-meta">
+                          <span>
+                            {formatNumber(category.transactionCount)} transaksi
+                          </span>
+                          <strong>
+                            {formatCompactCurrency(category.amount, currency)}
+                          </strong>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p className="dashboard-donut-note">
+                  {spendingCategories.some((category) => category.isOther)}
+                </p>
+              </div>
+            </>
           )}
         </article>
 
