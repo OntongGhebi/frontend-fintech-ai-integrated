@@ -5,11 +5,20 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { Link } from "react-router-dom";
+import {
+  Archive,
+  Eye,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Wallet,
+  X,
+} from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./AccountsPage.css";
-import { Link } from "react-router-dom";
-import { Archive, Eye, Pencil } from "lucide-react";
 
 type AccountType = "CASH" | "BANK" | "E_WALLET" | "CREDIT_CARD" | "OTHER";
 
@@ -81,14 +90,18 @@ function getErrorMessage(error: unknown): string {
     }
 
     if (error.status === 404) {
-      return "Akun tidak ditemukan atau sudah diarsipkan. Muat ulang daftar akun.";
+      return "Akun tidak ditemukan atau sudah tidak tersedia. Segarkan daftar akun.";
     }
 
     if (error.status === 400) {
       return `Data akun tidak valid: ${error.message}`;
     }
 
-    return error.message;
+    if (error.status === 401 || error.status === 403) {
+      return "Sesi Anda tidak valid atau tidak memiliki izin untuk melakukan tindakan ini.";
+    }
+
+    return error.message || "Permintaan gagal. Silakan coba kembali.";
   }
 
   if (error instanceof Error) {
@@ -117,9 +130,7 @@ export function AccountsPage() {
   const [archiving, setArchiving] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | AccountType>("ALL");
 
   const loadAccounts = useCallback(async () => {
     setLoading(true);
@@ -150,14 +161,11 @@ export function AccountsPage() {
           .toLocaleLowerCase("id-ID")
           .includes(normalizedSearch);
 
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "ACTIVE" && account.isActive) ||
-        (statusFilter === "ARCHIVED" && !account.isActive);
+      const matchesType = typeFilter === "ALL" || account.type === typeFilter;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesType;
     });
-  }, [accounts, search, statusFilter]);
+  }, [accounts, search, typeFilter]);
 
   const activeAccounts = useMemo(
     () => accounts.filter((account) => account.isActive),
@@ -170,6 +178,11 @@ export function AccountsPage() {
         (total, account) => total + Number(account.openingBalance || 0),
         0,
       ),
+    [activeAccounts],
+  );
+
+  const activeAccountTypes = useMemo(
+    () => new Set(activeAccounts.map((account) => account.type)).size,
     [activeAccounts],
   );
 
@@ -234,36 +247,37 @@ export function AccountsPage() {
       return;
     }
 
-    if (
-      formMode === "create" &&
-      accounts.some(
-        (account) =>
-          account.name.trim().toLocaleLowerCase("id-ID") ===
-          name.toLocaleLowerCase("id-ID"),
-      )
-    ) {
+    const normalizedName = name.toLocaleLowerCase("id-ID");
+
+    const duplicate = accounts.some(
+      (account) =>
+        account.id !== editingAccountId &&
+        account.name.trim().toLocaleLowerCase("id-ID") === normalizedName,
+    );
+
+    if (duplicate) {
       setFormError("Nama akun sudah digunakan. Pilih nama yang berbeda.");
       return;
     }
 
-    const openingBalance = Number(form.openingBalance);
+    let openingBalance = 0;
 
-    if (
-      formMode === "create" &&
-      (!form.openingBalance.trim() ||
-        !Number.isFinite(openingBalance) ||
-        openingBalance < 0)
-    ) {
-      setFormError("Saldo awal harus berupa angka nol atau lebih.");
-      return;
-    }
+    if (formMode === "create") {
+      const rawBalance = form.openingBalance.trim();
 
-    if (
-      formMode === "create" &&
-      !/^\d+(\.\d{1,4})?$/.test(form.openingBalance.trim())
-    ) {
-      setFormError("Saldo awal hanya boleh memiliki maksimal 4 angka desimal.");
-      return;
+      if (!rawBalance || !/^\d+(\.\d{1,4})?$/.test(rawBalance)) {
+        setFormError(
+          "Saldo awal harus berupa angka valid dengan maksimal 4 angka desimal.",
+        );
+        return;
+      }
+
+      openingBalance = Number(rawBalance);
+
+      if (!Number.isFinite(openingBalance) || openingBalance < 0) {
+        setFormError("Saldo awal harus berupa angka nol atau lebih.");
+        return;
+      }
     }
 
     setSaving(true);
@@ -281,15 +295,18 @@ export function AccountsPage() {
           created,
           ...current.filter((account) => account.id !== created.id),
         ]);
+
         setNotice(`Akun "${created.name}" berhasil dibuat.`);
       } else {
         if (!editingAccountId) {
           setFormError(
-            "ID akun tidak ditemukan. Tutup formulir lalu coba lagi.",
+            "ID akun tidak ditemukan. Tutup formulir lalu coba kembali.",
           );
           return;
         }
 
+        // Backend hanya mendukung perubahan nama, jenis, dan mata uang.
+        // Saldo awal sengaja tidak dikirim pada permintaan PATCH.
         const updated = await apiClient.patch<Account>(
           `accounts/${encodeURIComponent(editingAccountId)}`,
           {
@@ -303,6 +320,7 @@ export function AccountsPage() {
             account.id === updated.id ? updated : account,
           ),
         );
+
         setNotice(`Akun "${updated.name}" berhasil diperbarui.`);
       }
 
@@ -324,20 +342,27 @@ export function AccountsPage() {
     setNotice("");
 
     try {
+      const archivedName = accountToArchive.name;
+
       await apiClient.delete<{ message: string }>(
         `accounts/${encodeURIComponent(accountToArchive.id)}`,
       );
 
-      const archivedName = accountToArchive.name;
-
       setAccountToArchive(null);
       setNotice(`Akun "${archivedName}" berhasil diarsipkan.`);
+
+      // GET /accounts tidak mengembalikan akun yang sudah diarsipkan.
       await loadAccounts();
     } catch (error) {
       setPageError(getErrorMessage(error));
     } finally {
       setArchiving(false);
     }
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setTypeFilter("ALL");
   }
 
   return (
@@ -357,7 +382,7 @@ export function AccountsPage() {
           className="accounts-button accounts-button-primary"
           onClick={openCreateForm}
         >
-          <span aria-hidden="true">＋</span>
+          <Plus size={17} aria-hidden="true" />
           Tambah akun
         </button>
       </header>
@@ -386,7 +411,7 @@ export function AccountsPage() {
             aria-label="Tutup notifikasi"
             onClick={() => setNotice("")}
           >
-            ×
+            <X size={15} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -394,7 +419,7 @@ export function AccountsPage() {
       <div className="accounts-summary-grid">
         <article className="accounts-summary-card">
           <span className="accounts-summary-icon accounts-summary-icon-green">
-            ◫
+            <Wallet size={19} aria-hidden="true" />
           </span>
           <div>
             <p>Total akun aktif</p>
@@ -416,13 +441,11 @@ export function AccountsPage() {
 
         <article className="accounts-summary-card">
           <span className="accounts-summary-icon accounts-summary-icon-gray">
-            ▤
+            <Wallet size={19} aria-hidden="true" />
           </span>
           <div>
             <p>Jenis akun</p>
-            <strong>
-              {new Set(activeAccounts.map((account) => account.type)).size}
-            </strong>
+            <strong>{activeAccountTypes}</strong>
             <span>Jenis akun yang sedang digunakan</span>
           </div>
         </article>
@@ -445,13 +468,14 @@ export function AccountsPage() {
             onClick={() => void loadAccounts()}
             disabled={loading}
           >
-            {loading ? "Memuat…" : "↻ Segarkan"}
+            <RefreshCw size={15} aria-hidden="true" />
+            {loading ? "Memuat…" : "Segarkan"}
           </button>
         </div>
 
         <div className="accounts-toolbar">
           <label className="accounts-search">
-            <span aria-hidden="true">⌕</span>
+            <Search size={17} aria-hidden="true" />
             <input
               type="search"
               value={search}
@@ -462,18 +486,19 @@ export function AccountsPage() {
           </label>
 
           <label className="accounts-filter">
-            <span>Status</span>
+            <span>Jenis akun</span>
             <select
-              value={statusFilter}
+              value={typeFilter}
               onChange={(event) =>
-                setStatusFilter(
-                  event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                )
+                setTypeFilter(event.target.value as "ALL" | AccountType)
               }
             >
-              <option value="ALL">Semua akun</option>
-              <option value="ACTIVE">Aktif</option>
-              <option value="ARCHIVED">Diarsipkan</option>
+              <option value="ALL">Semua jenis</option>
+              {ACCOUNT_TYPES.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
@@ -484,9 +509,23 @@ export function AccountsPage() {
             <strong>Memuat daftar akun…</strong>
             <p>Data sedang diambil dari server.</p>
           </div>
+        ) : pageError && accounts.length === 0 ? (
+          <div className="accounts-state">
+            <strong>Daftar akun belum dapat dimuat</strong>
+            <p>Periksa koneksi Anda, kemudian coba muat ulang data akun.</p>
+            <button
+              type="button"
+              className="accounts-button accounts-button-primary"
+              onClick={() => void loadAccounts()}
+            >
+              Coba lagi
+            </button>
+          </div>
         ) : accounts.length === 0 ? (
           <div className="accounts-state">
-            <span className="accounts-empty-icon">◫</span>
+            <span className="accounts-empty-icon">
+              <Wallet size={24} aria-hidden="true" />
+            </span>
             <strong>Belum ada akun keuangan</strong>
             <p>Tambahkan akun pertama untuk mulai mengatur sumber dana Anda.</p>
             <button
@@ -494,20 +533,18 @@ export function AccountsPage() {
               className="accounts-button accounts-button-primary"
               onClick={openCreateForm}
             >
+              <Plus size={16} aria-hidden="true" />
               Tambah akun pertama
             </button>
           </div>
         ) : filteredAccounts.length === 0 ? (
           <div className="accounts-state">
             <strong>Akun tidak ditemukan</strong>
-            <p>Coba ubah kata kunci pencarian atau filter status.</p>
+            <p>Coba ubah kata kunci pencarian atau filter jenis akun.</p>
             <button
               type="button"
               className="accounts-button accounts-button-secondary"
-              onClick={() => {
-                setSearch("");
-                setStatusFilter("ALL");
-              }}
+              onClick={resetFilters}
             >
               Reset filter
             </button>
@@ -552,10 +589,13 @@ export function AccountsPage() {
                         </div>
                       </div>
                     </td>
+
                     <td>{getAccountTypeLabel(account.type)}</td>
+
                     <td className="accounts-balance-cell">
                       {formatCurrency(account.openingBalance)}
                     </td>
+
                     <td>
                       <span
                         className={`accounts-status-pill ${
@@ -564,10 +604,12 @@ export function AccountsPage() {
                             : "accounts-status-archived"
                         }`}
                       >
-                        {account.isActive ? "Aktif" : "Diarsipkan"}
+                        {account.isActive ? "Aktif" : "Nonaktif"}
                       </span>
                     </td>
+
                     <td>{formatDate(account.createdAt)}</td>
+
                     <td>
                       <div className="accounts-row-actions">
                         <button
@@ -613,7 +655,8 @@ export function AccountsPage() {
         <p className="accounts-list-footnote">
           Saldo yang ditampilkan adalah saldo awal dari backend, bukan saldo
           berjalan setelah transaksi. Akun yang diarsipkan tidak ditampilkan
-          oleh endpoint daftar akun backend saat ini.
+          oleh endpoint daftar akun. Pengarsipan tidak menghapus riwayat
+          transaksi secara permanen.
         </p>
       </section>
 
@@ -647,6 +690,7 @@ export function AccountsPage() {
                     : "Perbarui nama atau jenis akun. Saldo awal tidak dapat diubah."}
                 </p>
               </div>
+
               <button
                 type="button"
                 className="accounts-modal-close"
@@ -654,7 +698,7 @@ export function AccountsPage() {
                 disabled={saving}
                 aria-label="Tutup formulir"
               >
-                ×
+                <X size={18} aria-hidden="true" />
               </button>
             </header>
 
@@ -733,6 +777,7 @@ export function AccountsPage() {
                 >
                   Batal
                 </button>
+
                 <button
                   type="submit"
                   className="accounts-button accounts-button-primary"
@@ -767,14 +812,18 @@ export function AccountsPage() {
             aria-labelledby="accounts-archive-title"
           >
             <span className="accounts-archive-icon" aria-hidden="true">
-              !
+              <Archive size={21} />
             </span>
+
             <h3 id="accounts-archive-title">Arsipkan akun ini?</h3>
+
             <p>
-              Akun <strong>{accountToArchive.name}</strong> akan diarsipkan.
-              Akun ini tidak lagi muncul dalam daftar akun aktif. Pastikan
-              transaksi yang terkait sudah dipertimbangkan sebelum melanjutkan.
+              Akun <strong>{accountToArchive.name}</strong> akan diarsipkan dan
+              tidak lagi muncul dalam daftar akun aktif. Pengarsipan bukan
+              penghapusan permanen. Pastikan transaksi yang terkait sudah
+              dipertimbangkan sebelum melanjutkan.
             </p>
+
             <div className="accounts-form-actions">
               <button
                 type="button"
@@ -784,6 +833,7 @@ export function AccountsPage() {
               >
                 Batal
               </button>
+
               <button
                 type="button"
                 className="accounts-button accounts-button-danger"
