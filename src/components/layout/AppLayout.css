@@ -1093,3 +1093,28 @@
     height: 27px;
   }
 }
+
+.sidebar-search-container {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 18px;
+}
+
+.sidebar-search-container .global-search-results {
+  left: 0;
+  width: min(360px, calc(100vw - 32px));
+}
+
+@media (max-width: 768px) {
+  .sidebar-search-container .global-search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    max-height: 55vh;
+  }
+}

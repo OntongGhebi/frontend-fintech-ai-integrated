@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { GlobalSearch } from "./GlobalSearch";
 import "./AppLayout.css";
 
 const primaryNavigation = [
@@ -234,16 +235,19 @@ export function AppLayout() {
   const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const [mobileNavState, setMobileNavState] = useState({
     pathname: location.pathname,
     isOpen: false,
   });
+
   const [workspaceState, setWorkspaceState] = useState(() => ({
     pathname: location.pathname,
     isOpen: workspaceNavigation.some((item) =>
       location.pathname.startsWith(item.to),
     ),
   }));
+
   const [logoutError, setLogoutError] = useState("");
 
   const isWorkspaceOpen =
@@ -295,6 +299,10 @@ export function AppLayout() {
     location.pathname.startsWith(item.to),
   );
 
+  const closeMobileNavigation = () => {
+    setIsMobileNavOpen(false);
+  };
+
   return (
     <div className="app-shell">
       {isMobileNavOpen && (
@@ -302,7 +310,7 @@ export function AppLayout() {
           type="button"
           className="layout-mobile-backdrop"
           aria-label="Tutup navigasi"
-          onClick={() => setIsMobileNavOpen(false)}
+          onClick={closeMobileNavigation}
         />
       )}
 
@@ -311,13 +319,14 @@ export function AppLayout() {
       >
         <div className="layout-sidebar-mobile-heading">
           <span>NAVIGATION</span>
+
           <button
             type="button"
             className="layout-icon-button"
             aria-label="Tutup navigasi"
-            onClick={() => setIsMobileNavOpen(false)}
+            onClick={closeMobileNavigation}
           >
-            <X size={19} />
+            <X size={19} aria-hidden="true" />
           </button>
         </div>
 
@@ -325,11 +334,12 @@ export function AppLayout() {
           to="/"
           className="layout-brand"
           aria-label="Fintech AI dashboard"
-          onClick={() => setIsMobileNavOpen(false)}
+          onClick={closeMobileNavigation}
         >
           <span className="layout-brand-mark" aria-hidden="true">
             F
           </span>
+
           <span className="layout-brand-copy">
             <strong>Fintech AI</strong>
             <span>Personal Finance</span>
@@ -341,23 +351,28 @@ export function AppLayout() {
           <span>Personal workspace</span>
         </div>
 
+        {/* Global search */}
+        <div className="sidebar-search-container">
+          <GlobalSearch onNavigate={closeMobileNavigation} />
+        </div>
+
         <nav className="layout-navigation" aria-label="Navigasi utama">
           <NavigationGroup
             title="OVERVIEW"
             items={primaryNavigation}
-            onNavigate={() => setIsMobileNavOpen(false)}
+            onNavigate={closeMobileNavigation}
           />
 
           <NavigationGroup
             title="MANAGE"
             items={financeNavigation}
-            onNavigate={() => setIsMobileNavOpen(false)}
+            onNavigate={closeMobileNavigation}
           />
 
           <NavigationGroup
             title="ANALYTICS"
             items={insightNavigation}
-            onNavigate={() => setIsMobileNavOpen(false)}
+            onNavigate={closeMobileNavigation}
           />
 
           <section className="layout-nav-group" aria-label="Workspace">
@@ -398,7 +413,7 @@ export function AppLayout() {
                       className={({ isActive }) =>
                         `layout-nav-link${isActive ? " is-active" : ""}`
                       }
-                      onClick={() => setIsMobileNavOpen(false)}
+                      onClick={closeMobileNavigation}
                     >
                       <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
                       <span>{item.label}</span>
