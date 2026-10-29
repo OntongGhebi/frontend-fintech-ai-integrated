@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Link,
   NavLink,
@@ -6,96 +6,62 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-
-import { useAuth } from "../../contexts/AuthContext";
 import {
-  ChartArea,
-  FileBarChart,
-  HandCoins,
-  WalletMinimal,
+  ArrowLeftRight,
   Bell,
+  ChartNoAxesCombined,
+  ChevronDown,
+  ChevronRight,
   CreditCard,
+  HandCoins,
+  LayoutDashboard,
+  LogOut,
+  Menu,
   ReceiptText,
-  Workflow,
-  Settings,
-  Tags,
-  PiggyBank,
   Repeat,
+  Tags,
+  Wallet,
+  X,
+  PiggyBank,
+  Workflow,
 } from "lucide-react";
 
-const navigation = [
+import { useAuth } from "../../contexts/AuthContext";
+import "./AppLayout.css";
+
+const primaryNavigation = [
   {
     label: "Dashboard",
-    icon: <ChartArea size={18} />,
+    icon: LayoutDashboard,
     to: "/",
     end: true,
   },
-  {
-    label: "Transactions",
-    icon: <HandCoins size={18} />,
-    to: "/transactions",
-    end: false,
-  },
-  {
-    label: "Accounts",
-    icon: <WalletMinimal size={18} />,
-    to: "/accounts",
-    end: false,
-  },
-  {
-    label: "Budgets",
-    icon: <PiggyBank size={18} />,
-    to: "/budgets",
-    end: false,
-  },
-  {
-    label: "Reports",
-    icon: <FileBarChart size={18} />,
-    to: "/reports",
-    end: false,
-  },
-  {
-    label: "Categories",
-    icon: <Tags size={18} />,
-    to: "/categories",
-    end: false,
-  },
-  {
-    label: "Notifications",
-    icon: <Bell size={18} />,
-    to: "/notifications",
-    end: false,
-  },
+];
+
+const financeNavigation = [
+  { label: "Transactions", icon: HandCoins, to: "/transactions" },
+  { label: "Accounts", icon: Wallet, to: "/accounts" },
+  { label: "Budgets", icon: PiggyBank, to: "/budgets" },
+  { label: "Categories", icon: Tags, to: "/categories" },
   {
     label: "Recurring",
-    icon: <Repeat size={18} />,
+    icon: Repeat,
     to: "/recurring-transactions",
-    end: false,
   },
+];
+
+const insightNavigation = [
   {
-    label: "Subscription",
-    icon: <CreditCard size={18} />,
-    to: "/subscription",
-    end: false,
+    label: "Reports & Analytics",
+    icon: ChartNoAxesCombined,
+    to: "/reports",
   },
-  {
-    label: "Payments",
-    icon: <ReceiptText size={18} />,
-    to: "/payments",
-    end: false,
-  },
-  {
-    label: "Integrations",
-    icon: <Workflow size={18} />,
-    to: "/integrations",
-    end: false,
-  },
-  {
-    label: "Settings",
-    icon: <Settings size={18} />,
-    to: "/settings",
-    end: false,
-  },
+];
+
+const workspaceNavigation = [
+  { label: "Subscription", icon: CreditCard, to: "/subscription" },
+  { label: "Payments", icon: ReceiptText, to: "/payments" },
+  { label: "Integrations", icon: Workflow, to: "/integrations" },
 ];
 
 function getPageHeading(pathname: string) {
@@ -164,7 +130,7 @@ function getPageHeading(pathname: string) {
 
   if (pathname === "/reports") {
     return {
-      title: "Reports",
+      title: "Reports & Analytics",
       description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
     };
   }
@@ -186,14 +152,14 @@ function getPageHeading(pathname: string) {
   if (pathname === "/payments") {
     return {
       title: "Payments",
-      description: "Lihat riwayat pembayaran dan status transaksi pembayaran.",
+      description: "Lihat riwayat pembayaran dan status pembayaran.",
     };
   }
 
   if (pathname === "/integrations") {
     return {
       title: "Integrations",
-      description: "Kelola panduan integrasi Telegram dan AI Assistant.",
+      description: "Kelola integrasi Telegram dan AI Assistant.",
     };
   }
 
@@ -210,15 +176,56 @@ function getPageHeading(pathname: string) {
   ) {
     return {
       title: "Recurring Transactions",
-      description:
-        "Kelola transaksi terjadwal untuk pemasukan dan pengeluaran rutin.",
+      description: "Kelola transaksi terjadwal untuk kebutuhan rutin.",
     };
   }
 
   return {
     title: "Dashboard",
-    description: "Track, assess, and enhance your financial performance.",
+    description: "Pantau dan evaluasi performa keuanganmu.",
   };
+}
+
+interface NavigationItem {
+  label: string;
+  icon: typeof LayoutDashboard;
+  to: string;
+  end?: boolean;
+}
+
+interface NavigationGroupProps {
+  title: string;
+  items: NavigationItem[];
+  onNavigate: () => void;
+}
+
+function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
+  return (
+    <section className="layout-nav-group" aria-label={title}>
+      <span className="layout-nav-heading">{title}</span>
+
+      <div className="layout-nav-items">
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end ?? false}
+              className={({ isActive }) =>
+                `layout-nav-link${isActive ? " is-active" : ""}`
+              }
+              onClick={onNavigate}
+            >
+              <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 export function AppLayout() {
@@ -227,12 +234,39 @@ export function AppLayout() {
   const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [mobileNavState, setMobileNavState] = useState({
+    pathname: location.pathname,
+    isOpen: false,
+  });
+  const [workspaceState, setWorkspaceState] = useState(() => ({
+    pathname: location.pathname,
+    isOpen: workspaceNavigation.some((item) =>
+      location.pathname.startsWith(item.to),
+    ),
+  }));
   const [logoutError, setLogoutError] = useState("");
 
-  useEffect(() => {
-    setIsMobileNavOpen(false);
-  }, [location.pathname]);
+  const isWorkspaceOpen =
+    workspaceState.pathname === location.pathname
+      ? workspaceState.isOpen
+      : workspaceNavigation.some((item) =>
+          location.pathname.startsWith(item.to),
+        );
+
+  const isMobileNavOpen =
+    mobileNavState.pathname === location.pathname && mobileNavState.isOpen;
+
+  const setIsMobileNavOpen = (
+    next: boolean | ((isOpen: boolean) => boolean),
+  ) => {
+    setMobileNavState((current) => ({
+      pathname: location.pathname,
+      isOpen:
+        typeof next === "function"
+          ? next(current.pathname === location.pathname && current.isOpen)
+          : next,
+    }));
+  };
 
   async function handleLogout() {
     if (isLoggingOut) return;
@@ -254,112 +288,162 @@ export function AppLayout() {
   const initial = displayName.charAt(0).toUpperCase();
   const pageHeading = getPageHeading(location.pathname);
 
-  const showAddTransactionButton =
+  const showTransactionActions =
     location.pathname === "/" || location.pathname === "/transactions";
 
-  const showTransferButton =
-    location.pathname === "/" || location.pathname === "/transactions";
+  const workspaceIsActive = workspaceNavigation.some((item) =>
+    location.pathname.startsWith(item.to),
+  );
 
   return (
     <div className="app-shell">
       {isMobileNavOpen && (
         <button
           type="button"
-          className="mobile-nav-backdrop"
+          className="layout-mobile-backdrop"
           aria-label="Tutup navigasi"
           onClick={() => setIsMobileNavOpen(false)}
         />
       )}
 
-      <aside className={`sidebar${isMobileNavOpen ? " sidebar-open" : ""}`}>
-        <div className="sidebar-mobile-heading">
-          <span>NAVIGASI</span>
+      <aside
+        className={`layout-sidebar${isMobileNavOpen ? " is-mobile-open" : ""}`}
+      >
+        <div className="layout-sidebar-mobile-heading">
+          <span>NAVIGATION</span>
           <button
             type="button"
-            className="sidebar-mobile-close"
+            className="layout-icon-button"
             aria-label="Tutup navigasi"
             onClick={() => setIsMobileNavOpen(false)}
           >
-            ×
+            <X size={19} />
           </button>
         </div>
 
         <NavLink
           to="/"
-          className="brand"
+          className="layout-brand"
           aria-label="Fintech AI dashboard"
           onClick={() => setIsMobileNavOpen(false)}
         >
-          <span className="brand-mark" aria-hidden="true">
+          <span className="layout-brand-mark" aria-hidden="true">
             F
           </span>
-
-          <span className="brand-copy">
+          <span className="layout-brand-copy">
             <strong>Fintech AI</strong>
             <span>Personal Finance</span>
           </span>
         </NavLink>
 
-        <div className="sidebar-search-placeholder">
-          <span aria-hidden="true">⌕</span>
-          <span>Financial workspace</span>
+        <div className="layout-sidebar-caption">
+          <span className="layout-caption-dot" />
+          <span>Personal workspace</span>
         </div>
 
-        <nav aria-label="Navigasi utama" className="navigation">
-          <span className="navigation-heading">MENU</span>
+        <nav className="layout-navigation" aria-label="Navigasi utama">
+          <NavigationGroup
+            title="OVERVIEW"
+            items={primaryNavigation}
+            onNavigate={() => setIsMobileNavOpen(false)}
+          />
 
-          {navigation.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `navigation-link${isActive ? " active" : ""}`
+          <NavigationGroup
+            title="MANAGE"
+            items={financeNavigation}
+            onNavigate={() => setIsMobileNavOpen(false)}
+          />
+
+          <NavigationGroup
+            title="ANALYTICS"
+            items={insightNavigation}
+            onNavigate={() => setIsMobileNavOpen(false)}
+          />
+
+          <section className="layout-nav-group" aria-label="Workspace">
+            <button
+              type="button"
+              className={`layout-nav-group-toggle${
+                workspaceIsActive ? " is-active" : ""
+              }`}
+              aria-expanded={isWorkspaceOpen}
+              onClick={() =>
+                setWorkspaceState({
+                  pathname: location.pathname,
+                  isOpen: !isWorkspaceOpen,
+                })
               }
-              onClick={() => setIsMobileNavOpen(false)}
             >
-              <span className="navigation-icon" aria-hidden="true">
-                {item.icon}
+              <span className="layout-nav-group-toggle-label">
+                <Workflow size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>WORKSPACE</span>
               </span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
 
-          <span className="navigation-heading navigation-heading-spaced">
-            YOUR FINANCES
-          </span>
+              {isWorkspaceOpen ? (
+                <ChevronDown size={16} aria-hidden="true" />
+              ) : (
+                <ChevronRight size={16} aria-hidden="true" />
+              )}
+            </button>
+
+            {isWorkspaceOpen && (
+              <div className="layout-nav-items layout-nav-subitems">
+                {workspaceNavigation.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `layout-nav-link${isActive ? " is-active" : ""}`
+                      }
+                      onClick={() => setIsMobileNavOpen(false)}
+                    >
+                      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         </nav>
 
-        <div className="sidebar-bottom">
-          <div className="sidebar-status">
-            <span className="status-dot" />
+        <div className="layout-sidebar-bottom">
+          <div className="layout-workspace-status">
+            <span className="layout-caption-dot" />
             <span>Workspace aktif</span>
           </div>
 
-          <div className="sidebar-user">
-            <div className="user-avatar" aria-hidden="true">
+          <div className="layout-sidebar-user">
+            <div className="layout-avatar" aria-hidden="true">
               {initial}
             </div>
 
-            <div className="sidebar-user-info">
+            <div className="layout-sidebar-user-copy">
               <strong title={displayName}>{displayName}</strong>
               <span title={user?.email}>{user?.email || "Akun pengguna"}</span>
             </div>
 
             <button
               type="button"
-              className="logout-button"
+              className="layout-icon-button layout-logout-button"
               onClick={() => void handleLogout()}
               disabled={isLoggingOut}
               aria-label="Logout"
               title="Logout"
             >
-              {isLoggingOut ? "…" : "↗"}
+              {isLoggingOut ? (
+                <span aria-hidden="true">…</span>
+              ) : (
+                <LogOut size={17} aria-hidden="true" />
+              )}
             </button>
           </div>
 
           {logoutError && (
-            <p className="sidebar-error" role="alert">
+            <p className="layout-logout-error" role="alert">
               {logoutError}
             </p>
           )}
@@ -367,18 +451,16 @@ export function AppLayout() {
       </aside>
 
       <div className="main-column">
-        <header className="topbar">
+        <header className="topbar layout-topbar">
           <div className="topbar-heading-group">
             <button
               type="button"
-              className="mobile-nav-toggle"
+              className="layout-mobile-menu-button"
               aria-label={isMobileNavOpen ? "Tutup navigasi" : "Buka navigasi"}
               aria-expanded={isMobileNavOpen}
               onClick={() => setIsMobileNavOpen((open) => !open)}
             >
-              <span />
-              <span />
-              <span />
+              <Menu size={21} aria-hidden="true" />
             </button>
 
             <div className="topbar-title">
@@ -388,49 +470,68 @@ export function AppLayout() {
             </div>
           </div>
 
-          <div className="topbar-actions">
-            {showTransferButton && (
-              <Link
-                to="/transactions/transfer"
-                className="layout-transfer-button"
-                aria-label="Transfer dana antar rekening"
-              >
-                <span aria-hidden="true">↔</span>
-                <span>Transfer Dana</span>
-              </Link>
+          <div className="topbar-actions layout-topbar-actions">
+            {showTransactionActions && (
+              <div className="layout-transaction-actions">
+                <Link
+                  to="/transactions/transfer"
+                  className="layout-transfer-button"
+                  aria-label="Transfer dana antar rekening"
+                  title="Transfer dana"
+                >
+                  <ArrowLeftRight size={17} aria-hidden="true" />
+                  <span>Transfer</span>
+                </Link>
+
+                <Link
+                  to="/transactions/new"
+                  className="layout-add-transaction-button"
+                  aria-label="Tambah transaksi baru"
+                  title="Tambah transaksi"
+                >
+                  <span className="layout-add-icon" aria-hidden="true">
+                    +
+                  </span>
+                  <span>Tambah transaksi</span>
+                </Link>
+              </div>
             )}
 
-            {showAddTransactionButton && (
-              <Link
-                to="/transactions/new"
-                className="layout-add-transaction-button"
-                aria-label="Tambah transaksi baru"
+            <div className="layout-account-actions">
+              <NavLink
+                to="/notifications"
+                className={({ isActive }) =>
+                  `layout-notification-button${isActive ? " is-active" : ""}`
+                }
+                aria-label="Buka notifikasi"
+                title="Notifications"
               >
-                <span aria-hidden="true">＋</span>
-                <span>Tambah Transaksi</span>
-              </Link>
-            )}
+                <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
+              </NavLink>
 
-            <span className="topbar-date">
-              <span className="topbar-date-dot" />
-              IDR · Asia/Jakarta
-            </span>
+              <NavLink
+                to="/settings"
+                className={({ isActive }) =>
+                  `layout-topbar-profile${isActive ? " is-active" : ""}`
+                }
+                aria-label="Buka pengaturan akun"
+                title="Profil dan pengaturan"
+              >
+                <div
+                  className="layout-avatar layout-avatar-small"
+                  aria-hidden="true"
+                >
+                  {initial}
+                </div>
 
-            <NavLink
-              to="/settings"
-              className="topbar-profile"
-              aria-label="Buka pengaturan akun"
-              title="Pengaturan akun"
-            >
-              <div className="user-avatar user-avatar-small" aria-hidden="true">
-                {initial}
-              </div>
+                <div className="layout-topbar-profile-copy">
+                  <strong>{displayName}</strong>
+                  <span>{user?.email || "Pengaturan akun"}</span>
+                </div>
 
-              <div className="topbar-profile-copy">
-                <strong>{displayName}</strong>
-                <span>{user?.email}</span>
-              </div>
-            </NavLink>
+                <ChevronDown size={15} aria-hidden="true" />
+              </NavLink>
+            </div>
           </div>
         </header>
 
