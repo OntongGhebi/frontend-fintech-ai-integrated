@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./TransactionDetailPage.css";
@@ -232,6 +239,20 @@ export function TransactionDetailPage() {
       return;
     }
 
+    const transactionDate = new Date(toJakartaIso(form.transactionDate));
+    if (Number.isNaN(transactionDate.getTime())) {
+      setError("Tanggal dan waktu transaksi tidak valid.");
+      return;
+    }
+
+    // Backend saat ini belum mendukung penghapusan categoryId melalui null.
+    if (transaction.categoryId && !form.categoryId) {
+      setError(
+        "Backend saat ini belum mendukung penghapusan kategori dari transaksi. Pilih kategori lain atau pertahankan kategori saat ini.",
+      );
+      return;
+    }
+
     if (!form.accountId) {
       setError("Pilih akun untuk transaksi ini.");
       return;
@@ -281,7 +302,14 @@ export function TransactionDetailPage() {
   }
 
   async function handleVoid() {
-    if (!transaction || transaction.status !== "ACTIVE") return;
+    // Transfer memiliki dua catatan yang saling terhubung.
+    if (
+      !transaction ||
+      transaction.status !== "ACTIVE" ||
+      transaction.type === "TRANSFER"
+    ) {
+      return;
+    }
 
     setVoiding(true);
     setError("");
@@ -318,9 +346,16 @@ export function TransactionDetailPage() {
   if (loading) {
     return (
       <section className="transaction-detail-page">
-        <Link className="transaction-back-link" to="/transactions">
-          ← Kembali ke transaksi
-        </Link>
+        <button
+          className="transaction-back-icon-button"
+          type="button"
+          onClick={() => navigate("/transactions")}
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
+        </button>
+
         <div className="transaction-detail-state">
           <span className="transaction-spinner" />
           <strong>Memuat detail transaksi…</strong>
@@ -333,9 +368,16 @@ export function TransactionDetailPage() {
   if (!transaction) {
     return (
       <section className="transaction-detail-page">
-        <Link className="transaction-back-link" to="/transactions">
-          ← Kembali ke transaksi
-        </Link>
+        <button
+          className="transaction-back-icon-button"
+          type="button"
+          onClick={() => navigate("/transactions")}
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
+        </button>
+
         <div className="transaction-detail-state transaction-detail-state-error">
           <strong>Detail transaksi tidak dapat ditampilkan</strong>
           <p>{error || "Transaksi tidak ditemukan."}</p>
@@ -355,18 +397,25 @@ export function TransactionDetailPage() {
 
   return (
     <section className="transaction-detail-page">
-      <Link className="transaction-back-link" to="/transactions">
-        ← Kembali ke transaksi
-      </Link>
-
       <header className="transaction-detail-heading">
-        <div>
+        <button
+          className="transaction-back-icon-button"
+          type="button"
+          onClick={() => navigate("/transactions")}
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
+        </button>
+
+        <div className="transaction-detail-heading-content">
           <p className="transaction-eyebrow">MANAJEMEN KEUANGAN</p>
           <h2>Detail transaksi</h2>
           <p className="transaction-detail-subtitle">
             Periksa informasi dan kelola transaksi yang tercatat.
           </p>
         </div>
+
         <span
           className={`transaction-status-pill ${
             isActive ? "transaction-status-active" : "transaction-status-voided"
@@ -384,6 +433,7 @@ export function TransactionDetailPage() {
           {error}
         </div>
       )}
+
       {notice && (
         <div
           className="transaction-feedback transaction-feedback-success"
@@ -415,15 +465,16 @@ export function TransactionDetailPage() {
               <h3>Informasi transaksi</h3>
               <p>Rincian transaksi yang tersimpan di akun Anda.</p>
             </div>
+
             {!isEditing && isActive && transaction.type !== "TRANSFER" && (
               <button
                 className="transaction-button transaction-button-secondary"
                 type="button"
-                onClick={() => {
+                onClick={() =>
                   navigate(
                     `/transactions/${encodeURIComponent(transaction.id)}/edit`,
-                  );
-                }}
+                  )
+                }
               >
                 Edit transaksi
               </button>
@@ -569,6 +620,7 @@ export function TransactionDetailPage() {
           <p className="transaction-detail-card-description">
             Identitas dan riwayat perubahan transaksi.
           </p>
+
           <dl className="transaction-detail-list transaction-metadata-list">
             <div>
               <dt>ID transaksi</dt>
@@ -592,13 +644,13 @@ export function TransactionDetailPage() {
             )}
           </dl>
 
-          {isActive && (
+          {isActive && transaction.type !== "TRANSFER" && (
             <div className="transaction-danger-zone">
               <h4>Zona berisiko</h4>
               <p>
-                Void transaksi akan mengubah statusnya. Tindakan ini tidak
-                menghapus catatan secara permanen dan tidak dapat diulang dari
-                halaman ini setelah berhasil.
+                Void akan mengubah status transaksi menjadi VOIDED, bukan
+                menghapus catatan secara permanen. Tindakan ini tidak dapat
+                dibatalkan dari halaman ini.
               </p>
               <button
                 className="transaction-button transaction-button-danger"
@@ -609,10 +661,23 @@ export function TransactionDetailPage() {
               </button>
             </div>
           )}
+
+          {isActive && transaction.type === "TRANSFER" && (
+            <div
+              className="transaction-feedback transaction-feedback-success"
+              role="note"
+            >
+              <h4>Transfer terlindungi</h4>
+              <p>
+                Transfer terdiri dari dua catatan yang saling terhubung. Edit
+                dan void transfer dinonaktifkan agar kedua sisi tidak berbeda.
+              </p>
+            </div>
+          )}
         </aside>
       </div>
 
-      {confirmVoid && (
+      {confirmVoid && isActive && transaction.type !== "TRANSFER" && (
         <div
           className="transaction-modal-backdrop"
           role="presentation"

@@ -455,6 +455,44 @@
   margin-top: 23px;
 }
 
+.transaction-back-icon-button {
+  display: inline-flex;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-color, #374151);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.transaction-back-icon-button:hover {
+  background: var(--surface-hover, #f3f4f6);
+  border-color: var(--border-strong, #cbd5e1);
+}
+
+.transaction-back-icon-button:active {
+  transform: translateX(-2px);
+}
+
+.transaction-back-icon-button:focus-visible {
+  outline: 2px solid var(--primary-color, #4f46e5);
+  outline-offset: 3px;
+}
+
+.transaction-detail-heading-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
   .transaction-detail-grid {
     grid-template-columns: 1fr;
