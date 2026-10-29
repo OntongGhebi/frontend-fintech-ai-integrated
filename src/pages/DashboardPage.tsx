@@ -377,7 +377,6 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
     </span>
   );
 }
-
 function ComparisonDetail({
   comparison,
   currency,
@@ -698,7 +697,6 @@ export function DashboardPage() {
       (sum, item) => sum + Math.max(0, toAmount(item.actualAmount)),
       0,
     );
-
     return {
       totalBudget,
       totalActual,
@@ -1200,7 +1198,6 @@ export function DashboardPage() {
             </div>
           )}
         </article>
-
         <article
           className="dashboard-panel dashboard-spending-panel"
           aria-labelledby="dashboard-spending-title"
@@ -1330,9 +1327,15 @@ export function DashboardPage() {
                   })}
                 </div>
 
-                <p className="dashboard-donut-note">
-                  {spendingCategories.some((category) => category.isOther)}
-                </p>
+                {spendingCategories.some((category) => category.isOther) ? (
+                  <p className="dashboard-donut-note">
+                    Kategori dengan nilai lebih kecil digabungkan ke Lainnya.
+                  </p>
+                ) : (
+                  <p className="dashboard-donut-note">
+                    Menampilkan seluruh kategori pengeluaran yang tersedia.
+                  </p>
+                )}
               </div>
             </>
           )}

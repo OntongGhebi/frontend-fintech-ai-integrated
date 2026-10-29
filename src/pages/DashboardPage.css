@@ -3116,114 +3116,58 @@
   }
 }
 
-/* Phase 15.3.2.7 — Money Flow Chart Refinement */
+/* =========================================================
+   PHASE 15.3.2.7 — CONSOLIDATED ANALYTICS REFINEMENT
+   Money Flow + Spending Breakdown
+   ========================================================= */
 
-.dashboard-page .dashboard-money-flow > .dashboard-panel-heading p,
-.dashboard-page .dashboard-money-flow .dashboard-panel-heading > div > p {
-  display: none;
+/* ---------------------------------------------------------
+   CARD LAYOUT — KEEP THE EXISTING DASHBOARD GRID
+   --------------------------------------------------------- */
+
+.dashboard-page .dashboard-primary-grid {
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.dashboard-page .dashboard-primary-grid > *,
+.dashboard-page .dashboard-money-flow,
+.dashboard-page .dashboard-spending-panel {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dashboard-page .dashboard-money-flow,
 .dashboard-page .dashboard-spending-panel {
+  width: 100%;
+  height: 100%;
   padding-top: 17px;
   padding-bottom: 17px;
+  box-sizing: border-box;
 }
 
-.dashboard-page .dashboard-money-flow .dashboard-chart {
-  margin-top: 14px;
+.dashboard-page .dashboard-money-flow {
+  overflow: hidden;
 }
 
-.dashboard-page .dashboard-money-flow .dashboard-chart-axis,
-.dashboard-page .dashboard-money-flow .dashboard-chart-plot,
-.dashboard-page .dashboard-money-flow .dashboard-chart-loading {
-  height: 192px;
+.dashboard-page .dashboard-spending-panel {
+  overflow: hidden;
 }
 
-.dashboard-page .dashboard-money-flow .dashboard-chart-bars--grouped {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(1px, 0.2vw, 4px);
-  isolation: isolate;
-  height: calc(100% - 27px);
-}
-
-.dashboard-page
-  .dashboard-money-flow
-  .dashboard-chart-bars--grouped
-  .dashboard-chart-bar {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  display: block;
-  width: clamp(4px, 22%, 13px);
-  min-width: 0;
-  max-width: 13px;
-  flex: 1 1 0;
-  transform: none;
-  border-radius: 4px 4px 1px 1px;
-}
-
-.dashboard-page .dashboard-money-flow .dashboard-chart-bar--target,
-.dashboard-page .dashboard-money-flow .dashboard-legend-dot--target {
-  background: var(--dashboard-chart-target, #dce2dc);
-}
-
-.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income,
-.dashboard-page .dashboard-money-flow .dashboard-legend-dot--income {
-  background: var(--dashboard-chart-income, #347b67);
-}
-
-.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense,
-.dashboard-page .dashboard-money-flow .dashboard-legend-dot--expense {
-  background: var(--dashboard-chart-expense, #b8df36);
-}
-
-@media (max-width: 900px) {
-  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
-  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
-  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
-    height: 190px;
-  }
-}
-
-@media (max-width: 560px) {
-  .dashboard-page .dashboard-money-flow,
-  .dashboard-page .dashboard-spending-panel {
-    padding-top: 13px;
-    padding-bottom: 13px;
-  }
-
-  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
-  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
-  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
-    height: 175px;
-  }
-
-  .dashboard-page .dashboard-money-flow .dashboard-chart-bars--grouped {
-    gap: 2px;
-  }
-
-  .dashboard-page
-    .dashboard-money-flow
-    .dashboard-chart-bars--grouped
-    .dashboard-chart-bar {
-    width: 25%;
-    max-width: 10px;
-  }
-}
-
-/* Phase 15.3.2.7 — Brand-consistent analytics */
+/* ---------------------------------------------------------
+   MONEY FLOW — HEADER AND INLINE LEGEND
+   --------------------------------------------------------- */
 
 .dashboard-page .dashboard-panel-heading--money-flow {
-  display: flex;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .dashboard-page .dashboard-money-flow-title {
-  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -3233,94 +3177,687 @@
 
 .dashboard-page .dashboard-money-flow-header-actions {
   display: flex;
+  min-width: 0;
   align-items: center;
   justify-content: flex-end;
-  gap: 14px;
-  min-width: 0;
+  gap: 12px;
 }
 
 .dashboard-page .dashboard-chart-legend--inline {
   display: flex;
+  min-width: 0;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 8px 14px;
+  gap: 7px 12px;
   margin: 0;
 }
 
 .dashboard-page .dashboard-chart-legend--inline > span {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
   gap: 6px;
-  white-space: nowrap;
+  color: #6f7973;
   font-size: 11px;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
 .dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot {
-  flex: 0 0 8px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  flex: 0 0 8px;
+  border-radius: 3px;
 }
 
 .dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--target {
-  background: var(--dashboard-chart-target, #dce2dc);
+  border: 1px solid #cbd3cb;
+  background: var(--dashboard-chart-target);
 }
 
 .dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--income {
-  background: var(--dashboard-chart-income, #347b67);
+  background: var(--dashboard-chart-income);
 }
 
 .dashboard-page .dashboard-chart-legend--inline .dashboard-legend-dot--expense {
-  background: var(--dashboard-chart-expense, #b8df36);
+  background: var(--dashboard-chart-expense);
 }
 
-/* Keep the donut chart within the project's green-lime identity. */
-.dashboard-page .dashboard-donut {
+/* Hide the old descriptive paragraph if it is redundant. */
+.dashboard-page .dashboard-money-flow > .dashboard-panel-heading p,
+.dashboard-page .dashboard-money-flow .dashboard-panel-heading > div > p {
+  display: none;
+}
+
+/* ---------------------------------------------------------
+   MONEY FLOW — CHART CONTAINER
+   --------------------------------------------------------- */
+
+.dashboard-page .dashboard-money-flow .dashboard-chart {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+  box-sizing: border-box;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+.dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+.dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+  height: 192px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-axis {
+  padding-bottom: 27px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-plot {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-gridline--three {
+  bottom: 27px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-columns {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-column {
+  min-width: 0;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: calc(100% - 27px);
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  isolation: isolate;
+}
+
+/* Every visible series bar uses the same fixed flex basis.
+   Missing series do not change the width of the remaining bars.
+   The width is responsive so three bars can fit inside each month. */
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-bars--grouped
+  .dashboard-chart-bar {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  display: block;
+  width: clamp(7px, 0.8vw, 10px);
+  min-width: clamp(7px, 0.8vw, 10px);
+  max-width: 10px;
+  flex: 0 0 clamp(7px, 0.8vw, 10px);
+  margin: 0;
+  transform: none;
+  border-radius: 4px 4px 1px 1px;
+  box-sizing: border-box;
+}
+
+/* Preserve the project green-lime identity. */
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--target,
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--budget {
+  z-index: 1;
+  background: var(--dashboard-chart-target);
+  box-shadow: inset 0 0 0 1px rgb(113 129 115 / 8%);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  z-index: 2;
+  background: var(--dashboard-chart-expense);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income {
+  z-index: 3;
+  background: var(--dashboard-chart-income);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-column > span {
+  min-width: 0;
+  font-size: 9px;
+}
+
+/* Keep chart summaries aligned and readable. */
+.dashboard-page .dashboard-money-flow .dashboard-chart-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 17px;
+  padding-top: 14px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-summary > div {
+  min-width: 0;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-summary strong {
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------
+   SPENDING BREAKDOWN — DONUT AND CATEGORY LIST
+   --------------------------------------------------------- */
+
+.dashboard-page .dashboard-spending-breakdown {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-donut-layout,
+.dashboard-page .dashboard-spending-panel .dashboard-spending-donut-layout {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-donut,
+.dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+  width: min(100%, 190px);
+  min-width: 0;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend,
+.dashboard-page .dashboard-spending-panel .dashboard-category-list {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
+  gap: 11px;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend-item,
+.dashboard-page .dashboard-spending-panel .dashboard-category-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend-heading,
+.dashboard-page .dashboard-spending-panel .dashboard-category-heading {
+  min-width: 0;
+  gap: 7px;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend-name,
+.dashboard-page .dashboard-spending-panel .dashboard-category-name strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend-amount,
+.dashboard-page .dashboard-spending-panel .dashboard-category-meta strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Use neutral green for empty/unspecified donut backgrounds. */
+.dashboard-page .dashboard-spending-panel .dashboard-donut {
   --dashboard-donut-fallback: #347b67;
 }
 
-@media (max-width: 1100px) {
-  .dashboard-page .dashboard-panel-heading--money-flow {
-    align-items: flex-start;
+/* ---------------------------------------------------------
+   LARGE DESKTOP
+   --------------------------------------------------------- */
+
+@media (min-width: 1500px) {
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding-top: 19px;
+    padding-bottom: 19px;
   }
 
-  .dashboard-page .dashboard-money-flow-header-actions {
-    flex-wrap: wrap;
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 58px minmax(0, 1fr);
     gap: 10px;
   }
 
-  .dashboard-page .dashboard-chart-legend--inline {
-    gap: 7px 10px;
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 220px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-bars {
+    height: calc(100% - 27px);
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 20px;
+    min-width: 20px;
+    max-width: 20px;
+    flex-basis: 20px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    gap: 18px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 205px);
   }
 }
 
-@media (max-width: 700px) {
-  .dashboard-page .dashboard-panel-heading--money-flow {
-    flex-direction: column;
-    align-items: stretch;
+/* ---------------------------------------------------------
+   LAPTOP
+   --------------------------------------------------------- */
+
+@media (min-width: 1151px) and (max-width: 1499px) {
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
+    gap: 16px;
+  }
+
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding: 17px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 9px;
+    min-width: 9px;
+    max-width: 9px;
+    flex-basis: 9px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     gap: 12px;
   }
 
-  .dashboard-page .dashboard-money-flow-header-actions {
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  .dashboard-page .dashboard-chart-legend--inline {
-    justify-content: flex-start;
-    gap: 8px 12px;
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 170px);
   }
 }
 
-@media (max-width: 420px) {
+/* ---------------------------------------------------------
+   COMPACT LAPTOP
+   --------------------------------------------------------- */
+
+@media (min-width: 901px) and (max-width: 1150px) {
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(255px, 0.9fr);
+    gap: 13px;
+  }
+
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding: 15px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 45px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 190px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 8px;
+    min-width: 8px;
+    max-width: 8px;
+    flex-basis: 8px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 14px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut-layout,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut-layout {
+    width: min(100%, 180px);
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 180px);
+  }
+}
+
+/* ---------------------------------------------------------
+   TABLET
+   --------------------------------------------------------- */
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding: 19px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 215px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 15px;
+    min-width: 15px;
+    max-width: 15px;
+    flex-basis: 15px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 20px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 200px);
+  }
+}
+
+/* ---------------------------------------------------------
+   SMALL TABLET / MOBILE LANDSCAPE
+   --------------------------------------------------------- */
+
+@media (min-width: 561px) and (max-width: 640px) {
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding: 16px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 195px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 8px;
+    min-width: 8px;
+    max-width: 8px;
+    flex-basis: 8px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 16px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut-layout,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut-layout {
+    width: min(100%, 190px);
+  }
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-spending-panel {
+    padding: 13px;
+  }
+
+  .dashboard-page .dashboard-panel-heading--money-flow {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 11px;
+  }
+
   .dashboard-page .dashboard-money-flow-header-actions {
-    align-items: flex-start;
-    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px;
   }
 
   .dashboard-page .dashboard-chart-legend--inline {
     justify-content: flex-start;
+    gap: 8px 10px;
+  }
+
+  .dashboard-page .dashboard-chart-legend--inline > span {
+    font-size: 10px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 5px;
+    margin-top: 14px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 175px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis {
+    padding-bottom: 25px;
+    font-size: 9px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-gridline--three {
+    bottom: 25px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-columns {
+    gap: 1px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-bars {
+    height: calc(100% - 25px);
+    gap: 1px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 7px;
+    min-width: 7px;
+    max-width: 7px;
+    flex-basis: 7px;
+    border-radius: 3px 3px 1px 1px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-column > span {
+    font-size: 8px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 15px;
+    padding-top: 12px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-summary span {
+    font-size: 10px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-summary strong {
+    font-size: 13px;
+  }
+
+  .dashboard-page .dashboard-spending-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 16px;
+    margin-top: 17px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut-layout,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut-layout {
+    width: min(100%, 180px);
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 180px);
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-legend,
+  .dashboard-page .dashboard-spending-panel .dashboard-category-list {
+    gap: 10px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-legend-name {
+    font-size: 11px;
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-legend-amount,
+  .dashboard-page
+    .dashboard-spending-panel
+    .dashboard-spending-legend-percentage {
+    font-size: 10px;
+  }
+}
+
+/* ---------------------------------------------------------
+   VERY SMALL MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 380px) {
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    grid-template-columns: 37px minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 165px;
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--grouped
+    .dashboard-chart-bar {
+    width: 6px;
+    min-width: 6px;
+    max-width: 6px;
+    flex-basis: 6px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut-layout,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut-layout {
+    width: min(100%, 160px);
+  }
+
+  .dashboard-page .dashboard-spending-panel .dashboard-donut,
+  .dashboard-page .dashboard-spending-panel .dashboard-spending-donut {
+    width: min(100%, 160px);
+  }
+}
+
+/* ---------------------------------------------------------
+   FINAL OVERFLOW SAFETY
+   --------------------------------------------------------- */
+
+.dashboard-page .dashboard-money-flow,
+.dashboard-page .dashboard-spending-panel,
+.dashboard-page .dashboard-money-flow .dashboard-chart,
+.dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+.dashboard-page .dashboard-money-flow .dashboard-chart-columns,
+.dashboard-page .dashboard-money-flow .dashboard-chart-column,
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars,
+.dashboard-page .dashboard-spending-breakdown,
+.dashboard-page .dashboard-spending-legend,
+.dashboard-page .dashboard-category-list {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dashboard-page .dashboard-spending-panel .dashboard-category-meta,
+.dashboard-page .dashboard-spending-panel .dashboard-spending-legend-heading {
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page .dashboard-money-flow .dashboard-chart-bar {
+    transition: none !important;
   }
 }
