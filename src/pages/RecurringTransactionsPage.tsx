@@ -656,10 +656,6 @@ export function RecurringTransactionsPage() {
                     ? "Edit jadwal transaksi"
                     : "Buat jadwal transaksi"}
                 </h2>
-                <p>
-                  Jadwal ini akan diproses backend sesuai frekuensi dan
-                  tanggalnya.
-                </p>
               </div>
               <button
                 type="button"
