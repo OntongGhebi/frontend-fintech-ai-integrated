@@ -1,0 +1,63 @@
+/* Notification shortcut and unread counter in the application top bar. */
+.topbar-notification-link {
+  position: relative;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border: 1px solid #e8ece8;
+  border-radius: 11px;
+  background: #fff;
+  color: #66736a;
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+.topbar-notification-link:hover,
+.topbar-notification-link.active {
+  border-color: #d6e5d8;
+  background: #f4f8f2;
+  color: #285e43;
+}
+.topbar-notification-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: flex;
+  min-width: 19px;
+  height: 19px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgb(16 24 40 / 18%);
+}
+.topbar-notification-link:focus-visible {
+  outline: 3px solid rgb(56 103 214 / 35%);
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .topbar-notification-link {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .topbar-notification-badge {
+    top: -6px;
+    right: -6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar-notification-link {
+    transition: none;
+  }
+}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import {
   Link,
   NavLink,
@@ -6,6 +7,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
 import {
   ArrowLeftRight,
   Bell,
@@ -27,8 +29,13 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { apiClient } from "../../lib/api-client";
 import { GlobalSearch } from "./GlobalSearch";
+
 import "./AppLayout.css";
+
+const NOTIFICATION_UPDATED_EVENT = "fintech:notifications-updated";
+const NOTIFICATION_REFRESH_INTERVAL = 60_000;
 
 const primaryNavigation = [
   {
@@ -220,6 +227,7 @@ function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
               onClick={onNavigate}
             >
               <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+
               <span>{item.label}</span>
             </NavLink>
           );
@@ -231,10 +239,12 @@ function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
 
 export function AppLayout() {
   const { user, logout } = useAuth();
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const [mobileNavState, setMobileNavState] = useState({
     pathname: location.pathname,
@@ -272,6 +282,46 @@ export function AppLayout() {
     }));
   };
 
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      const response = await apiClient.get<{ count: number }>(
+        "notifications/unread-count",
+      );
+
+      setUnreadCount(
+        Number.isFinite(response?.count) ? Math.max(0, response.count) : 0,
+      );
+    } catch {
+      // Jangan mengganggu navigasi jika request badge gagal.
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadUnreadCount();
+
+    const handleNotificationUpdate = () => {
+      void loadUnreadCount();
+    };
+
+    window.addEventListener(
+      NOTIFICATION_UPDATED_EVENT,
+      handleNotificationUpdate,
+    );
+
+    const intervalId = window.setInterval(() => {
+      void loadUnreadCount();
+    }, NOTIFICATION_REFRESH_INTERVAL);
+
+    return () => {
+      window.removeEventListener(
+        NOTIFICATION_UPDATED_EVENT,
+        handleNotificationUpdate,
+      );
+
+      window.clearInterval(intervalId);
+    };
+  }, [loadUnreadCount]);
+
   async function handleLogout() {
     if (isLoggingOut) return;
 
@@ -290,6 +340,7 @@ export function AppLayout() {
 
   const displayName = user?.name?.trim() || "Pengguna";
   const initial = displayName.charAt(0).toUpperCase();
+
   const pageHeading = getPageHeading(location.pathname);
 
   const showTransactionActions =
@@ -302,6 +353,8 @@ export function AppLayout() {
   const closeMobileNavigation = () => {
     setIsMobileNavOpen(false);
   };
+
+  const notificationBadgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
   return (
     <div className="app-shell">
@@ -391,6 +444,7 @@ export function AppLayout() {
             >
               <span className="layout-nav-group-toggle-label">
                 <Workflow size={18} strokeWidth={1.8} aria-hidden="true" />
+
                 <span>WORKSPACE</span>
               </span>
 
@@ -416,6 +470,7 @@ export function AppLayout() {
                       onClick={closeMobileNavigation}
                     >
                       <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+
                       <span>{item.label}</span>
                     </NavLink>
                   );
@@ -438,6 +493,7 @@ export function AppLayout() {
 
             <div className="layout-sidebar-user-copy">
               <strong title={displayName}>{displayName}</strong>
+
               <span title={user?.email}>{user?.email || "Akun pengguna"}</span>
             </div>
 
@@ -480,7 +536,9 @@ export function AppLayout() {
 
             <div className="topbar-title">
               <span className="eyebrow">PERSONAL FINANCE</span>
+
               <h1>{pageHeading.title}</h1>
+
               <p>{pageHeading.description}</p>
             </div>
           </div>
@@ -495,6 +553,7 @@ export function AppLayout() {
                   title="Transfer dana"
                 >
                   <ArrowLeftRight size={17} aria-hidden="true" />
+
                   <span>Transfer</span>
                 </Link>
 
@@ -507,6 +566,7 @@ export function AppLayout() {
                   <span className="layout-add-icon" aria-hidden="true">
                     +
                   </span>
+
                   <span>Tambah transaksi</span>
                 </Link>
               </div>
@@ -518,10 +578,45 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   `layout-notification-button${isActive ? " is-active" : ""}`
                 }
-                aria-label="Buka notifikasi"
+                aria-label={
+                  unreadCount > 0
+                    ? `Buka notifikasi, ${unreadCount} belum dibaca`
+                    : "Buka notifikasi"
+                }
                 title="Notifications"
+                style={{
+                  position: "relative",
+                }}
               >
                 <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
+
+                {unreadCount > 0 && (
+                  <span
+                    aria-label={`${unreadCount} notifikasi belum dibaca`}
+                    style={{
+                      position: "absolute",
+                      top: "-5px",
+                      right: "-6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: "17px",
+                      height: "17px",
+                      padding: "0 4px",
+                      border: "2px solid #ffffff",
+                      borderRadius: "999px",
+                      background: "#e5484d",
+                      color: "#ffffff",
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      lineHeight: 1,
+                      whiteSpace: "nowrap",
+                      boxSizing: "content-box",
+                    }}
+                  >
+                    {notificationBadgeLabel}
+                  </span>
+                )}
               </NavLink>
 
               <NavLink
