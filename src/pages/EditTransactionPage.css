@@ -2,6 +2,8 @@
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
+  display: grid;
+  gap: 20px;
   padding: 8px 0 40px;
   color: var(--text-primary, #18221e);
 }

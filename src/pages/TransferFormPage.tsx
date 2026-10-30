@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowDownUp,
+  ArrowLeft,
   ArrowLeftRight,
   CheckCircle2,
   Wallet,
@@ -9,6 +10,7 @@ import {
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./TransferFormPage.css";
+import "./TransactionDetailPage.css";
 
 interface Account {
   id: string;
@@ -170,6 +172,7 @@ export function TransferFormPage() {
   );
 
   const amount = Number(form.amount);
+
   const isAmountValid =
     form.amount.trim() !== "" &&
     Number.isFinite(amount) &&
@@ -205,6 +208,7 @@ export function TransferFormPage() {
       sourceAccountId: current.destinationAccountId,
       destinationAccountId: current.sourceAccountId,
     }));
+
     setSubmitError("");
     setTransferResult(null);
   }
@@ -269,7 +273,9 @@ export function TransferFormPage() {
           </div>
 
           <span className="transfer-eyebrow">TRANSFER BERHASIL</span>
+
           <h2>Dana berhasil dipindahkan</h2>
+
           <p className="transfer-success-description">
             Transfer sudah dikirim ke backend. Catatan transaksi sumber dan
             tujuan telah diterima.
@@ -280,22 +286,27 @@ export function TransferFormPage() {
               <span>Nominal transfer</span>
               <strong>{formatCurrency(amount)}</strong>
             </div>
+
             <div className="transfer-receipt-row">
               <span>Dari rekening</span>
               <strong>{sourceAccount?.name ?? "Rekening sumber"}</strong>
             </div>
+
             <div className="transfer-receipt-row">
               <span>Ke rekening</span>
               <strong>{destinationAccount?.name ?? "Rekening tujuan"}</strong>
             </div>
+
             <div className="transfer-receipt-row">
               <span>Tanggal transfer</span>
               <strong>{formatDateTime(form.transactionDate)}</strong>
             </div>
+
             <div className="transfer-receipt-row">
               <span>ID grup transfer</span>
               <code>{transferResult.transferGroupId}</code>
             </div>
+
             <div className="transfer-receipt-row">
               <span>Catatan transaksi</span>
               <strong>{transferResult.transactions.length}</strong>
@@ -310,6 +321,7 @@ export function TransferFormPage() {
             >
               Lihat transaksi
             </button>
+
             <button
               type="button"
               className="transfer-secondary-button"
@@ -320,6 +332,7 @@ export function TransferFormPage() {
                   description: "",
                   transactionDate: getLocalDateTimeValue(),
                 }));
+
                 setTransferResult(null);
               }}
             >
@@ -333,9 +346,13 @@ export function TransferFormPage() {
 
   return (
     <section className="transfer-page">
-      <Link to="/transactions" className="transfer-back-link">
-        <ArrowLeftRight size={15} aria-hidden="true" />
-        Kembali ke transaksi
+      <Link
+        to="/transactions"
+        className="transaction-back-icon-button transaction-back-icon-button--spaced"
+        aria-label="Kembali ke daftar transaksi"
+        title="Kembali ke daftar transaksi"
+      >
+        <ArrowLeft size={20} aria-hidden="true" />
       </Link>
 
       <div className="transfer-content-grid">
@@ -345,12 +362,14 @@ export function TransferFormPage() {
               <h3>Detail transfer</h3>
               <p>Lengkapi informasi pemindahan dana berikut.</p>
             </div>
+
             <span className="transfer-currency-badge">IDR</span>
           </div>
 
           {accountsError && (
             <div className="transfer-alert transfer-alert-error" role="alert">
               <p>{accountsError}</p>
+
               <button type="button" onClick={() => window.location.reload()}>
                 Muat ulang
               </button>
@@ -371,11 +390,14 @@ export function TransferFormPage() {
           ) : accounts.length < 2 ? (
             <div className="transfer-empty-state">
               <Wallet size={28} aria-hidden="true" />
+
               <strong>Belum cukup rekening untuk transfer</strong>
+
               <p>
                 Kamu membutuhkan setidaknya dua rekening aktif dengan mata uang
                 IDR untuk melakukan transfer.
               </p>
+
               <Link to="/accounts" className="transfer-secondary-button">
                 Buka rekening
               </Link>
@@ -385,6 +407,7 @@ export function TransferFormPage() {
               <div className="transfer-account-selector">
                 <div className="transfer-field">
                   <label htmlFor="sourceAccountId">Dari rekening</label>
+
                   <select
                     id="sourceAccountId"
                     value={form.sourceAccountId}
@@ -394,6 +417,7 @@ export function TransferFormPage() {
                     required
                   >
                     <option value="">Pilih rekening sumber</option>
+
                     {accounts.map((account) => (
                       <option key={account.id} value={account.id}>
                         {account.name} · {account.type}
@@ -414,6 +438,7 @@ export function TransferFormPage() {
 
                 <div className="transfer-field">
                   <label htmlFor="destinationAccountId">Ke rekening</label>
+
                   <select
                     id="destinationAccountId"
                     value={form.destinationAccountId}
@@ -423,6 +448,7 @@ export function TransferFormPage() {
                     required
                   >
                     <option value="">Pilih rekening tujuan</option>
+
                     {accounts.map((account) => (
                       <option key={account.id} value={account.id}>
                         {account.name} · {account.type}
@@ -440,8 +466,10 @@ export function TransferFormPage() {
 
               <div className="transfer-field transfer-amount-field">
                 <label htmlFor="transferAmount">Nominal transfer</label>
+
                 <div className="transfer-amount-input">
                   <span>Rp</span>
+
                   <input
                     id="transferAmount"
                     type="number"
@@ -457,6 +485,7 @@ export function TransferFormPage() {
                     required
                   />
                 </div>
+
                 {form.amount && !isAmountValid && (
                   <p className="transfer-field-error">
                     Masukkan nominal positif dengan maksimal 4 angka desimal.
@@ -466,6 +495,7 @@ export function TransferFormPage() {
 
               <div className="transfer-field">
                 <label htmlFor="transferDate">Tanggal dan waktu</label>
+
                 <input
                   id="transferDate"
                   type="datetime-local"
@@ -475,6 +505,7 @@ export function TransferFormPage() {
                   }
                   required
                 />
+
                 <small>Zona waktu: Asia/Jakarta (WIB).</small>
               </div>
 
@@ -482,6 +513,7 @@ export function TransferFormPage() {
                 <label htmlFor="transferDescription">
                   Deskripsi <span>(opsional)</span>
                 </label>
+
                 <textarea
                   id="transferDescription"
                   rows={3}
@@ -492,6 +524,7 @@ export function TransferFormPage() {
                     updateField("description", event.target.value)
                   }
                 />
+
                 <small>{form.description.length}/500 karakter</small>
               </div>
 
@@ -499,6 +532,7 @@ export function TransferFormPage() {
                 <Link to="/transactions" className="transfer-cancel-link">
                   Batal
                 </Link>
+
                 <button
                   type="submit"
                   className="transfer-primary-button"
@@ -525,12 +559,15 @@ export function TransferFormPage() {
           <div className="transfer-summary-icon" aria-hidden="true">
             <Wallet size={20} />
           </div>
+
           <h3>Ringkasan transfer</h3>
+
           <p>Periksa kembali detail berikut sebelum melanjutkan.</p>
 
           <div className="transfer-summary-accounts">
             <div className="transfer-summary-account">
               <span className="transfer-summary-dot transfer-summary-dot-source" />
+
               <div>
                 <small>DARI</small>
                 <strong>
@@ -538,9 +575,12 @@ export function TransferFormPage() {
                 </strong>
               </div>
             </div>
+
             <div className="transfer-summary-connector" aria-hidden="true" />
+
             <div className="transfer-summary-account">
               <span className="transfer-summary-dot transfer-summary-dot-destination" />
+
               <div>
                 <small>KE</small>
                 <strong>
@@ -557,6 +597,7 @@ export function TransferFormPage() {
 
           <div className="transfer-summary-note">
             <CheckCircle2 size={16} aria-hidden="true" />
+
             <p>
               Transfer dicatat melalui satu endpoint khusus agar catatan
               rekening sumber dan tujuan terhubung.
@@ -567,6 +608,7 @@ export function TransferFormPage() {
             <span>Mata uang</span>
             <strong>IDR</strong>
           </div>
+
           <div className="transfer-summary-meta">
             <span>Biaya transfer</span>
             <strong>Belum ditetapkan</strong>

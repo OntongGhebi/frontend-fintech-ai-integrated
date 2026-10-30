@@ -455,6 +455,7 @@
   margin-top: 23px;
 }
 
+/* Shared back button used across transaction pages. */
 .transaction-back-icon-button {
   display: inline-flex;
   flex: 0 0 40px;
@@ -491,6 +492,11 @@
 .transaction-detail-heading-content {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Adds consistent separation when the shared back control sits above page content. */
+.transaction-back-icon-button--spaced {
+  margin-bottom: 18px;
 }
 
 @media (max-width: 900px) {

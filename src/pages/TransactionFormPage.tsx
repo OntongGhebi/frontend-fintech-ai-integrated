@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
@@ -304,8 +305,13 @@ export function TransactionFormPage() {
       className="transaction-form-page"
       aria-label="Form tambah transaksi"
     >
-      <Link to="/transactions" className="transaction-form-back-link">
-        ← Kembali ke transaksi
+      <Link
+        to="/transactions"
+        className="transaction-back-icon-button"
+        aria-label="Kembali ke daftar transaksi"
+        title="Kembali ke daftar transaksi"
+      >
+        <ArrowLeft size={20} aria-hidden="true" />
       </Link>
 
       {loadError && (

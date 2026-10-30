@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, LoaderCircle, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle2, LoaderCircle, Save } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./EditTransactionPage.css";
@@ -385,6 +385,14 @@ export function EditTransactionPage() {
   if (isLoading) {
     return (
       <section className="edit-transaction-page">
+        <Link
+          to={`/transactions/${id}`}
+          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
+        </Link>
         <div className="edit-transaction-loading" role="status">
           <LoaderCircle className="edit-transaction-spinner" size={22} />
           <span>Memuat data transaksi...</span>
@@ -409,8 +417,13 @@ export function EditTransactionPage() {
           >
             Coba lagi
           </button>
-          <Link to="/transactions" className="transaction-back-link">
-            ← Kembali ke transaksi
+          <Link
+            to={`/transactions/${id}`}
+            className="transaction-back-icon-button transaction-back-icon-button--spaced"
+            aria-label="Kembali ke daftar transaksi"
+            title="Kembali ke daftar transaksi"
+          >
+            <ArrowLeft size={20} aria-hidden="true" />
           </Link>
         </div>
       </section>
@@ -424,8 +437,13 @@ export function EditTransactionPage() {
   if (transaction.type === "TRANSFER") {
     return (
       <section className="edit-transaction-page">
-        <Link to="/transactions" className="transaction-back-link">
-          ← Kembali ke transaksi
+        <Link
+          to={`/transactions/${transaction.id}`}
+          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
         </Link>
         <div className="edit-transaction-alert edit-transaction-alert--warning">
           <strong>Transfer tidak dapat diedit melalui formulir ini</strong>
@@ -442,8 +460,13 @@ export function EditTransactionPage() {
   if (transaction.status !== "ACTIVE") {
     return (
       <section className="edit-transaction-page">
-        <Link to="/transactions" className="transaction-back-link">
-          ← Kembali ke transaksi
+        <Link
+          to={`/transactions/${transaction.id}`}
+          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          aria-label="Kembali ke daftar transaksi"
+          title="Kembali ke daftar transaksi"
+        >
+          <ArrowLeft size={20} aria-hidden="true" />
         </Link>
         <div className="edit-transaction-alert edit-transaction-alert--warning">
           <strong>Transaksi sudah dibatalkan</strong>
@@ -455,8 +478,13 @@ export function EditTransactionPage() {
 
   return (
     <section className="edit-transaction-page">
-      <Link to="/transactions" className="edit-transaction-back-link">
-        ← Kembali ke transaksi
+      <Link
+        to={`/transactions/${transaction.id}`}
+        className="transaction-back-icon-button transaction-back-icon-button--spaced"
+        aria-label="Kembali ke daftar transaksi"
+        title="Kembali ke daftar transaksi"
+      >
+        <ArrowLeft size={20} aria-hidden="true" />
       </Link>
 
       <div className="edit-transaction-layout">
