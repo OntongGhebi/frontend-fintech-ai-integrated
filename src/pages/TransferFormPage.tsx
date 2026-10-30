@@ -283,6 +283,8 @@ export function TransferFormPage() {
       return;
     }
 
+    const sourceAccountId = sourceAccount.id;
+
     let cancelled = false;
 
     async function loadBalance() {
@@ -292,13 +294,13 @@ export function TransferFormPage() {
 
       try {
         const result = await apiClient.get<AccountBalanceResponse>(
-          `accounts/${encodeURIComponent(sourceAccount.id)}/balance`,
+          `accounts/${encodeURIComponent(sourceAccountId)}/balance`,
         );
 
         if (cancelled) return;
 
         if (
-          result.accountId !== sourceAccount.id ||
+          result.accountId !== sourceAccountId ||
           result.currency !== "IDR" ||
           !Number.isFinite(Number(result.balance))
         ) {

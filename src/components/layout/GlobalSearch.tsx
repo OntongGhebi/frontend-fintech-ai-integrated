@@ -9,8 +9,8 @@ import {
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowDown,
-  ArrowUp,
+  // ArrowDown,
+  // ArrowUp,
   ArrowUpRight,
   Banknote,
   Bell,
