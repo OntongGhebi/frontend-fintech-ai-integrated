@@ -1,0 +1,218 @@
+.subscription-history {
+  overflow: hidden;
+  border: 1px solid #e3e8f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgb(24 39 75 / 4%);
+}
+
+.subscription-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 21px 24px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.subscription-history-header h3 {
+  margin: 7px 0 0;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.subscription-history-header p {
+  margin: 7px 0 0;
+  color: #7b8497;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.subscription-history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subscription-history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 19px 24px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.subscription-history-item:last-child {
+  border-bottom: 0;
+}
+
+.subscription-history-icon {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  place-items: center;
+  border: 1px solid #e3e9f3;
+  border-radius: 12px;
+  background: #f8faff;
+  color: #405a91;
+}
+
+.subscription-history-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.subscription-history-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.subscription-history-title-row strong {
+  color: #263248;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.subscription-history-title-row time {
+  flex: 0 0 auto;
+  color: #8a93a5;
+  font-size: 11px;
+}
+
+.subscription-history-content > p {
+  margin: 5px 0 8px;
+  color: #7b8497;
+  font-size: 12px;
+}
+
+.subscription-history-transition {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #7b8497;
+  font-size: 11px;
+}
+
+.subscription-history-transition strong {
+  color: #344f8a;
+  font-weight: 750;
+}
+
+.subscription-history-state {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 22px;
+  color: #64748b;
+  text-align: center;
+}
+
+.subscription-history-state > strong {
+  margin-top: 11px;
+  color: #263248;
+  font-size: 14px;
+}
+
+.subscription-history-state p {
+  max-width: 420px;
+  margin: 7px 0 0;
+  color: #7b8497;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.subscription-history-error > svg {
+  color: #b42318;
+}
+
+.subscription-history-error .subscription-primary-button {
+  margin-top: 16px;
+}
+
+.subscription-history-loader {
+  width: 27px;
+  height: 27px;
+  border: 3px solid #e5eaf2;
+  border-top-color: #405a91;
+  border-radius: 50%;
+  animation: subscription-history-spin 0.8s linear infinite;
+}
+
+.subscription-history-spin {
+  animation: subscription-history-spin 0.8s linear infinite;
+}
+
+@keyframes subscription-history-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.subscription-history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 20px;
+  border-top: 1px solid #edf0f5;
+  color: #7b8497;
+  font-size: 11px;
+}
+
+.subscription-history-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subscription-history-pagination button {
+  display: grid;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  border: 1px solid #e1e6ee;
+  border-radius: 9px;
+  background: #fff;
+  color: #344054;
+  cursor: pointer;
+}
+
+.subscription-history-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+@media (max-width: 650px) {
+  .subscription-history-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .subscription-history-item {
+    padding: 17px 18px;
+  }
+
+  .subscription-history-title-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .subscription-history-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subscription-history-loader,
+  .subscription-history-spin {
+    animation-duration: 1.8s;
+  }
+}

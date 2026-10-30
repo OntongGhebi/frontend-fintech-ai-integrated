@@ -15,6 +15,7 @@ import {
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./SubscriptionPage.css";
+import { SubscriptionHistorySection } from "./SubscriptionHistorySection";
 
 type SubscriptionStatus =
   | "TRIALING"
@@ -633,6 +634,8 @@ export function SubscriptionPage() {
               </div>
             )}
           </section>
+
+          <SubscriptionHistorySection />
 
           <section
             className="subscription-plans-section"
