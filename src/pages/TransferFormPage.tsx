@@ -508,10 +508,6 @@ export function TransferFormPage() {
 
           <span className="transfer-eyebrow">TRANSFER BERHASIL</span>
           <h2>Dana berhasil dipindahkan</h2>
-          <p className="transfer-success-description">
-            Backend telah mengembalikan dua catatan transaksi yang terhubung
-            dalam satu grup transfer.
-          </p>
 
           <div className="transfer-receipt">
             <div className="transfer-receipt-row">

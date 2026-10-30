@@ -18,6 +18,12 @@ interface Account {
   updatedAt: string;
 }
 
+interface AccountBalanceResponse {
+  accountId: string;
+  balance: string;
+  currency: string;
+}
+
 interface Transaction {
   id: string;
   accountId: string;
@@ -97,6 +103,9 @@ export function AccountDetailPage() {
   const navigate = useNavigate();
 
   const [account, setAccount] = useState<Account | null>(null);
+  const [currentBalance, setCurrentBalance] = useState<string | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
+  const [balanceError, setBalanceError] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -126,6 +135,30 @@ export function AccountDetailPage() {
       setAccount(null);
     } finally {
       setLoadingAccount(false);
+    }
+  }, [id]);
+
+  const loadCurrentBalance = useCallback(async () => {
+    if (!id) {
+      setCurrentBalance(null);
+      setBalanceError("ID akun tidak valid.");
+      setLoadingBalance(false);
+      return;
+    }
+
+    setLoadingBalance(true);
+    setBalanceError("");
+
+    try {
+      const result = await apiClient.get<AccountBalanceResponse>(
+        `accounts/${encodeURIComponent(id)}/balance`,
+      );
+      setCurrentBalance(result.balance);
+    } catch (error) {
+      setCurrentBalance(null);
+      setBalanceError(getErrorMessage(error));
+    } finally {
+      setLoadingBalance(false);
     }
   }, [id]);
 
@@ -169,6 +202,10 @@ export function AccountDetailPage() {
   useEffect(() => {
     void loadTransactions();
   }, [loadTransactions]);
+
+  useEffect(() => {
+    void loadCurrentBalance();
+  }, [loadCurrentBalance]);
 
   const summary = useMemo(() => {
     const activeTransactions = transactions.filter(
@@ -219,12 +256,6 @@ export function AccountDetailPage() {
 
   return (
     <main className="account-detail-page">
-      <div className="account-detail-breadcrumb">
-        <Link to="/accounts">Accounts</Link>
-        <span>/</span>
-        <span>{account.name}</span>
-      </div>
-
       <header className="account-detail-header">
         <div>
           <p className="account-detail-eyebrow">DETAIL AKUN</p>
@@ -267,9 +298,30 @@ export function AccountDetailPage() {
 
       <section className="account-detail-opening-balance">
         <div>
-          <p>Saldo awal</p>
-          <h2>{formatCurrency(account.openingBalance, account.currency)}</h2>
-          <span>Ini adalah saldo awal akun, bukan saldo berjalan terkini.</span>
+          <p>Saldo berjalan</p>
+          <h2>
+            {loadingBalance
+              ? "Memuat…"
+              : currentBalance === null
+                ? "—"
+                : formatCurrency(currentBalance, account.currency)}
+          </h2>
+          <span>
+            Saldo awal:{" "}
+            {formatCurrency(account.openingBalance, account.currency)}
+          </span>
+          {balanceError && (
+            <div className="account-detail-inline-error" role="alert">
+              <p>Saldo terkini gagal dimuat. {balanceError}</p>
+              <button
+                type="button"
+                onClick={() => void loadCurrentBalance()}
+                disabled={loadingBalance}
+              >
+                {loadingBalance ? "Memuat…" : "Coba lagi"}
+              </button>
+            </div>
+          )}
         </div>
         <div className="account-detail-balance-icon" aria-hidden="true">
           ◫
@@ -302,14 +354,21 @@ export function AccountDetailPage() {
             <h2>Riwayat transaksi</h2>
             <p>{total} transaksi ditemukan untuk akun ini</p>
           </div>
-          <button
-            type="button"
-            className="account-detail-refresh"
-            onClick={() => void loadTransactions()}
-            disabled={loadingTransactions}
-          >
-            {loadingTransactions ? "Memuat…" : "↻ Muat ulang"}
-          </button>
+          <div className="account-detail-actions">
+            <button
+              type="button"
+              className="account-detail-refresh"
+              onClick={() => {
+                void loadCurrentBalance();
+                void loadTransactions();
+              }}
+              disabled={loadingTransactions || loadingBalance}
+            >
+              {loadingTransactions || loadingBalance
+                ? "Memuat…"
+                : "↻ Muat ulang"}
+            </button>
+          </div>
         </div>
 
         {transactionError && (
