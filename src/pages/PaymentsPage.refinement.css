@@ -1,0 +1,41 @@
+/* Per-payment status refresh action. */
+
+.payments-row-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface-color, #fff);
+  color: var(--text-color, #374151);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.payments-row-refresh:hover:not(:disabled) {
+  background: var(--surface-hover, #f9fafb);
+  border-color: var(--primary-color, #9ca3af);
+}
+
+.payments-row-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payments-row-refresh:focus-visible {
+  outline: 2px solid var(--primary-color, #6366f1);
+  outline-offset: 2px;
+}
+
+.payments-no-action {
+  color: var(--muted-color, #9ca3af);
+}

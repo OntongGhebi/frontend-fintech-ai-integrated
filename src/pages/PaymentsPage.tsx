@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./PaymentsPage.css";
+import "./PaymentsPage.refinement.css";
 
 type PaymentStatus =
   | "PENDING"
@@ -25,14 +26,6 @@ type PaymentStatus =
   | "REFUNDED"
   | "CANCELED"
   | string;
-
-interface PaymentSubscription {
-  id?: string;
-  plan?: {
-    name?: string;
-    code?: string;
-  } | null;
-}
 
 interface PaymentRecord {
   id: string;
@@ -46,22 +39,27 @@ interface PaymentRecord {
   failedAt?: string | null;
   createdAt: string;
   updatedAt?: string;
-  subscription?: PaymentSubscription | null;
-}
-
-interface PaymentHistoryMeta {
-  page?: number;
-  limit?: number;
-  total?: number;
-  totalPages?: number;
+  subscription?: {
+    id?: string;
+    status?: string;
+    billingInterval?: string;
+    plan?: {
+      name?: string;
+      code?: string;
+    } | null;
+  } | null;
 }
 
 interface PaymentHistoryPayload {
-  data?: PaymentRecord[] | { items?: PaymentRecord[] };
-  items?: PaymentRecord[];
-  payments?: PaymentRecord[];
-  meta?: PaymentHistoryMeta;
-  pagination?: PaymentHistoryMeta;
+  data?: PaymentRecord[];
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+  };
 }
 
 interface CurrentSubscription {
@@ -73,24 +71,20 @@ interface CurrentSubscription {
   } | null;
 }
 
-interface CurrentSubscriptionPayload {
-  data?: CurrentSubscription | null;
-  subscription?: CurrentSubscription | null;
-}
-
 interface CheckoutResponse {
   payment: {
     id: string;
-    subscriptionId?: string;
-    amount?: number | string;
-    currency?: string;
-    status?: string;
-    provider?: string;
-    createdAt?: string;
+    subscriptionId: string;
+    amount: string;
+    currency: string;
+    status: string;
+    provider: string;
+    providerPaymentId: string | null;
+    createdAt: string;
   };
   checkout: {
-    provider: string;
-    snapToken?: string;
+    provider: "MIDTRANS";
+    snapToken: string;
     redirectUrl: string;
   };
 }
@@ -129,44 +123,33 @@ function getErrorMessage(error: unknown): string {
     return "Tidak dapat terhubung ke backend. Periksa koneksi dan konfigurasi API.";
   }
 
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
   return "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.";
 }
 
-function unwrapPayments(payload: PaymentHistoryPayload): PaymentRecord[] {
-  if (Array.isArray(payload.data)) {
-    return payload.data;
-  }
-
-  if (payload.data && !Array.isArray(payload.data)) {
-    return payload.data.items ?? [];
-  }
-
-  return payload.items ?? payload.payments ?? [];
-}
-
-function unwrapCurrentSubscription(
-  payload: CurrentSubscription | CurrentSubscriptionPayload | null,
+function unwrapSubscription(
+  payload:
+    | CurrentSubscription
+    | {
+        data?: CurrentSubscription | null;
+        subscription?: CurrentSubscription | null;
+      }
+    | null,
 ): CurrentSubscription | null {
   if (!payload) return null;
 
-  if ("data" in payload) return payload.data ?? null;
-  if ("subscription" in payload) return payload.subscription ?? null;
+  if ("data" in payload) {
+    return payload.data ?? null;
+  }
+
+  if ("subscription" in payload) {
+    return payload.subscription ?? null;
+  }
 
   return payload as CurrentSubscription;
-}
-
-function getPagination(
-  payload: PaymentHistoryPayload,
-  currentPage: number,
-): PaymentHistoryMeta {
-  const meta = payload.meta ?? payload.pagination;
-
-  return {
-    page: meta?.page ?? currentPage,
-    limit: meta?.limit ?? PAGE_SIZE,
-    total: meta?.total,
-    totalPages: meta?.totalPages,
-  };
 }
 
 function formatAmount(amount: number | string, currency = "IDR"): string {
@@ -192,6 +175,7 @@ function formatDate(value?: string | null): string {
   if (!value) return "—";
 
   const date = new Date(value);
+
   if (Number.isNaN(date.getTime())) return "—";
 
   return new Intl.DateTimeFormat("id-ID", {
@@ -255,8 +239,8 @@ function StatusIcon({ status }: { status: PaymentStatus }) {
 }
 
 /**
- * Allow only official Midtrans web checkout hosts.
- * A checkout response does not prove that the payment has been completed.
+ * Hanya izinkan URL checkout HTTPS dari domain resmi Midtrans.
+ * Redirect checkout bukan bukti bahwa pembayaran sudah berhasil.
  */
 function isAllowedMidtransCheckoutUrl(value: string): boolean {
   try {
@@ -278,14 +262,21 @@ export function PaymentsPage() {
   const [subscription, setSubscription] = useState<CurrentSubscription | null>(
     null,
   );
-  const [pagination, setPagination] = useState<PaymentHistoryMeta>({
+
+  const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 0,
   });
 
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [refreshingPaymentId, setRefreshingPaymentId] = useState<string | null>(
+    null,
+  );
+
   const [loadError, setLoadError] = useState("");
   const [checkoutError, setCheckoutError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
@@ -299,11 +290,17 @@ export function PaymentsPage() {
         apiClient.get<PaymentHistoryPayload>(
           `payments/history?page=${page}&limit=${PAGE_SIZE}`,
         ),
+
         apiClient
-          .get<CurrentSubscription | CurrentSubscriptionPayload | null>(
-            "subscriptions/me",
-          )
-          .then(unwrapCurrentSubscription)
+          .get<
+            | CurrentSubscription
+            | {
+                data?: CurrentSubscription | null;
+                subscription?: CurrentSubscription | null;
+              }
+            | null
+          >("subscriptions/me")
+          .then(unwrapSubscription)
           .catch((error: unknown) => {
             if (error instanceof ApiRequestError && error.status === 404) {
               return null;
@@ -313,8 +310,15 @@ export function PaymentsPage() {
           }),
       ]);
 
-      setPayments(unwrapPayments(historyResult));
-      setPagination(getPagination(historyResult, page));
+      setPayments(historyResult.data ?? []);
+
+      setPagination({
+        page: historyResult.meta?.page ?? page,
+        limit: historyResult.meta?.limit ?? PAGE_SIZE,
+        total: historyResult.meta?.total ?? 0,
+        totalPages: historyResult.meta?.totalPages ?? 0,
+      });
+
       setSubscription(subscriptionResult);
     } catch (error) {
       setLoadError(getErrorMessage(error));
@@ -330,7 +334,9 @@ export function PaymentsPage() {
   const totalPaid = useMemo(
     () =>
       payments.reduce((total, payment) => {
-        if (payment.status.toUpperCase() !== "PAID") return total;
+        if (payment.status.toUpperCase() !== "PAID") {
+          return total;
+        }
 
         const amount =
           typeof payment.amount === "number"
@@ -349,11 +355,30 @@ export function PaymentsPage() {
     [payments],
   );
 
+  // Backend hanya mengizinkan ACTIVE dan TRIALING untuk checkout.
   const currentSubscriptionCanBePaid =
     Boolean(subscription?.id) &&
-    ["ACTIVE", "PAST_DUE", "TRIALING"].includes(
-      subscription?.status.toUpperCase() ?? "",
-    );
+    ["ACTIVE", "TRIALING"].includes(subscription?.status.toUpperCase() ?? "");
+
+  async function handleRefreshPayment(paymentId: string) {
+    if (refreshingPaymentId || isLoading) return;
+
+    setRefreshingPaymentId(paymentId);
+    setCheckoutError("");
+
+    try {
+      // Membaca status terbaru yang tersimpan di backend.
+      // Endpoint ini tidak mengubah status pembayaran di Midtrans.
+      await apiClient.get<PaymentRecord>(`payments/${paymentId}`);
+
+      // Muat ulang riwayat dan subscription dari backend.
+      await loadPayments();
+    } catch (error) {
+      setCheckoutError(getErrorMessage(error));
+    } finally {
+      setRefreshingPaymentId(null);
+    }
+  }
 
   async function handleCheckout() {
     if (!subscription?.id || isCheckingOut) return;
@@ -389,28 +414,19 @@ export function PaymentsPage() {
         );
       }
 
-      // Status pembayaran tetap ditentukan backend setelah verifikasi.
+      // Jangan mengubah status pembayaran di frontend.
+      // Status final ditentukan oleh backend setelah verifikasi webhook.
       window.location.assign(redirectUrl);
     } catch (error) {
-      setCheckoutError(
-        error instanceof Error &&
-          !(error instanceof ApiRequestError) &&
-          error.message.includes("URL checkout")
-          ? error.message
-          : getErrorMessage(error),
-      );
+      setCheckoutError(getErrorMessage(error));
       setIsCheckingOut(false);
     }
   }
 
-  const totalPages =
-    pagination.totalPages ??
-    (typeof pagination.total === "number"
-      ? Math.max(1, Math.ceil(pagination.total / PAGE_SIZE))
-      : null);
+  const totalPages = pagination.totalPages > 0 ? pagination.totalPages : null;
 
   const totalLabel =
-    typeof pagination.total === "number"
+    pagination.total > 0
       ? `${pagination.total} pembayaran`
       : `${payments.length} pembayaran pada halaman ini`;
 
@@ -419,7 +435,9 @@ export function PaymentsPage() {
       <header className="payments-page-heading">
         <div>
           <span className="payments-eyebrow">BILLING CENTER</span>
+
           <h2 id="payments-title">Payments</h2>
+
           <p>
             Kelola pembayaran subscription dan periksa riwayat transaksi
             Midtrans Anda.
@@ -441,6 +459,7 @@ export function PaymentsPage() {
           ) : (
             <RefreshCw size={16} aria-hidden="true" />
           )}
+
           <span>Muat ulang</span>
         </button>
       </header>
@@ -462,7 +481,9 @@ export function PaymentsPage() {
             <span className="payments-section-eyebrow">
               PEMBAYARAN SUBSCRIPTION
             </span>
+
             <h3>Kelola pembayaran Anda</h3>
+
             <p>
               Checkout diproses melalui Midtrans. Status pembayaran akan
               diperbarui oleh backend setelah notifikasi pembayaran
@@ -488,6 +509,7 @@ export function PaymentsPage() {
               ) : (
                 <ExternalLink size={17} aria-hidden="true" />
               )}
+
               <span>
                 {isCheckingOut
                   ? "Menyiapkan checkout..."
@@ -501,6 +523,7 @@ export function PaymentsPage() {
             className="payments-primary-button payments-link-button"
           >
             <CreditCard size={17} aria-hidden="true" />
+
             <span>Lihat subscription</span>
           </Link>
         )}
@@ -509,11 +532,12 @@ export function PaymentsPage() {
       {pendingCount > 0 && !isLoading && !loadError && (
         <div className="payments-alert" role="status">
           <Clock3 size={18} aria-hidden="true" />
+
           <span>
             Ada {pendingCount} pembayaran yang masih menunggu konfirmasi pada
-            halaman ini. Muat ulang riwayat untuk memeriksa status terbaru.
-            Status hanya berubah setelah backend menerima atau memverifikasi
-            pembaruan pembayaran.
+            halaman ini. Gunakan tombol Periksa status untuk membaca status
+            terbaru yang sudah tercatat di backend. Status hanya berubah setelah
+            backend menerima atau memverifikasi pembaruan pembayaran.
           </span>
         </div>
       )}
@@ -523,8 +547,10 @@ export function PaymentsPage() {
           <span className="payments-summary-icon payments-summary-icon-paid">
             <CheckCircle2 size={19} aria-hidden="true" />
           </span>
+
           <div>
             <span>Total pembayaran berhasil di halaman ini</span>
+
             <strong>{formatAmount(totalPaid)}</strong>
           </div>
         </article>
@@ -533,8 +559,10 @@ export function PaymentsPage() {
           <span className="payments-summary-icon payments-summary-icon-pending">
             <Clock3 size={19} aria-hidden="true" />
           </span>
+
           <div>
             <span>Pembayaran menunggu di halaman ini</span>
+
             <strong>{pendingCount}</strong>
           </div>
         </article>
@@ -543,6 +571,7 @@ export function PaymentsPage() {
           <span className="payments-summary-icon payments-summary-icon-total">
             <CalendarDays size={19} aria-hidden="true" />
           </span>
+
           <div>
             <span>Riwayat</span>
             <strong>{totalLabel}</strong>
@@ -554,7 +583,6 @@ export function PaymentsPage() {
         <header className="payments-history-header">
           <div>
             <h3>Riwayat pembayaran</h3>
-            <p>Daftar transaksi pembayaran yang tercatat di backend.</p>
           </div>
 
           <span className="payments-secure-label">
@@ -570,14 +598,19 @@ export function PaymentsPage() {
               className="payments-spin"
               aria-hidden="true"
             />
+
             <strong>Memuat riwayat pembayaran</strong>
+
             <p>Mohon tunggu sebentar.</p>
           </div>
         ) : loadError ? (
           <div className="payments-state payments-state-error" role="alert">
             <AlertCircle size={28} aria-hidden="true" />
+
             <strong>Riwayat pembayaran gagal dimuat</strong>
+
             <p>{loadError}</p>
+
             <button
               type="button"
               className="payments-primary-button"
@@ -591,7 +624,9 @@ export function PaymentsPage() {
             <span className="payments-empty-icon">
               <CreditCard size={26} aria-hidden="true" />
             </span>
+
             <strong>Belum ada riwayat pembayaran</strong>
+
             <p>
               Pembayaran yang dibuat akan muncul di sini setelah tercatat oleh
               backend.
@@ -608,8 +643,10 @@ export function PaymentsPage() {
                     <th scope="col">Jumlah</th>
                     <th scope="col">Status</th>
                     <th scope="col">Provider</th>
+                    <th scope="col">Aksi</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {payments.map((payment) => (
                     <tr key={payment.id}>
@@ -618,22 +655,26 @@ export function PaymentsPage() {
                           <span className="payments-row-icon">
                             <CreditCard size={17} aria-hidden="true" />
                           </span>
+
                           <div>
                             <strong>
                               {payment.subscription?.plan?.name ??
                                 "Subscription"}
                             </strong>
+
                             <span title={payment.id}>
                               ID: {payment.id.slice(0, 8)}
                             </span>
                           </div>
                         </div>
                       </td>
+
                       <td>
                         <span className="payments-date">
                           {formatDate(payment.createdAt)}
                         </span>
                       </td>
+
                       <td>
                         <strong className="payments-amount">
                           {formatAmount(
@@ -642,6 +683,7 @@ export function PaymentsPage() {
                           )}
                         </strong>
                       </td>
+
                       <td>
                         <span
                           className={`payments-status ${getStatusClass(
@@ -649,13 +691,46 @@ export function PaymentsPage() {
                           )}`}
                         >
                           <StatusIcon status={payment.status} />
+
                           {getStatusLabel(payment.status)}
                         </span>
                       </td>
+
                       <td>
                         <span className="payments-provider">
                           {payment.provider || "Midtrans"}
                         </span>
+                      </td>
+
+                      <td>
+                        {payment.status.toUpperCase() === "PENDING" ? (
+                          <button
+                            type="button"
+                            className="payments-row-refresh"
+                            onClick={() =>
+                              void handleRefreshPayment(payment.id)
+                            }
+                            disabled={refreshingPaymentId !== null || isLoading}
+                            aria-label={`Periksa status pembayaran ${payment.id.slice(
+                              0,
+                              8,
+                            )}`}
+                          >
+                            {refreshingPaymentId === payment.id ? (
+                              <LoaderCircle
+                                size={15}
+                                className="payments-spin"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <RefreshCw size={15} aria-hidden="true" />
+                            )}
+
+                            <span>Periksa status</span>
+                          </button>
+                        ) : (
+                          <span className="payments-no-action">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}

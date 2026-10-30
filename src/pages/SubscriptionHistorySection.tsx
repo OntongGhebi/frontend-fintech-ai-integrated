@@ -182,11 +182,6 @@ export function SubscriptionHistorySection() {
           </span>
 
           <h3 id="subscription-history-title">Riwayat subscription</h3>
-
-          <p>
-            Catatan perubahan status dan aktivitas subscription yang tercatat
-            oleh backend.
-          </p>
         </div>
 
         <button
