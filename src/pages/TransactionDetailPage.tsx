@@ -397,7 +397,7 @@ export function TransactionDetailPage() {
 
   return (
     <section className="transaction-detail-page">
-      <header className="transaction-detail-heading">
+      <div className="transaction-detail-heading transaction-detail-toolbar">
         <button
           className="transaction-back-icon-button"
           type="button"
@@ -408,14 +408,6 @@ export function TransactionDetailPage() {
           <ArrowLeft size={20} aria-hidden="true" />
         </button>
 
-        <div className="transaction-detail-heading-content">
-          <p className="transaction-eyebrow">MANAJEMEN KEUANGAN</p>
-          <h2>Detail transaksi</h2>
-          <p className="transaction-detail-subtitle">
-            Periksa informasi dan kelola transaksi yang tercatat.
-          </p>
-        </div>
-
         <span
           className={`transaction-status-pill ${
             isActive ? "transaction-status-active" : "transaction-status-voided"
@@ -423,7 +415,7 @@ export function TransactionDetailPage() {
         >
           {isActive ? "Aktif" : "Voided"}
         </span>
-      </header>
+      </div>
 
       {error && (
         <div

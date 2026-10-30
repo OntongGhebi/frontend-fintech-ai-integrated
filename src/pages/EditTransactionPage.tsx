@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, LoaderCircle, Save, Wallet } from "lucide-react";
+import { CheckCircle2, LoaderCircle, Save } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./EditTransactionPage.css";
@@ -455,20 +455,9 @@ export function EditTransactionPage() {
 
   return (
     <section className="edit-transaction-page">
-      <header className="edit-transaction-heading">
-        <div>
-          <Link to="/transactions" className="transaction-back-link">
-            ← Kembali ke transaksi
-          </Link>
-          <span className="edit-transaction-eyebrow">TRANSAKSI</span>
-          <h1>Edit transaksi</h1>
-          <p>Perbarui informasi transaksi tanpa membuat catatan baru.</p>
-        </div>
-
-        <div className="edit-transaction-heading-icon" aria-hidden="true">
-          <Wallet size={25} />
-        </div>
-      </header>
+      <Link to="/transactions" className="edit-transaction-back-link">
+        ← Kembali ke transaksi
+      </Link>
 
       <div className="edit-transaction-layout">
         <form

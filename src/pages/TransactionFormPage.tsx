@@ -302,24 +302,11 @@ export function TransactionFormPage() {
   return (
     <section
       className="transaction-form-page"
-      aria-labelledby="transaction-form-title"
+      aria-label="Form tambah transaksi"
     >
-      <div className="transaction-form-heading">
-        <div>
-          <span className="transaction-form-eyebrow">
-            FINANCIAL ACTIVITY / NEW
-          </span>
-          <h2 id="transaction-form-title">Tambah transaksi</h2>
-          <p>
-            Catat pemasukan atau pengeluaran untuk memperbarui gambaran
-            keuanganmu.
-          </p>
-        </div>
-
-        <Link to="/transactions" className="transaction-back-link">
-          ← Kembali ke transaksi
-        </Link>
-      </div>
+      <Link to="/transactions" className="transaction-form-back-link">
+        ← Kembali ke transaksi
+      </Link>
 
       {loadError && (
         <div

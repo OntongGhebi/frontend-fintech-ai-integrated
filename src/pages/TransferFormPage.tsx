@@ -262,7 +262,7 @@ export function TransferFormPage() {
 
   if (transferResult) {
     return (
-      <main className="transfer-page">
+      <section className="transfer-page">
         <section className="transfer-success-card" aria-live="polite">
           <div className="transfer-success-icon">
             <CheckCircle2 size={32} aria-hidden="true" />
@@ -327,29 +327,16 @@ export function TransferFormPage() {
             </button>
           </div>
         </section>
-      </main>
+      </section>
     );
   }
 
   return (
-    <main className="transfer-page">
-      <div className="transfer-page-heading">
-        <div>
-          <Link to="/transactions" className="transfer-back-link">
-            <ArrowLeftRight size={15} aria-hidden="true" />
-            Kembali ke transaksi
-          </Link>
-          <span className="transfer-eyebrow">PEMINDAHAN DANA</span>
-          <h2>Transfer antar rekening</h2>
-          <p>
-            Pindahkan saldo antar rekening milikmu dan simpan kedua sisi
-            transaksi secara konsisten.
-          </p>
-        </div>
-        <div className="transfer-heading-icon" aria-hidden="true">
-          <ArrowDownUp size={24} />
-        </div>
-      </div>
+    <section className="transfer-page">
+      <Link to="/transactions" className="transfer-back-link">
+        <ArrowLeftRight size={15} aria-hidden="true" />
+        Kembali ke transaksi
+      </Link>
 
       <div className="transfer-content-grid">
         <form className="transfer-form-card" onSubmit={handleSubmit} noValidate>
@@ -586,6 +573,6 @@ export function TransferFormPage() {
           </div>
         </aside>
       </div>
-    </main>
+    </section>
   );
 }
