@@ -651,17 +651,6 @@ export function TransferFormPage() {
                       </option>
                     ))}
                   </select>
-                  {sourceAccount && (
-                    <small aria-live="polite">
-                      {isLoadingSourceBalance
-                        ? "Memuat saldo tersedia..."
-                        : sourceBalanceError
-                          ? sourceBalanceError
-                          : sourceBalance !== null
-                            ? `Saldo tersedia: ${formatCurrency(sourceBalance)}`
-                            : "Saldo tersedia belum diketahui."}
-                    </small>
-                  )}
                 </div>
 
                 <button
@@ -692,6 +681,38 @@ export function TransferFormPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Informasi saldo dipindahkan ke bawah baris dropdown agar
+                  kedua field rekening selalu sejajar. */}
+              <div
+                className="transfer-source-balance"
+                aria-live="polite"
+                style={{
+                  display: "block",
+                  marginTop: "8px",
+                  marginBottom: "16px",
+                  fontSize: "0.8125rem",
+                  lineHeight: 1.5,
+                }}
+              >
+                {sourceAccount ? (
+                  isLoadingSourceBalance ? (
+                    <small>Memuat saldo tersedia...</small>
+                  ) : sourceBalanceError ? (
+                    <small>{sourceBalanceError}</small>
+                  ) : sourceBalance !== null ? (
+                    <small>
+                      Saldo tersedia: {formatCurrency(sourceBalance)}
+                    </small>
+                  ) : (
+                    <small>Saldo tersedia belum diketahui.</small>
+                  )
+                ) : (
+                  <small>
+                    Pilih rekening sumber untuk melihat saldo tersedia.
+                  </small>
+                )}
               </div>
 
               {sameAccount && (
@@ -733,7 +754,7 @@ export function TransferFormPage() {
                       setSourceBalanceReloadKey((current) => current + 1)
                     }
                   >
-                    Muat ulang saldo
+                    Muat ulang saldo dengan memilih ulang rekening sumber
                   </button>
                 </div>
               )}
