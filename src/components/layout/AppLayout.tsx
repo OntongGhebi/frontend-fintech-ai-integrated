@@ -41,11 +41,6 @@ const primaryNavigation = [
   },
 ];
 
-const financeNavigation = [
-  { label: "Accounts", icon: Wallet, to: "/accounts" },
-  { label: "Categories", icon: Tags, to: "/categories" },
-];
-
 const financeOperationsNavigation = [
   { label: "Transactions", icon: HandCoins, to: "/transactions" },
   { label: "Budgets", icon: PiggyBank, to: "/budgets" },
@@ -53,14 +48,6 @@ const financeOperationsNavigation = [
     label: "Recurring",
     icon: Repeat,
     to: "/recurring-transactions",
-  },
-];
-
-const insightNavigation = [
-  {
-    label: "Reports & Analytics",
-    icon: ChartNoAxesCombined,
-    to: "/reports",
   },
 ];
 
@@ -217,8 +204,6 @@ interface NavigationGroupProps {
 function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
   return (
     <section className="layout-nav-group" aria-label={title}>
-      <span className="layout-nav-heading">{title}</span>
-
       <div className="layout-nav-items">
         {items.map((item) => {
           const Icon = item.icon;
@@ -403,14 +388,8 @@ export function AppLayout() {
 
         <nav className="layout-navigation" aria-label="Navigasi utama">
           <NavigationGroup
-            title="OVERVIEW"
+            title="Dashboard"
             items={primaryNavigation}
-            onNavigate={closeMobileNavigation}
-          />
-
-          <NavigationGroup
-            title="MANAGE"
-            items={financeNavigation}
             onNavigate={closeMobileNavigation}
           />
 
@@ -430,7 +409,7 @@ export function AppLayout() {
             >
               <span className="layout-nav-group-toggle-label">
                 <HandCoins size={18} strokeWidth={1.8} aria-hidden="true" />
-                <span>FINANCE</span>
+                <span>Finance</span>
               </span>
 
               {isFinanceOpen ? (
@@ -465,8 +444,23 @@ export function AppLayout() {
           </section>
 
           <NavigationGroup
-            title="ANALYTICS"
-            items={insightNavigation}
+            title="Accounts and Categories"
+            items={[
+              { label: "Accounts", icon: Wallet, to: "/accounts" },
+              { label: "Categories", icon: Tags, to: "/categories" },
+            ]}
+            onNavigate={closeMobileNavigation}
+          />
+
+          <NavigationGroup
+            title="Reports & Analytics"
+            items={[
+              {
+                label: "Reports & Analytics",
+                icon: ChartNoAxesCombined,
+                to: "/reports",
+              },
+            ]}
             onNavigate={closeMobileNavigation}
           />
 
@@ -486,7 +480,7 @@ export function AppLayout() {
             >
               <span className="layout-nav-group-toggle-label">
                 <Workflow size={18} strokeWidth={1.8} aria-hidden="true" />
-                <span>WORKSPACE</span>
+                <span>Workspace</span>
               </span>
 
               {isWorkspaceOpen ? (

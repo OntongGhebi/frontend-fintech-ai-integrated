@@ -7,7 +7,6 @@ import {
   Check,
   CreditCard,
   LoaderCircle,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -56,10 +55,14 @@ interface SubscriptionPayload {
   subscription?: Subscription | null;
 }
 
-type Feedback = { kind: "success" | "error"; message: string };
+type Feedback = {
+  kind: "success" | "error";
+  message: string;
+};
 
 function unwrapPlanPayload(payload: Plan[] | PlansPayload): Plan[] {
   if (Array.isArray(payload)) return payload;
+
   return payload.data ?? payload.items ?? payload.plans ?? [];
 }
 
@@ -67,35 +70,57 @@ function unwrapSubscriptionPayload(
   payload: Subscription | SubscriptionPayload | null,
 ): Subscription | null {
   if (!payload) return null;
-  if ("data" in payload) return payload.data ?? null;
-  if ("subscription" in payload) return payload.subscription ?? null;
+
+  if ("data" in payload) {
+    return payload.data ?? null;
+  }
+
+  if ("subscription" in payload) {
+    return payload.subscription ?? null;
+  }
+
   return payload as Subscription;
 }
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (error.status === 401)
+    if (error.status === 401) {
       return "Sesi Anda berakhir. Silakan login kembali.";
-    if (error.status === 403)
+    }
+
+    if (error.status === 403) {
       return "Anda tidak memiliki izin untuk melakukan tindakan ini.";
-    if (error.status === 409)
+    }
+
+    if (error.status === 409) {
       return (
         error.message ||
         "Trial tidak dapat dimulai pada kondisi subscription saat ini."
       );
-    if (error.status >= 500)
+    }
+
+    if (error.status >= 500) {
       return "Server sedang mengalami kendala. Silakan coba lagi.";
+    }
+
     return error.message || "Permintaan tidak dapat diproses.";
   }
-  if (error instanceof TypeError)
+
+  if (error instanceof TypeError) {
     return "Tidak dapat terhubung ke backend. Periksa koneksi dan konfigurasi API.";
+  }
+
   return "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.";
 }
 
 function formatPrice(price: string | number, currency = "IDR"): string {
   const numericPrice =
     typeof price === "number" ? price : Number.parseFloat(price);
-  if (!Number.isFinite(numericPrice)) return `${price} ${currency}`;
+
+  if (!Number.isFinite(numericPrice)) {
+    return `${price} ${currency}`;
+  }
+
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency,
@@ -105,62 +130,90 @@ function formatPrice(price: string | number, currency = "IDR"): string {
 
 function formatInterval(interval?: string | null): string {
   if (!interval) return "periode";
+
   const normalized = interval.toLowerCase();
+
   if (normalized.includes("month")) return "bulan";
-  if (normalized.includes("year") || normalized.includes("annual"))
+
+  if (normalized.includes("year") || normalized.includes("annual")) {
     return "tahun";
+  }
+
   if (normalized.includes("week")) return "minggu";
+
   if (normalized.includes("day")) return "hari";
+
   return normalized;
 }
 
 function getFeatureLabel(feature: PlanFeature): string | null {
-  if (typeof feature === "string") return feature;
-  if (feature.enabled === false) return null;
+  if (typeof feature === "string") {
+    return feature;
+  }
+
+  if (feature.enabled === false) {
+    return null;
+  }
+
   const label =
     feature.name ?? feature.description ?? feature.featureCode ?? feature.code;
+
   if (!label) return null;
+
   if (typeof feature.limitValue === "number" && feature.limitValue >= 0) {
     const period = feature.limitPeriod
       ? ` / ${feature.limitPeriod.toLowerCase()}`
       : "";
+
     return `${label}: ${feature.limitValue}${period}`;
   }
+
   return label;
 }
 
 export function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+
   const [isStartingTrial, setIsStartingTrial] = useState(false);
+
   const [selectedPlanCode, setSelectedPlanCode] = useState<string | null>(null);
+
   const [reloadKey, setReloadKey] = useState(0);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setLoadError("");
+
     try {
       const plansRequest = apiClient.get<Plan[] | PlansPayload>("plans");
+
       const subscriptionRequest = apiClient
         .get<Subscription | SubscriptionPayload | null>("subscriptions/me")
         .then(unwrapSubscriptionPayload)
         .catch((error: unknown) => {
-          if (error instanceof ApiRequestError && error.status === 404)
+          if (error instanceof ApiRequestError && error.status === 404) {
             return null;
+          }
+
           throw error;
         });
+
       const [plansResponse, currentSubscription] = await Promise.all([
         plansRequest,
         subscriptionRequest,
       ]);
+
       setPlans(
         unwrapPlanPayload(plansResponse).filter(
           (plan) => plan.isActive !== false,
         ),
       );
+
       setSubscription(currentSubscription);
     } catch (error) {
       setLoadError(getErrorMessage(error));
@@ -183,7 +236,9 @@ export function PlansPage() {
       ),
     [subscription],
   );
+
   const currentPlanCode = subscription?.plan?.code ?? null;
+
   const canStartTrial =
     !activeSubscription &&
     subscription?.status.toUpperCase() !== "CANCELED" &&
@@ -191,23 +246,33 @@ export function PlansPage() {
 
   async function handleStartTrial(plan: Plan) {
     if (isStartingTrial || !canStartTrial) return;
+
     const confirmed = window.confirm(
       `Mulai trial untuk paket ${plan.name}? Backend hanya mengizinkan satu kali trial per pengguna.`,
     );
+
     if (!confirmed) return;
 
     setIsStartingTrial(true);
     setSelectedPlanCode(plan.code);
     setFeedback(null);
+
     try {
-      await apiClient.post("subscriptions/trial", { planCode: plan.code });
+      await apiClient.post("subscriptions/trial", {
+        planCode: plan.code,
+      });
+
       setFeedback({
         kind: "success",
         message: `Trial paket ${plan.name} berhasil dimulai.`,
       });
+
       await loadData();
     } catch (error) {
-      setFeedback({ kind: "error", message: getErrorMessage(error) });
+      setFeedback({
+        kind: "error",
+        message: getErrorMessage(error),
+      });
     } finally {
       setIsStartingTrial(false);
       setSelectedPlanCode(null);
@@ -219,15 +284,18 @@ export function PlansPage() {
       className="subscription-page plans-page"
       aria-labelledby="plans-page-title"
     >
-      <header className="subscription-page-heading">
+      <header className="subscription-section-heading plans-page-heading">
         <div>
-          <span className="subscription-eyebrow">SUBSCRIPTION</span>
-          <h2 id="plans-page-title">Pilih paket yang tepat</h2>
+          <span className="subscription-section-eyebrow">AVAILABLE PLANS</span>
+
+          <h2 id="plans-page-title">Paket yang tersedia</h2>
+
           <p>
-            Bandingkan fitur dan pilih paket untuk kebutuhan pengelolaan
-            keuanganmu.
+            Harga dan fitur ditampilkan berdasarkan informasi paket yang
+            tersedia.
           </p>
         </div>
+
         <Link to="/subscription" className="subscription-secondary-button">
           Lihat subscription
         </Link>
@@ -243,6 +311,7 @@ export function PlansPage() {
           ) : (
             <BadgeCheck size={18} aria-hidden="true" />
           )}
+
           <span>{feedback.message}</span>
         </div>
       )}
@@ -253,7 +322,9 @@ export function PlansPage() {
           role="alert"
         >
           <AlertCircle size={18} aria-hidden="true" />
+
           <span>{loadError}</span>
+
           <button
             type="button"
             className="subscription-inline-retry"
@@ -271,13 +342,17 @@ export function PlansPage() {
             className="subscription-spin"
             aria-hidden="true"
           />
+
           <strong>Memuat pilihan paket</strong>
+
           <p>Mengambil daftar paket yang tersedia.</p>
         </div>
       ) : plans.length === 0 ? (
         <div className="subscription-empty-plans">
           <AlertCircle size={26} aria-hidden="true" />
+
           <strong>Belum ada paket yang tersedia</strong>
+
           <p>
             Backend belum mengembalikan paket aktif. Silakan coba lagi nanti.
           </p>
@@ -285,34 +360,22 @@ export function PlansPage() {
       ) : (
         <section
           className="subscription-plans-section"
-          aria-labelledby="available-plans-title"
+          aria-labelledby="plans-page-title"
         >
-          <div className="subscription-section-heading">
-            <div>
-              <span className="subscription-section-eyebrow">
-                AVAILABLE PLANS
-              </span>
-              <h3 id="available-plans-title">Paket yang tersedia</h3>
-              <p>
-                Harga dan fitur ditampilkan berdasarkan informasi resmi dari
-                backend.
-              </p>
-            </div>
-            <span className="subscription-secure-note">
-              <ShieldCheck size={15} aria-hidden="true" /> Paket resmi
-            </span>
-          </div>
-
           <div className="subscription-plans-grid">
             {plans.map((plan) => {
               const isCurrentPlan =
                 Boolean(currentPlanCode) && currentPlanCode === plan.code;
+
               const features = (plan.features ?? [])
                 .map(getFeatureLabel)
                 .filter((feature): feature is string => Boolean(feature));
+
               return (
                 <article
-                  className={`subscription-plan-card${isCurrentPlan ? " subscription-plan-current" : ""}`}
+                  className={`subscription-plan-card${
+                    isCurrentPlan ? " subscription-plan-current" : ""
+                  }`}
                   key={plan.id}
                 >
                   {isCurrentPlan && (
@@ -320,6 +383,7 @@ export function PlansPage() {
                       Paket saat ini
                     </span>
                   )}
+
                   <div className="subscription-plan-icon">
                     {plan.code.toLowerCase().includes("pro") ? (
                       <Sparkles size={21} aria-hidden="true" />
@@ -327,25 +391,33 @@ export function PlansPage() {
                       <CreditCard size={21} aria-hidden="true" />
                     )}
                   </div>
+
                   <h4>{plan.name}</h4>
+
                   <p className="subscription-plan-description">
                     {plan.description || "Paket untuk kebutuhan keuangan Anda."}
                   </p>
+
                   <div className="subscription-plan-price">
                     <strong>
                       {formatPrice(plan.price, plan.currency || "IDR")}
                     </strong>
+
                     <span>/ {formatInterval(plan.billingInterval)}</span>
                   </div>
+
                   <div className="subscription-plan-divider" />
+
                   <span className="subscription-features-label">
                     Fitur paket
                   </span>
+
                   {features.length > 0 ? (
                     <ul className="subscription-feature-list">
                       {features.map((feature, index) => (
                         <li key={`${plan.id}-${index}`}>
                           <Check size={16} aria-hidden="true" />
+
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -355,14 +427,15 @@ export function PlansPage() {
                       Detail fitur belum tersedia.
                     </p>
                   )}
+
                   <div className="subscription-plan-action">
                     {isCurrentPlan ? (
                       <Link
                         to="/subscription"
                         className="subscription-secondary-button subscription-full-width"
                       >
-                        <BadgeCheck size={16} aria-hidden="true" /> Paket saat
-                        ini
+                        <BadgeCheck size={16} aria-hidden="true" />
+                        Paket saat ini
                       </Link>
                     ) : canStartTrial ? (
                       <button
@@ -379,6 +452,7 @@ export function PlansPage() {
                         ) : (
                           <CalendarDays size={16} aria-hidden="true" />
                         )}
+
                         <span>
                           {isStartingTrial && selectedPlanCode === plan.code
                             ? "Memproses..."

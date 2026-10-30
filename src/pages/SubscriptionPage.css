@@ -1,6 +1,6 @@
 .subscription-page {
   display: grid;
-  gap: 24px;
+  gap: 8px;
   color: var(--text-primary, #172033);
 }
 

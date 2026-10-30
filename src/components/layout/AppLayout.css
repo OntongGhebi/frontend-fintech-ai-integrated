@@ -84,7 +84,7 @@
 .layout-navigation {
   display: flex;
   flex-direction: column;
-  gap: 21px;
+  gap: 7px;
   padding: 0 0 20px;
 }
 
@@ -241,7 +241,7 @@
 .layout-topbar-profile-copy strong {
   overflow: hidden;
   color: var(--text-primary, #20293a);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;

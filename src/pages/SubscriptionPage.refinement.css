@@ -1,14 +1,25 @@
-.subscription-plans-cta {
-  width: fit-content;
-  margin-top: 14px;
-  text-decoration: none;
+/* Layout refinement for the standalone Plans page. */
+
+.plans-page-heading {
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-.subscription-plans-footnote {
+.plans-page-heading > div {
+  min-width: 0;
+}
+
+.plans-page-heading h2 {
+  margin: 5px 0 6px;
+}
+
+.plans-page-heading p {
   margin: 0;
-  color: #7b8497;
-  font-size: 12px;
-  line-height: 1.6;
+}
+
+.plans-page-heading > a {
+  flex: 0 0 auto;
+  text-decoration: none;
 }
 
 .subscription-plans-footnote a {
@@ -17,20 +28,10 @@
   text-decoration: none;
 }
 
-.subscription-plans-footnote a:hover {
-  text-decoration: underline;
-}
-
-.plans-page .subscription-page-heading {
-  align-items: center;
-}
-
-.plans-page .subscription-page-heading > a {
-  text-decoration: none;
-}
-
 @media (max-width: 650px) {
-  .plans-page .subscription-page-heading {
+  .plans-page-heading {
     align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
   }
 }
