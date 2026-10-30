@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-
+import { useState } from "react";
 import {
   Link,
   NavLink,
@@ -7,7 +6,6 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-
 import {
   ArrowLeftRight,
   Bell,
@@ -15,6 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   CreditCard,
+  Crown,
   HandCoins,
   LayoutDashboard,
   LogOut,
@@ -29,13 +28,9 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
-import { apiClient } from "../../lib/api-client";
 import { GlobalSearch } from "./GlobalSearch";
-
 import "./AppLayout.css";
-
-const NOTIFICATION_UPDATED_EVENT = "fintech:notifications-updated";
-const NOTIFICATION_REFRESH_INTERVAL = 60_000;
+import "./AppLayout.subscription.css";
 
 const primaryNavigation = [
   {
@@ -47,10 +42,13 @@ const primaryNavigation = [
 ];
 
 const financeNavigation = [
-  { label: "Transactions", icon: HandCoins, to: "/transactions" },
   { label: "Accounts", icon: Wallet, to: "/accounts" },
-  { label: "Budgets", icon: PiggyBank, to: "/budgets" },
   { label: "Categories", icon: Tags, to: "/categories" },
+];
+
+const financeOperationsNavigation = [
+  { label: "Transactions", icon: HandCoins, to: "/transactions" },
+  { label: "Budgets", icon: PiggyBank, to: "/budgets" },
   {
     label: "Recurring",
     icon: Repeat,
@@ -150,10 +148,19 @@ function getPageHeading(pathname: string) {
     };
   }
 
+  if (pathname === "/plans") {
+    return {
+      title: "Pilih Paket",
+      description:
+        "Pilih paket yang sesuai dengan kebutuhan pengelolaan keuanganmu.",
+    };
+  }
+
   if (pathname === "/subscription") {
     return {
       title: "Subscription",
-      description: "Kelola paket dan status langganan akunmu.",
+      description:
+        "Pantau paket aktif, masa langganan, dan riwayat aktivitas akunmu.",
     };
   }
 
@@ -227,7 +234,6 @@ function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
               onClick={onNavigate}
             >
               <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-
               <span>{item.label}</span>
             </NavLink>
           );
@@ -239,17 +245,22 @@ function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
 
 export function AppLayout() {
   const { user, logout } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const [mobileNavState, setMobileNavState] = useState({
     pathname: location.pathname,
     isOpen: false,
   });
+
+  const [financeState, setFinanceState] = useState(() => ({
+    pathname: location.pathname,
+    isOpen: financeOperationsNavigation.some((item) =>
+      location.pathname.startsWith(item.to),
+    ),
+  }));
 
   const [workspaceState, setWorkspaceState] = useState(() => ({
     pathname: location.pathname,
@@ -259,6 +270,13 @@ export function AppLayout() {
   }));
 
   const [logoutError, setLogoutError] = useState("");
+
+  const isFinanceOpen =
+    financeState.pathname === location.pathname
+      ? financeState.isOpen
+      : financeOperationsNavigation.some((item) =>
+          location.pathname.startsWith(item.to),
+        );
 
   const isWorkspaceOpen =
     workspaceState.pathname === location.pathname
@@ -282,46 +300,6 @@ export function AppLayout() {
     }));
   };
 
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      const response = await apiClient.get<{ count: number }>(
-        "notifications/unread-count",
-      );
-
-      setUnreadCount(
-        Number.isFinite(response?.count) ? Math.max(0, response.count) : 0,
-      );
-    } catch {
-      // Jangan mengganggu navigasi jika request badge gagal.
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadUnreadCount();
-
-    const handleNotificationUpdate = () => {
-      void loadUnreadCount();
-    };
-
-    window.addEventListener(
-      NOTIFICATION_UPDATED_EVENT,
-      handleNotificationUpdate,
-    );
-
-    const intervalId = window.setInterval(() => {
-      void loadUnreadCount();
-    }, NOTIFICATION_REFRESH_INTERVAL);
-
-    return () => {
-      window.removeEventListener(
-        NOTIFICATION_UPDATED_EVENT,
-        handleNotificationUpdate,
-      );
-
-      window.clearInterval(intervalId);
-    };
-  }, [loadUnreadCount]);
-
   async function handleLogout() {
     if (isLoggingOut) return;
 
@@ -340,11 +318,14 @@ export function AppLayout() {
 
   const displayName = user?.name?.trim() || "Pengguna";
   const initial = displayName.charAt(0).toUpperCase();
-
   const pageHeading = getPageHeading(location.pathname);
 
   const showTransactionActions =
     location.pathname === "/" || location.pathname === "/transactions";
+
+  const financeIsActive = financeOperationsNavigation.some((item) =>
+    location.pathname.startsWith(item.to),
+  );
 
   const workspaceIsActive = workspaceNavigation.some((item) =>
     location.pathname.startsWith(item.to),
@@ -353,8 +334,6 @@ export function AppLayout() {
   const closeMobileNavigation = () => {
     setIsMobileNavOpen(false);
   };
-
-  const notificationBadgeLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
   return (
     <div className="app-shell">
@@ -383,21 +362,34 @@ export function AppLayout() {
           </button>
         </div>
 
-        <NavLink
-          to="/"
-          className="layout-brand"
-          aria-label="Fintech AI dashboard"
-          onClick={closeMobileNavigation}
-        >
-          <span className="layout-brand-mark" aria-hidden="true">
-            F
-          </span>
+        <div className="layout-brand-row">
+          <NavLink
+            to="/"
+            className="layout-brand"
+            aria-label="Fintech AI dashboard"
+            onClick={closeMobileNavigation}
+          >
+            <span className="layout-brand-mark" aria-hidden="true">
+              F
+            </span>
 
-          <span className="layout-brand-copy">
-            <strong>Fintech AI</strong>
-            <span>Personal Finance</span>
-          </span>
-        </NavLink>
+            <span className="layout-brand-copy">
+              <strong>Fintech AI</strong>
+              <span>Personal Finance</span>
+            </span>
+          </NavLink>
+          <NavLink
+            to="/plans"
+            className={({ isActive }) =>
+              `layout-brand-plan-link${isActive ? " is-active" : ""}`
+            }
+            aria-label="Lihat pilihan paket subscription"
+            title="Paket & harga"
+            onClick={closeMobileNavigation}
+          >
+            <Crown size={19} strokeWidth={1.9} aria-hidden="true" />
+          </NavLink>
+        </div>
 
         <div className="layout-sidebar-caption">
           <span className="layout-caption-dot" />
@@ -422,6 +414,56 @@ export function AppLayout() {
             onNavigate={closeMobileNavigation}
           />
 
+          <section className="layout-nav-group" aria-label="Finance">
+            <button
+              type="button"
+              className={`layout-nav-group-toggle${
+                financeIsActive ? " is-active" : ""
+              }`}
+              aria-expanded={isFinanceOpen}
+              onClick={() =>
+                setFinanceState({
+                  pathname: location.pathname,
+                  isOpen: !isFinanceOpen,
+                })
+              }
+            >
+              <span className="layout-nav-group-toggle-label">
+                <HandCoins size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>FINANCE</span>
+              </span>
+
+              {isFinanceOpen ? (
+                <ChevronDown size={16} aria-hidden="true" />
+              ) : (
+                <ChevronRight size={16} aria-hidden="true" />
+              )}
+            </button>
+
+            {isFinanceOpen && (
+              <div className="layout-nav-items layout-nav-subitems">
+                {financeOperationsNavigation.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.to === "/transactions"}
+                      className={({ isActive }) =>
+                        `layout-nav-link${isActive ? " is-active" : ""}`
+                      }
+                      onClick={closeMobileNavigation}
+                    >
+                      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
           <NavigationGroup
             title="ANALYTICS"
             items={insightNavigation}
@@ -444,7 +486,6 @@ export function AppLayout() {
             >
               <span className="layout-nav-group-toggle-label">
                 <Workflow size={18} strokeWidth={1.8} aria-hidden="true" />
-
                 <span>WORKSPACE</span>
               </span>
 
@@ -470,7 +511,6 @@ export function AppLayout() {
                       onClick={closeMobileNavigation}
                     >
                       <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-
                       <span>{item.label}</span>
                     </NavLink>
                   );
@@ -493,7 +533,6 @@ export function AppLayout() {
 
             <div className="layout-sidebar-user-copy">
               <strong title={displayName}>{displayName}</strong>
-
               <span title={user?.email}>{user?.email || "Akun pengguna"}</span>
             </div>
 
@@ -536,9 +575,7 @@ export function AppLayout() {
 
             <div className="topbar-title">
               <span className="eyebrow">PERSONAL FINANCE</span>
-
               <h1>{pageHeading.title}</h1>
-
               <p>{pageHeading.description}</p>
             </div>
           </div>
@@ -553,7 +590,6 @@ export function AppLayout() {
                   title="Transfer dana"
                 >
                   <ArrowLeftRight size={17} aria-hidden="true" />
-
                   <span>Transfer</span>
                 </Link>
 
@@ -566,7 +602,6 @@ export function AppLayout() {
                   <span className="layout-add-icon" aria-hidden="true">
                     +
                   </span>
-
                   <span>Tambah transaksi</span>
                 </Link>
               </div>
@@ -578,45 +613,10 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   `layout-notification-button${isActive ? " is-active" : ""}`
                 }
-                aria-label={
-                  unreadCount > 0
-                    ? `Buka notifikasi, ${unreadCount} belum dibaca`
-                    : "Buka notifikasi"
-                }
+                aria-label="Buka notifikasi"
                 title="Notifications"
-                style={{
-                  position: "relative",
-                }}
               >
                 <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
-
-                {unreadCount > 0 && (
-                  <span
-                    aria-label={`${unreadCount} notifikasi belum dibaca`}
-                    style={{
-                      position: "absolute",
-                      top: "-5px",
-                      right: "-6px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minWidth: "17px",
-                      height: "17px",
-                      padding: "0 4px",
-                      border: "2px solid #ffffff",
-                      borderRadius: "999px",
-                      background: "#e5484d",
-                      color: "#ffffff",
-                      fontSize: "9px",
-                      fontWeight: 800,
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                      boxSizing: "content-box",
-                    }}
-                  >
-                    {notificationBadgeLabel}
-                  </span>
-                )}
               </NavLink>
 
               <NavLink

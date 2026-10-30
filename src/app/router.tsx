@@ -19,6 +19,7 @@ import { AccountDetailPage } from "../pages/AccountDetailPage";
 import { ReportsPage } from "../pages/ReportsPage";
 import { NotificationsPage } from "../pages/NotificationsPage";
 import { SubscriptionPage } from "../pages/SubscriptionPage";
+import { PlansPage } from "../pages/PlansPage";
 import { PaymentsPage } from "../pages/PaymentsPage";
 import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { SettingsPage } from "../pages/SettingsPage";
@@ -97,6 +98,10 @@ export const router = createBrowserRouter([
           {
             path: "recurring-transactions",
             element: <RecurringTransactionsPage />,
+          },
+          {
+            path: "plans",
+            element: <PlansPage />,
           },
           {
             path: "subscription",

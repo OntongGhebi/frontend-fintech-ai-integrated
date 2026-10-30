@@ -1,0 +1,41 @@
+.layout-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.layout-brand-row .layout-brand {
+  flex: 1;
+  min-width: 0;
+}
+
+.layout-brand-plan-link {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0 4px 20px 0;
+  border: 1px solid #e7eaf0;
+  border-radius: 11px;
+  background: #fff;
+  color: #a47728;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.layout-brand-plan-link:hover,
+.layout-brand-plan-link.is-active {
+  border-color: #ead9b7;
+  background: #fff8e9;
+  color: #8a5b12;
+}
+
+.layout-brand-plan-link:focus-visible {
+  outline: 3px solid rgb(164 119 40 / 24%);
+  outline-offset: 2px;
+}

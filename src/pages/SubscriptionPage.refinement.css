@@ -1,0 +1,36 @@
+.subscription-plans-cta {
+  width: fit-content;
+  margin-top: 14px;
+  text-decoration: none;
+}
+
+.subscription-plans-footnote {
+  margin: 0;
+  color: #7b8497;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.subscription-plans-footnote a {
+  color: #344f8a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.subscription-plans-footnote a:hover {
+  text-decoration: underline;
+}
+
+.plans-page .subscription-page-heading {
+  align-items: center;
+}
+
+.plans-page .subscription-page-heading > a {
+  text-decoration: none;
+}
+
+@media (max-width: 650px) {
+  .plans-page .subscription-page-heading {
+    align-items: flex-start;
+  }
+}
