@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  LoaderCircle,
-  Save,
-  Wallet,
-} from "lucide-react";
+import { CheckCircle2, LoaderCircle, Save, Wallet } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./EditTransactionPage.css";
+import "./TransactionFormPage.css";
+import "./TransactionDetailPage.css";
 
 type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER";
 
@@ -93,8 +89,22 @@ function getJakartaDateTimeValue(value: string): string {
 
 function toJakartaIsoDateTime(value: string): string {
   // Input datetime-local represents a wall-clock time, not UTC.
-  // This app stores user-facing transaction times in Asia/Jakarta.
   return `${value}:00+07:00`;
+}
+
+function isValidJakartaDateTime(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return false;
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    date.getUTCHours() === hour &&
+    date.getUTCMinutes() === minute
+  );
 }
 
 function getErrorMessage(error: unknown): string {
@@ -124,6 +134,7 @@ export function EditTransactionPage() {
   const navigate = useNavigate();
 
   const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const saveLock = useRef(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<FormValues>({
@@ -237,15 +248,18 @@ export function EditTransactionPage() {
       return;
     }
 
-    const amount = Number(form.amount);
+    if (saveLock.current || isSaving) return;
 
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setErrorMessage("Nominal harus lebih besar dari 0.");
+    const amountText = form.amount.trim();
+    if (!/^\d+(\.\d{1,4})?$/.test(amountText)) {
+      setErrorMessage("Nominal hanya boleh memiliki maksimal 4 angka desimal.");
       return;
     }
 
-    if (!/^\d+(\.\d{1,4})?$/.test(form.amount.trim())) {
-      setErrorMessage("Nominal hanya boleh memiliki maksimal 4 angka desimal.");
+    const amount = Number(amountText);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setErrorMessage("Nominal harus lebih besar dari 0.");
       return;
     }
 
@@ -254,8 +268,22 @@ export function EditTransactionPage() {
       return;
     }
 
-    if (!form.transactionDate) {
-      setErrorMessage("Tanggal dan waktu transaksi wajib diisi.");
+    if (amount > 999999999999999.9999) {
+      setErrorMessage("Nominal transaksi melebihi batas maksimum.");
+      return;
+    }
+
+    if (
+      !selectedAccount ||
+      selectedAccount.currency !== "IDR" ||
+      (!selectedAccount.isActive && form.accountId !== transaction.accountId)
+    ) {
+      setErrorMessage("Pilih rekening IDR yang aktif.");
+      return;
+    }
+
+    if (!isValidJakartaDateTime(form.transactionDate)) {
+      setErrorMessage("Tanggal dan waktu transaksi tidak valid.");
       return;
     }
 
@@ -327,6 +355,7 @@ export function EditTransactionPage() {
       return;
     }
 
+    saveLock.current = true;
     setIsSaving(true);
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -348,6 +377,7 @@ export function EditTransactionPage() {
     } catch (error: unknown) {
       setErrorMessage(getErrorMessage(error));
     } finally {
+      saveLock.current = false;
       setIsSaving(false);
     }
   }
@@ -379,8 +409,8 @@ export function EditTransactionPage() {
           >
             Coba lagi
           </button>
-          <Link to="/transactions" className="edit-transaction-back-link">
-            Kembali ke transaksi
+          <Link to="/transactions" className="transaction-back-link">
+            ← Kembali ke transaksi
           </Link>
         </div>
       </section>
@@ -394,12 +424,8 @@ export function EditTransactionPage() {
   if (transaction.type === "TRANSFER") {
     return (
       <section className="edit-transaction-page">
-        <Link
-          to={`/transactions/${transaction.id}`}
-          className="edit-transaction-back-link"
-        >
-          <ArrowLeft size={17} />
-          Kembali ke detail
+        <Link to="/transactions" className="transaction-back-link">
+          ← Kembali ke transaksi
         </Link>
         <div className="edit-transaction-alert edit-transaction-alert--warning">
           <strong>Transfer tidak dapat diedit melalui formulir ini</strong>
@@ -416,12 +442,8 @@ export function EditTransactionPage() {
   if (transaction.status !== "ACTIVE") {
     return (
       <section className="edit-transaction-page">
-        <Link
-          to={`/transactions/${transaction.id}`}
-          className="edit-transaction-back-link"
-        >
-          <ArrowLeft size={17} />
-          Kembali ke detail
+        <Link to="/transactions" className="transaction-back-link">
+          ← Kembali ke transaksi
         </Link>
         <div className="edit-transaction-alert edit-transaction-alert--warning">
           <strong>Transaksi sudah dibatalkan</strong>
@@ -435,12 +457,8 @@ export function EditTransactionPage() {
     <section className="edit-transaction-page">
       <header className="edit-transaction-heading">
         <div>
-          <Link
-            to={`/transactions/${transaction.id}`}
-            className="edit-transaction-back-link"
-          >
-            <ArrowLeft size={17} />
-            Kembali ke detail transaksi
+          <Link to="/transactions" className="transaction-back-link">
+            ← Kembali ke transaksi
           </Link>
           <span className="edit-transaction-eyebrow">TRANSAKSI</span>
           <h1>Edit transaksi</h1>
@@ -498,6 +516,7 @@ export function EditTransactionPage() {
               id="edit-transaction-account"
               value={form.accountId}
               onChange={(event) => updateField("accountId", event.target.value)}
+              disabled={isSaving}
               required
             >
               <option value="">Pilih rekening</option>
@@ -518,25 +537,36 @@ export function EditTransactionPage() {
             </small>
           </div>
 
-          <div className="edit-transaction-field">
-            <label htmlFor="edit-transaction-amount">Nominal (IDR)</label>
-            <div className="edit-transaction-amount-input">
+          <div className="transaction-form-amount-panel">
+            <label htmlFor="edit-transaction-amount">Nominal transaksi</label>
+            <div className="transaction-form-amount-input">
               <span>Rp</span>
               <input
                 id="edit-transaction-amount"
+                name="amount"
                 type="number"
                 inputMode="decimal"
                 min="0.0001"
+                max="999999999999999.9999"
                 step="0.0001"
+                placeholder="0"
                 value={form.amount}
                 onChange={(event) => updateField("amount", event.target.value)}
-                placeholder="0"
+                disabled={isSaving}
                 required
+                aria-describedby="edit-transaction-amount-hint"
               />
             </div>
-            <small>
-              Nominal saat ini: {formatCurrency(transaction.amount)}
+            <small id="edit-transaction-amount-hint">
+              Gunakan angka tanpa pemisah ribuan. Contoh: 75000 atau 1250.50.
             </small>
+            {form.amount.trim() &&
+              /^\d+(\.\d{1,4})?$/.test(form.amount.trim()) &&
+              Number(form.amount) > 0 && (
+                <div className="transaction-form-amount-preview">
+                  Pratinjau: <strong>{formatCurrency(form.amount)}</strong>
+                </div>
+              )}
           </div>
 
           <div className="edit-transaction-field">
@@ -549,16 +579,25 @@ export function EditTransactionPage() {
               onChange={(event) =>
                 updateField("categoryId", event.target.value)
               }
+              disabled={isSaving}
             >
-              <option value="">Tanpa perubahan kategori</option>
-              {availableCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
+              <option value={transaction.categoryId ?? ""}>
+                {transaction.categoryId
+                  ? "Pertahankan kategori saat ini"
+                  : "Tanpa kategori"}
+              </option>
+              {availableCategories
+                .filter((category) => category.id !== transaction.categoryId)
+                .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
             </select>
             <small>
-              Hanya kategori aktif yang sesuai dengan jenis transaksi.
+              Pilih kategori aktif yang sesuai. Kategori transaksi yang sudah
+              ada dipertahankan jika tidak diganti; penghapusan kategori belum
+              didukung oleh kontrak PATCH backend saat ini.
             </small>
           </div>
 
@@ -571,6 +610,7 @@ export function EditTransactionPage() {
               onChange={(event) =>
                 updateField("transactionDate", event.target.value)
               }
+              disabled={isSaving}
               required
             />
             <small>Waktu transaksi menggunakan zona waktu Asia/Jakarta.</small>
@@ -599,6 +639,10 @@ export function EditTransactionPage() {
             <Link
               to={`/transactions/${transaction.id}`}
               className="edit-transaction-button edit-transaction-button--secondary"
+              aria-disabled={isSaving}
+              onClick={(event) => {
+                if (isSaving) event.preventDefault();
+              }}
             >
               Batal
             </Link>

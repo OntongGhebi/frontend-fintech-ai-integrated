@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./TransactionFormPage.css";
+import "./TransactionDetailPage.css";
 
 type TransactionType = "INCOME" | "EXPENSE";
 
@@ -60,6 +61,21 @@ function toJakartaIsoDateTime(value: string): string {
   return `${value}:00+07:00`;
 }
 
+function isValidJakartaDateTime(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return false;
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    date.getUTCHours() === hour &&
+    date.getUTCMinutes() === minute
+  );
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
     if (error.status === 401) {
@@ -109,6 +125,7 @@ export function TransactionFormPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<TransactionFormValues>(INITIAL_FORM);
+  const submitLock = useRef(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
@@ -224,11 +241,7 @@ export function TransactionFormPage() {
       return "Tanggal dan waktu transaksi wajib diisi.";
     }
 
-    if (
-      Number.isNaN(
-        new Date(toJakartaIsoDateTime(form.transactionDate)).getTime(),
-      )
-    ) {
+    if (!isValidJakartaDateTime(form.transactionDate)) {
       return "Tanggal dan waktu transaksi tidak valid.";
     }
 
@@ -248,6 +261,7 @@ export function TransactionFormPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitLock.current) return;
     setSubmitError("");
 
     const validationError = validateForm();
@@ -257,6 +271,7 @@ export function TransactionFormPage() {
       return;
     }
 
+    submitLock.current = true;
     setIsSubmitting(true);
 
     try {
@@ -279,6 +294,7 @@ export function TransactionFormPage() {
     } catch (error) {
       setSubmitError(getErrorMessage(error));
     } finally {
+      submitLock.current = false;
       setIsSubmitting(false);
     }
   }
@@ -300,9 +316,8 @@ export function TransactionFormPage() {
           </p>
         </div>
 
-        <Link to="/transactions" className="transaction-form-back-link">
-          <span aria-hidden="true">←</span>
-          Kembali ke transaksi
+        <Link to="/transactions" className="transaction-back-link">
+          ← Kembali ke transaksi
         </Link>
       </div>
 
