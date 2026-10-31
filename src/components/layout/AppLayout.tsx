@@ -31,6 +31,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { GlobalSearch } from "./GlobalSearch";
 import "./AppLayout.css";
 import "./AppLayout.subscription.css";
+import { AIAssistantWidget } from "../ai-assistant/AIAssistantWidget";
 
 const primaryNavigation = [
   {
@@ -648,6 +649,7 @@ export function AppLayout() {
           <span>Personal finance workspace · IDR</span>
         </footer>
       </div>
+      <AIAssistantWidget />
     </div>
   );
 }
