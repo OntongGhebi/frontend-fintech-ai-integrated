@@ -1,93 +1,25 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import {
+  parseCategoryAnalytics,
+  parseDashboardOverview,
+} from "../lib/dashboard/dashboard-contract";
+import type {
+  DashboardCategoryAnalyticsResponse,
+  DashboardMonthlyFinancialSummaryItem,
+  DashboardMonthlyFinancialSummaryResponse,
+  DashboardOverviewResponse,
+} from "../types/dashboard";
 import { BudgetPerformanceSection } from "./dashboard/BudgetPerformanceSection";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
 import { CashFlowAnalyticsSection } from "./dashboard/CashFlowAnalyticsSection";
 import "./DashboardPage.css";
 
-interface DashboardSummary {
-  currency: string;
-  totalIncome: string;
-  totalExpense: string;
-  netCashFlow: string;
-  transactionCount: number;
-}
-
-interface MonthlyFinancialItem {
-  month: string;
-  income: string;
-  expense: string;
-  netCashFlow: string;
-  transactionCount: number;
-  savingsRate: string;
-}
-
-interface MonthlyFinancialSummary {
-  currency: string;
-  startDate: string;
-  endDate: string;
-  months: MonthlyFinancialItem[];
-  totalIncome: string;
-  totalExpense: string;
-  totalNetCashFlow: string;
-  totalTransactionCount: number;
-  averageMonthlyIncome: string;
-  averageMonthlyExpense: string;
-}
-
-interface CategoryAnalyticsItem {
-  categoryId: string;
-  categoryName: string;
-  totalAmount: string;
-  transactionCount: number;
-  percentage: string;
-}
-
-interface CategoryAnalytics {
-  currency: string;
-  type: "INCOME" | "EXPENSE";
-  categories: CategoryAnalyticsItem[];
-  totalAmount: string;
-  transactionCount: number;
-}
-
-interface DashboardOverview {
-  currency: string;
-  summary: DashboardSummary;
-  monthlyFinancialSummary: MonthlyFinancialSummary;
-  categoryAnalytics: CategoryAnalytics;
-}
-
-interface BudgetPerformanceItem {
-  budgetId: string;
-  budgetName: string;
-  categoryId: string | null;
-  categoryName: string | null;
-  budgetAmount: string | number;
-  actualAmount: string | number;
-  remainingAmount: string | number;
-  usagePercentage: string | number;
-  transactionCount: number;
-  status: "ON_TRACK" | "NEAR_LIMIT" | "OVER_BUDGET" | string;
-}
-
-interface BudgetPerformanceResponse {
-  currency?: string;
-  items?: BudgetPerformanceItem[];
-  budgets?: BudgetPerformanceItem[];
-  data?:
-    | BudgetPerformanceItem[]
-    | {
-        items?: BudgetPerformanceItem[];
-        budgets?: BudgetPerformanceItem[];
-      };
-  summary?: {
-    totalBudgetAmount?: string | number;
-    totalActualAmount?: string | number;
-    totalRemainingAmount?: string | number;
-  };
-}
+type DashboardOverview = DashboardOverviewResponse;
+type MonthlyFinancialItem = DashboardMonthlyFinancialSummaryItem;
+type MonthlyFinancialSummary = DashboardMonthlyFinancialSummaryResponse;
+type CategoryAnalytics = DashboardCategoryAnalyticsResponse;
 
 interface Comparison {
   current: number;
@@ -300,42 +232,6 @@ function getMonthlyComparison(
   }
 
   return { current, previous, difference, percentage };
-}
-
-function getBudgetItems(
-  response: BudgetPerformanceResponse | BudgetPerformanceItem[] | null,
-): BudgetPerformanceItem[] {
-  if (!response) {
-    return [];
-  }
-
-  if (Array.isArray(response)) {
-    return response;
-  }
-
-  if (Array.isArray(response.items)) {
-    return response.items;
-  }
-
-  if (Array.isArray(response.budgets)) {
-    return response.budgets;
-  }
-
-  if (Array.isArray(response.data)) {
-    return response.data;
-  }
-
-  if (response.data && !Array.isArray(response.data)) {
-    if (Array.isArray(response.data.items)) {
-      return response.data.items;
-    }
-
-    if (Array.isArray(response.data.budgets)) {
-      return response.data.budgets;
-    }
-  }
-
-  return [];
 }
 
 function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
@@ -567,7 +463,6 @@ export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [incomeAnalytics, setIncomeAnalytics] =
     useState<CategoryAnalytics | null>(null);
-  const [budgetItems, setBudgetItems] = useState<BudgetPerformanceItem[]>([]);
   const [budgetLoaded, setBudgetLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -582,33 +477,21 @@ export function DashboardPage() {
       setErrorMessage(null);
       setBudgetLoaded(false);
 
-      const [overviewResult, incomeResult, budgetResult] =
-        await Promise.allSettled([
-          apiClient.get<DashboardOverview>("/dashboard/overview"),
-          apiClient.get<CategoryAnalytics>("/dashboard/categories?type=INCOME"),
-          apiClient.get<BudgetPerformanceResponse | BudgetPerformanceItem[]>(
-            "/dashboard/budgets/performance",
-          ),
-        ]);
+      const [overviewResult, incomeResult] = await Promise.allSettled([
+        apiClient.get<unknown>("/dashboard/overview"),
+        apiClient.get<unknown>("/dashboard/categories?type=INCOME"),
+      ]);
 
-      if (cancelled) {
-        return;
-      }
+      if (cancelled) return;
 
+      let overviewLoaded = false;
       if (overviewResult.status === "fulfilled") {
-        const result = overviewResult.value;
-
-        if (
-          result?.summary &&
-          result.monthlyFinancialSummary &&
-          result.categoryAnalytics
-        ) {
-          setOverview(result);
-        } else {
+        try {
+          setOverview(parseDashboardOverview(overviewResult.value));
+          overviewLoaded = true;
+        } catch (error) {
           setOverview(null);
-          setErrorMessage(
-            "Respons dashboard belum memiliki struktur analitik yang diperlukan.",
-          );
+          setErrorMessage(getErrorMessage(error));
         }
       } else {
         setOverview(null);
@@ -616,18 +499,16 @@ export function DashboardPage() {
       }
 
       if (incomeResult.status === "fulfilled") {
-        setIncomeAnalytics(incomeResult.value);
+        try {
+          setIncomeAnalytics(parseCategoryAnalytics(incomeResult.value));
+        } catch {
+          setIncomeAnalytics(null);
+        }
       } else {
         setIncomeAnalytics(null);
       }
 
-      if (budgetResult.status === "fulfilled") {
-        setBudgetItems(getBudgetItems(budgetResult.value));
-      } else {
-        setBudgetItems([]);
-      }
-
-      setBudgetLoaded(true);
+      setBudgetLoaded(overviewLoaded);
       setIsLoading(false);
     }
 
@@ -688,23 +569,18 @@ export function DashboardPage() {
   );
 
   const budgetTotals = useMemo(() => {
-    const totalBudget = budgetItems.reduce(
-      (sum, item) => sum + Math.max(0, toAmount(item.budgetAmount)),
-      0,
-    );
+    const performance = overview?.budgetPerformance;
+    const totalBudget = toAmount(performance?.totalBudgetAmount);
+    const totalActual = toAmount(performance?.totalActualAmount);
 
-    const totalActual = budgetItems.reduce(
-      (sum, item) => sum + Math.max(0, toAmount(item.actualAmount)),
-      0,
-    );
     return {
       totalBudget,
       totalActual,
-      remaining: totalBudget - totalActual,
+      remaining: toAmount(performance?.totalRemainingAmount),
       usagePercentage:
         totalBudget > 0 ? (totalActual / totalBudget) * 100 : null,
     };
-  }, [budgetItems]);
+  }, [overview?.budgetPerformance]);
 
   const currentMonthKey = getCurrentMonthKey();
 
@@ -1383,7 +1259,12 @@ export function DashboardPage() {
         className="dashboard-module-section"
         aria-label="Performa anggaran"
       >
-        <BudgetPerformanceSection />
+        <BudgetPerformanceSection
+          performance={overview?.budgetPerformance ?? null}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
+          onRefresh={() => setReloadKey((current) => current + 1)}
+        />
       </section>
 
       <section
@@ -1397,7 +1278,12 @@ export function DashboardPage() {
         className="dashboard-module-section"
         aria-label="Analitik arus kas"
       >
-        <CashFlowAnalyticsSection />
+        <CashFlowAnalyticsSection
+          cashFlow={overview?.cashFlow ?? null}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
+          onRefresh={() => setReloadKey((current) => current + 1)}
+        />
       </section>
 
       <footer className="dashboard-footer">

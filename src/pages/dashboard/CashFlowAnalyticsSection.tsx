@@ -1,120 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { apiClient } from "../../lib/api-client";
+import { useMemo } from "react";
+import type {
+  DashboardCashFlowResponse,
+  CashFlowPeriod,
+} from "../../types/dashboard";
 import "./CashFlowAnalyticsSection.css";
-
-type CashFlowPeriod = "DAY" | "WEEK" | "MONTH" | "YEAR";
-
-interface CashFlowItem {
-  period: string;
-  income: string;
-  expense: string;
-  netCashFlow: string;
-  transactionCount: number;
-}
-
-interface CashFlowResponse {
-  currency: string;
-  startDate: string;
-  endDate: string;
-  period: CashFlowPeriod;
-  cashFlows: CashFlowItem[];
-  totalIncome: string;
-  totalExpense: string;
-  totalNetCashFlow: string;
-  totalTransactionCount: number;
-}
-
-interface DashboardOverviewResponse {
-  cashFlow: CashFlowResponse;
-}
-
-function unwrapResponse(value: unknown): unknown {
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-
-  const record = value as Record<string, unknown>;
-
-  if ("cashFlow" in record) {
-    return record;
-  }
-
-  if ("data" in record) {
-    const data = record.data;
-
-    if (
-      data &&
-      typeof data === "object" &&
-      "cashFlow" in (data as Record<string, unknown>)
-    ) {
-      return data;
-    }
-  }
-
-  return value;
-}
-
-function isCashFlowItem(value: unknown): value is CashFlowItem {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const item = value as Record<string, unknown>;
-
-  return (
-    typeof item.period === "string" &&
-    (typeof item.income === "string" || typeof item.income === "number") &&
-    (typeof item.expense === "string" || typeof item.expense === "number") &&
-    (typeof item.netCashFlow === "string" ||
-      typeof item.netCashFlow === "number") &&
-    typeof item.transactionCount === "number"
-  );
-}
-
-function parseCashFlow(value: unknown): CashFlowResponse | null {
-  const unwrapped = unwrapResponse(value);
-
-  if (!unwrapped || typeof unwrapped !== "object") {
-    return null;
-  }
-
-  const root = unwrapped as Record<string, unknown>;
-  const candidate = root.cashFlow;
-
-  if (!candidate || typeof candidate !== "object") {
-    return null;
-  }
-
-  const data = candidate as Record<string, unknown>;
-
-  if (
-    !Array.isArray(data.cashFlows) ||
-    !data.cashFlows.every(isCashFlowItem) ||
-    typeof data.currency !== "string" ||
-    typeof data.period !== "string" ||
-    (typeof data.totalIncome !== "string" &&
-      typeof data.totalIncome !== "number") ||
-    (typeof data.totalExpense !== "string" &&
-      typeof data.totalExpense !== "number") ||
-    (typeof data.totalNetCashFlow !== "string" &&
-      typeof data.totalNetCashFlow !== "number") ||
-    typeof data.totalTransactionCount !== "number"
-  ) {
-    return null;
-  }
-
-  return {
-    currency: data.currency,
-    startDate: typeof data.startDate === "string" ? data.startDate : "",
-    endDate: typeof data.endDate === "string" ? data.endDate : "",
-    period: data.period as CashFlowPeriod,
-    cashFlows: data.cashFlows,
-    totalIncome: String(data.totalIncome),
-    totalExpense: String(data.totalExpense),
-    totalNetCashFlow: String(data.totalNetCashFlow),
-    totalTransactionCount: data.totalTransactionCount,
-  };
-}
 
 function toNumber(value: string | number): number {
   const parsed = Number(value);
@@ -206,41 +95,21 @@ function CashFlowLegend() {
   );
 }
 
-export function CashFlowAnalyticsSection() {
-  const [cashFlow, setCashFlow] = useState<CashFlowResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface CashFlowAnalyticsSectionProps {
+  cashFlow: DashboardCashFlowResponse | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onRefresh: () => void;
+}
 
-  const loadCashFlow = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await apiClient.get<DashboardOverviewResponse>(
-        "/dashboard/overview",
-      );
-
-      const parsed = parseCashFlow(response);
-
-      if (!parsed) {
-        throw new Error(
-          "Format data arus kas dari server tidak sesuai dengan kontrak yang diharapkan.",
-        );
-      }
-
-      setCashFlow(parsed);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Gagal memuat analisis arus kas.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadCashFlow();
-  }, [loadCashFlow]);
+export function CashFlowAnalyticsSection({
+  cashFlow,
+  isLoading,
+  errorMessage,
+  onRefresh,
+}: CashFlowAnalyticsSectionProps) {
+  const loading = isLoading;
+  const error = errorMessage;
 
   const chartMaximum = useMemo(() => {
     if (!cashFlow?.cashFlows.length) {
@@ -301,7 +170,7 @@ export function CashFlowAnalyticsSection() {
             <button
               type="button"
               className="cash-flow-button"
-              onClick={() => void loadCashFlow()}
+              onClick={onRefresh}
             >
               Coba lagi
             </button>
@@ -332,7 +201,7 @@ export function CashFlowAnalyticsSection() {
         <button
           type="button"
           className="cash-flow-refresh"
-          onClick={() => void loadCashFlow()}
+          onClick={onRefresh}
           aria-label="Muat ulang analisis arus kas"
           title="Muat ulang"
         >

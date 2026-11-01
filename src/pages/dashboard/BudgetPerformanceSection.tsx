@@ -1,43 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
-
-import { ApiRequestError, apiClient } from "../../lib/api-client";
+import type {
+  DashboardBudgetPerformanceResponse,
+  DashboardBudgetPerformanceItem,
+  BudgetStatus,
+} from "../../types/dashboard";
 import "./BudgetPerformanceSection.css";
-
-type BudgetStatus = "ON_TRACK" | "NEAR_LIMIT" | "OVER_BUDGET";
-
-interface BudgetPerformanceItem {
-  budgetId: string;
-  budgetName: string;
-  categoryId: string | null;
-  categoryName: string | null;
-  budgetAmount: string | number;
-  actualAmount: string | number;
-  remainingAmount: string | number;
-  usagePercentage: string | number;
-  transactionCount: number;
-  status: BudgetStatus;
-}
-
-interface BudgetPerformanceResponse {
-  budgets?: BudgetPerformanceItem[];
-  items?: BudgetPerformanceItem[];
-  data?:
-    | BudgetPerformanceItem[]
-    | {
-        budgets?: BudgetPerformanceItem[];
-        items?: BudgetPerformanceItem[];
-      };
-}
 
 function toAmount(value: string | number | null | undefined): number {
   const amount = Number(value ?? 0);
   return Number.isFinite(amount) ? amount : 0;
 }
 
-function formatCurrency(value: string | number): string {
+function formatCurrency(value: string | number, currency = "IDR"): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
-    currency: "IDR",
+    currency,
     maximumFractionDigits: 0,
   }).format(toAmount(value));
 }
@@ -61,101 +37,25 @@ function getStatusLabel(status: BudgetStatus): string {
   }
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiRequestError) {
-    if (error.status === 0) {
-      return "Tidak dapat terhubung ke backend. Pastikan server API aktif.";
-    }
-
-    return error.message || "Data performa anggaran gagal dimuat.";
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Terjadi kesalahan saat memuat performa anggaran.";
+interface BudgetPerformanceSectionProps {
+  performance: DashboardBudgetPerformanceResponse | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onRefresh: () => void;
 }
 
-/**
- * Supports the common array and envelope forms without silently
- * treating an unknown response structure as an empty budget list.
- */
-function parseBudgetPerformance(
-  response: BudgetPerformanceItem[] | BudgetPerformanceResponse,
-): BudgetPerformanceItem[] {
-  if (Array.isArray(response)) {
-    return response;
-  }
+export function BudgetPerformanceSection({
+  performance,
+  isLoading,
+  errorMessage,
+  onRefresh,
+}: BudgetPerformanceSectionProps) {
+  const budgets: DashboardBudgetPerformanceItem[] = performance?.budgets ?? [];
+  const totalBudget = toAmount(performance?.totalBudgetAmount);
 
-  const data = response.data;
+  const totalSpent = toAmount(performance?.totalActualAmount);
 
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  if (data && !Array.isArray(data)) {
-    if (Array.isArray(data.budgets)) return data.budgets;
-    if (Array.isArray(data.items)) return data.items;
-  }
-
-  if (Array.isArray(response.budgets)) return response.budgets;
-  if (Array.isArray(response.items)) return response.items;
-
-  throw new Error("Format respons performa anggaran tidak sesuai kontrak API.");
-}
-
-export function BudgetPerformanceSection() {
-  const [budgets, setBudgets] = useState<BudgetPerformanceItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const loadBudgets = useCallback(async () => {
-    try {
-      const response = await apiClient.get<
-        BudgetPerformanceItem[] | BudgetPerformanceResponse
-      >("/dashboard/budgets/performance");
-
-      const items = parseBudgetPerformance(response);
-
-      const validItems = items.filter(
-        (item) =>
-          typeof item.budgetId === "string" &&
-          typeof item.budgetName === "string",
-      );
-
-      setErrorMessage(null);
-      setBudgets(validItems);
-    } catch (error: unknown) {
-      setErrorMessage(getErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void loadBudgets();
-    });
-
-    return () => window.clearTimeout(timeoutId);
-  }, [loadBudgets, reloadKey]);
-
-  const totalBudget = budgets.reduce(
-    (total, item) => total + toAmount(item.budgetAmount),
-    0,
-  );
-
-  const totalSpent = budgets.reduce(
-    (total, item) => total + toAmount(item.actualAmount),
-    0,
-  );
-
-  const totalRemaining = budgets.reduce(
-    (total, item) => total + toAmount(item.remainingAmount),
-    0,
-  );
+  const totalRemaining = toAmount(performance?.totalRemainingAmount);
 
   const budgetCount = budgets.length;
 
@@ -178,9 +78,7 @@ export function BudgetPerformanceSection() {
           className="budget-refresh-button"
           type="button"
           onClick={() => {
-            setIsLoading(true);
-            setErrorMessage(null);
-            setReloadKey((current) => current + 1);
+            onRefresh();
           }}
           disabled={isLoading}
         >
@@ -198,9 +96,7 @@ export function BudgetPerformanceSection() {
           <button
             type="button"
             onClick={() => {
-              setIsLoading(true);
-              setErrorMessage(null);
-              setReloadKey((current) => current + 1);
+              onRefresh();
             }}
             disabled={isLoading}
           >
@@ -233,19 +129,28 @@ export function BudgetPerformanceSection() {
             <div className="budget-summary-grid">
               <article className="budget-summary-card">
                 <span>Total anggaran</span>
-                <strong>{formatCurrency(totalBudget)}</strong>
+                <strong>
+                  {formatCurrency(totalBudget, performance?.currency ?? "IDR")}
+                </strong>
                 <small>{formatNumber(budgetCount)} anggaran</small>
               </article>
 
               <article className="budget-summary-card budget-summary-card--spent">
                 <span>Total digunakan</span>
-                <strong>{formatCurrency(totalSpent)}</strong>
+                <strong>
+                  {formatCurrency(totalSpent, performance?.currency ?? "IDR")}
+                </strong>
                 <small>Akumulasi pemakaian</small>
               </article>
 
               <article className="budget-summary-card budget-summary-card--remaining">
                 <span>Total sisa anggaran</span>
-                <strong>{formatCurrency(totalRemaining)}</strong>
+                <strong>
+                  {formatCurrency(
+                    totalRemaining,
+                    performance?.currency ?? "IDR",
+                  )}
+                </strong>
                 <small>Akumulasi sisa per anggaran</small>
               </article>
             </div>
@@ -280,11 +185,21 @@ export function BudgetPerformanceSection() {
                     <div className="budget-item-amounts">
                       <div>
                         <span>Digunakan</span>
-                        <strong>{formatCurrency(budget.actualAmount)}</strong>
+                        <strong>
+                          {formatCurrency(
+                            budget.actualAmount,
+                            performance?.currency ?? "IDR",
+                          )}
+                        </strong>
                       </div>
                       <div>
                         <span>Anggaran</span>
-                        <strong>{formatCurrency(budget.budgetAmount)}</strong>
+                        <strong>
+                          {formatCurrency(
+                            budget.budgetAmount,
+                            performance?.currency ?? "IDR",
+                          )}
+                        </strong>
                       </div>
                     </div>
 
@@ -314,7 +229,11 @@ export function BudgetPerformanceSection() {
 
                     <div className="budget-item-footer">
                       <span>
-                        Sisa: {formatCurrency(budget.remainingAmount)}
+                        Sisa:{" "}
+                        {formatCurrency(
+                          budget.remainingAmount,
+                          performance?.currency ?? "IDR",
+                        )}
                       </span>
                       <span>
                         {formatNumber(budget.transactionCount)} transaksi
