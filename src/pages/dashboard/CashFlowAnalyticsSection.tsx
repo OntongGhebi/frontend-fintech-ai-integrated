@@ -1,9 +1,27 @@
 import { useMemo } from "react";
-import type {
-  DashboardCashFlowResponse,
-  CashFlowPeriod,
-} from "../../types/dashboard";
 import "./CashFlowAnalyticsSection.css";
+
+type CashFlowPeriod = "DAY" | "WEEK" | "MONTH" | "YEAR";
+
+interface CashFlowItem {
+  period: string;
+  income: string | number;
+  expense: string | number;
+  netCashFlow: string | number;
+  transactionCount: number;
+}
+
+export interface CashFlowResponse {
+  currency: string;
+  startDate: string;
+  endDate: string;
+  period: CashFlowPeriod;
+  cashFlows: CashFlowItem[];
+  totalIncome: string | number;
+  totalExpense: string | number;
+  totalNetCashFlow: string | number;
+  totalTransactionCount: number;
+}
 
 function toNumber(value: string | number): number {
   const parsed = Number(value);
@@ -96,7 +114,7 @@ function CashFlowLegend() {
 }
 
 interface CashFlowAnalyticsSectionProps {
-  cashFlow: DashboardCashFlowResponse | null;
+  cashFlow: CashFlowResponse | null;
   isLoading: boolean;
   errorMessage: string | null;
   onRefresh: () => void;
@@ -108,14 +126,8 @@ export function CashFlowAnalyticsSection({
   errorMessage,
   onRefresh,
 }: CashFlowAnalyticsSectionProps) {
-  const loading = isLoading;
-  const error = errorMessage;
-
   const chartMaximum = useMemo(() => {
-    if (!cashFlow?.cashFlows.length) {
-      return 0;
-    }
-
+    if (!cashFlow?.cashFlows.length) return 0;
     return Math.max(
       0,
       ...cashFlow.cashFlows.flatMap((item) => [
@@ -125,7 +137,7 @@ export function CashFlowAnalyticsSection({
     );
   }, [cashFlow]);
 
-  if (loading) {
+  if (isLoading && !cashFlow) {
     return (
       <section
         className="cash-flow-section"
@@ -141,7 +153,6 @@ export function CashFlowAnalyticsSection({
             </p>
           </div>
         </div>
-
         <div className="cash-flow-loading" role="status">
           <span className="cash-flow-loading__spinner" />
           Memuat data arus kas
@@ -150,7 +161,7 @@ export function CashFlowAnalyticsSection({
     );
   }
 
-  if (error || !cashFlow) {
+  if (errorMessage || !cashFlow) {
     return (
       <section className="cash-flow-section" aria-labelledby="cash-flow-title">
         <div className="cash-flow-section__header">
@@ -159,14 +170,13 @@ export function CashFlowAnalyticsSection({
             <h2 id="cash-flow-title">Cash flow</h2>
           </div>
         </div>
-
         <div className="cash-flow-feedback cash-flow-feedback--error">
           <span className="cash-flow-feedback__icon" aria-hidden="true">
             !
           </span>
           <div>
             <h3>Analisis arus kas belum tersedia</h3>
-            <p>{error ?? "Data arus kas tidak dapat ditampilkan."}</p>
+            <p>{errorMessage ?? "Data arus kas tidak dapat ditampilkan."}</p>
             <button
               type="button"
               className="cash-flow-button"
@@ -196,14 +206,19 @@ export function CashFlowAnalyticsSection({
           <p className="cash-flow-section__date">
             {formatDateRange(cashFlow.startDate, cashFlow.endDate)}
           </p>
+          {isLoading && (
+            <p className="cash-flow-section__subtitle" role="status">
+              Memperbarui data periode...
+            </p>
+          )}
         </div>
 
         <button
           type="button"
           className="cash-flow-refresh"
           onClick={onRefresh}
-          aria-label="Muat ulang analisis arus kas"
-          title="Muat ulang"
+          aria-label="Muat ulang seluruh data dashboard"
+          title="Muat ulang seluruh data"
         >
           <span aria-hidden="true">↻</span>
           <span>Muat ulang</span>
