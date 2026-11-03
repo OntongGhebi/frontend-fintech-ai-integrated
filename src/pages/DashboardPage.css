@@ -3861,3 +3861,101 @@
     transition: none !important;
   }
 }
+
+/* Phase 15.3.2.3 — selectable monthly and custom analytics period. */
+.dashboard-page .dashboard-period-controls {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.dashboard-page .dashboard-period-fields {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.dashboard-page .dashboard-period-fields select,
+.dashboard-page .dashboard-period-fields input {
+  min-height: 36px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 9px;
+  outline: none;
+  background: var(--dashboard-surface);
+  color: var(--dashboard-text);
+  font-size: 12px;
+  font-weight: 600;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.dashboard-page .dashboard-period-fields select:focus-visible,
+.dashboard-page .dashboard-period-fields input:focus-visible,
+.dashboard-page .dashboard-period-apply:focus-visible {
+  border-color: var(--dashboard-emerald);
+  box-shadow: 0 0 0 3px rgb(52 123 103 / 14%);
+}
+
+.dashboard-page .dashboard-period-fields input[type="date"] {
+  width: 142px;
+  font-weight: 500;
+}
+
+.dashboard-page .dashboard-period-date-separator {
+  color: var(--dashboard-muted);
+  font-size: 12px;
+}
+
+.dashboard-page .dashboard-period-apply {
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--dashboard-forest);
+  border-radius: 9px;
+  background: var(--dashboard-forest);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.dashboard-page .dashboard-period-apply:hover {
+  background: var(--dashboard-emerald);
+  transform: translateY(-1px);
+}
+
+.dashboard-page .dashboard-period-error {
+  margin: 0;
+  color: #b5473c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .dashboard-page .dashboard-period-controls {
+    width: 100%;
+  }
+
+  .dashboard-page .dashboard-period-fields {
+    width: 100%;
+  }
+
+  .dashboard-page .dashboard-period-fields label {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .dashboard-page .dashboard-period-fields select,
+  .dashboard-page .dashboard-period-fields input[type="date"] {
+    width: 100%;
+  }
+
+  .dashboard-page .dashboard-period-apply {
+    flex: 1 1 100%;
+  }
+}

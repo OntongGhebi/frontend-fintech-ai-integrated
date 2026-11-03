@@ -459,6 +459,39 @@ function buildSpendingCategories(
   return topFive;
 }
 
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getMonthRange(year: number, monthIndex: number) {
+  const start = new Date(year, monthIndex, 1);
+  const end = new Date(year, monthIndex + 1, 0);
+  return {
+    startDate: toDateInputValue(start),
+    endDate: toDateInputValue(end),
+  };
+}
+
+function getPeriodLabel(startDate: string, endDate: string): string {
+  if (!startDate || !endDate) return "Periode analitik";
+  const start = new Date(`${startDate}T12:00:00`);
+  const end = new Date(`${endDate}T12:00:00`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return "Periode analitik";
+  }
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  });
+  if (startDate === endDate) return formatter.format(start);
+  return `${formatter.format(start)} – ${formatter.format(end)}`;
+}
+
 export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [incomeAnalytics, setIncomeAnalytics] =
@@ -468,6 +501,24 @@ export function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState<"6" | "12">("12");
+  const now = new Date();
+  const [periodMode, setPeriodMode] = useState<"month" | "custom">("month");
+  const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
+  const [selectedYear, setSelectedYear] = useState(String(now.getFullYear()));
+  const initialMonthRange = getMonthRange(now.getFullYear(), now.getMonth());
+  const [customStartDate, setCustomStartDate] = useState(
+    initialMonthRange.startDate,
+  );
+  const [customEndDate, setCustomEndDate] = useState(initialMonthRange.endDate);
+  const [appliedCustomRange, setAppliedCustomRange] =
+    useState(initialMonthRange);
+  const [periodError, setPeriodError] = useState<string | null>(null);
+
+  const activeRange =
+    periodMode === "month"
+      ? getMonthRange(Number(selectedYear), Number(selectedMonth))
+      : appliedCustomRange;
+  const queryString = `?startDate=${encodeURIComponent(activeRange.startDate)}&endDate=${encodeURIComponent(activeRange.endDate)}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -478,8 +529,10 @@ export function DashboardPage() {
       setBudgetLoaded(false);
 
       const [overviewResult, incomeResult] = await Promise.allSettled([
-        apiClient.get<unknown>("/dashboard/overview"),
-        apiClient.get<unknown>("/dashboard/categories?type=INCOME"),
+        apiClient.get<unknown>(`/dashboard/overview${queryString}`),
+        apiClient.get<unknown>(
+          `/dashboard/categories?type=INCOME&startDate=${encodeURIComponent(activeRange.startDate)}&endDate=${encodeURIComponent(activeRange.endDate)}`,
+        ),
       ]);
 
       if (cancelled) return;
@@ -517,7 +570,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, queryString, activeRange.startDate, activeRange.endDate]);
 
   const summary = overview?.summary;
   const monthlySummary = overview?.monthlyFinancialSummary;
@@ -634,12 +687,124 @@ export function DashboardPage() {
   return (
     <main className="dashboard-page">
       <div className="dashboard-toolbar" aria-label="Kontrol dashboard">
-        <div className="dashboard-toolbar-context">
-          <span className="dashboard-live-dot" aria-hidden="true" />
-          <span className="dashboard-toolbar-label">Periode analitik</span>
-          <strong className="dashboard-period-pill__value">
-            {formatPeriod(monthlySummary)}
-          </strong>
+        <div className="dashboard-period-controls">
+          <div className="dashboard-toolbar-context">
+            <span className="dashboard-live-dot" aria-hidden="true" />
+            <span className="dashboard-toolbar-label">Periode analitik</span>
+            <strong className="dashboard-period-pill__value">
+              {getPeriodLabel(activeRange.startDate, activeRange.endDate)}
+            </strong>
+          </div>
+          <div className="dashboard-period-fields">
+            <label className="dashboard-period-mode-label">
+              <span className="sr-only">Jenis periode</span>
+              <select
+                aria-label="Jenis periode analitik"
+                value={periodMode}
+                onChange={(event) => {
+                  setPeriodMode(event.target.value as "month" | "custom");
+                  setPeriodError(null);
+                }}
+              >
+                <option value="month">Bulanan</option>
+                <option value="custom">Rentang kustom</option>
+              </select>
+            </label>
+            {periodMode === "month" ? (
+              <>
+                <label>
+                  <span className="sr-only">Pilih bulan</span>
+                  <select
+                    aria-label="Pilih bulan"
+                    value={selectedMonth}
+                    onChange={(event) => setSelectedMonth(event.target.value)}
+                  >
+                    {Array.from({ length: 12 }, (_, index) => (
+                      <option key={index} value={String(index)}>
+                        {new Intl.DateTimeFormat("id-ID", {
+                          month: "long",
+                        }).format(new Date(2026, index, 1))}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span className="sr-only">Pilih tahun</span>
+                  <select
+                    aria-label="Pilih tahun"
+                    value={selectedYear}
+                    onChange={(event) => setSelectedYear(event.target.value)}
+                  >
+                    {Array.from(
+                      { length: 8 },
+                      (_, index) => now.getFullYear() - 5 + index,
+                    ).map((year) => (
+                      <option key={year} value={String(year)}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            ) : (
+              <>
+                <label>
+                  <span className="sr-only">Tanggal mulai</span>
+                  <input
+                    aria-label="Tanggal mulai"
+                    type="date"
+                    value={customStartDate}
+                    max={customEndDate || undefined}
+                    onChange={(event) => setCustomStartDate(event.target.value)}
+                  />
+                </label>
+                <span
+                  className="dashboard-period-date-separator"
+                  aria-hidden="true"
+                >
+                  –
+                </span>
+                <label>
+                  <span className="sr-only">Tanggal akhir</span>
+                  <input
+                    aria-label="Tanggal akhir"
+                    type="date"
+                    value={customEndDate}
+                    min={customStartDate || undefined}
+                    onChange={(event) => setCustomEndDate(event.target.value)}
+                  />
+                </label>
+                <button
+                  className="dashboard-period-apply"
+                  type="button"
+                  onClick={() => {
+                    if (
+                      !customStartDate ||
+                      !customEndDate ||
+                      customStartDate > customEndDate
+                    ) {
+                      setPeriodError(
+                        "Tanggal akhir harus sama dengan atau setelah tanggal mulai.",
+                      );
+                      return;
+                    }
+                    setAppliedCustomRange({
+                      startDate: customStartDate,
+                      endDate: customEndDate,
+                    });
+                    setPeriodError(null);
+                  }}
+                >
+                  Terapkan
+                </button>
+              </>
+            )}
+          </div>
+          {periodError && (
+            <p className="dashboard-period-error" role="alert">
+              {periodError}
+            </p>
+          )}
         </div>
 
         <button
