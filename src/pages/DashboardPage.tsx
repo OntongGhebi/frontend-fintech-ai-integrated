@@ -193,45 +193,48 @@ function getCurrentMonthKey(): string {
   return year && month ? `${year}-${month}` : "";
 }
 
-function getPreviousMonthKey(monthKey: string): string {
-  const match = /^(\d{4})-(\d{2})$/.exec(monthKey);
-
-  if (!match) {
-    return "";
-  }
-
-  const date = new Date(Number(match[1]), Number(match[2]) - 2, 1, 12);
-
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function getMonthlyComparison(
-  months: MonthlyFinancialItem[],
-  field: "income" | "expense",
+function getPeriodComparison(
+  currentValue: string | number | undefined,
+  previousValue: string | number | undefined,
 ): Comparison | null {
-  const currentMonth = getCurrentMonthKey();
-  const previousMonth = getPreviousMonthKey(currentMonth);
+  if (currentValue === undefined || previousValue === undefined) return null;
 
-  const currentItem = months.find((item) => item.month === currentMonth);
-  const previousItem = months.find((item) => item.month === previousMonth);
-
-  if (!currentItem || !previousItem) {
-    return null;
-  }
-
-  const current = toAmount(currentItem[field]);
-  const previous = toAmount(previousItem[field]);
+  const current = toAmount(currentValue);
+  const previous = toAmount(previousValue);
   const difference = current - previous;
-
-  let percentage: number | null = null;
-
-  if (previous !== 0) {
-    percentage = (difference / Math.abs(previous)) * 100;
-  } else if (current === 0) {
-    percentage = 0;
-  }
+  const percentage =
+    previous > 0 ? (difference / previous) * 100 : current === 0 ? 0 : null;
 
   return { current, previous, difference, percentage };
+}
+
+function getPreviousPeriodRange(
+  range: { startDate: string; endDate: string },
+  mode: "month" | "custom",
+): { startDate: string; endDate: string } {
+  if (mode === "month") {
+    const [year, month] = range.startDate.split("-").map(Number);
+    const previousMonth = new Date(Date.UTC(year, month - 2, 1));
+    const previousEnd = new Date(Date.UTC(year, month - 1, 0));
+    return {
+      startDate: previousMonth.toISOString().slice(0, 10),
+      endDate: previousEnd.toISOString().slice(0, 10),
+    };
+  }
+
+  const start = new Date(`${range.startDate}T00:00:00.000Z`);
+  const end = new Date(`${range.endDate}T00:00:00.000Z`);
+  const durationDays =
+    Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
+  const previousEnd = new Date(start.getTime() - 86_400_000);
+  const previousStart = new Date(
+    previousEnd.getTime() - (durationDays - 1) * 86_400_000,
+  );
+
+  return {
+    startDate: previousStart.toISOString().slice(0, 10),
+    endDate: previousEnd.toISOString().slice(0, 10),
+  };
 }
 
 function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
@@ -239,7 +242,7 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
     return (
       <span
         className="dashboard-comparison-header dashboard-comparison-header--muted"
-        title="Data bulan ini atau bulan lalu belum lengkap"
+        title="Data periode terpilih atau periode pembanding belum tersedia"
       >
         <span aria-hidden="true">—</span>
         <span>Belum tersedia</span>
@@ -255,11 +258,11 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
   return (
     <span
       className={`dashboard-comparison-header dashboard-comparison-header--${tone}`}
-      title={`Bulan ini: ${formatCurrency(comparison.current)}. Bulan lalu: ${formatCurrency(comparison.previous)}.`}
+      title={`Periode terpilih: ${formatCurrency(comparison.current)}. Periode sebelumnya: ${formatCurrency(comparison.previous)}.`}
       aria-label={
         comparison.percentage === null
-          ? `Perubahan nominal ${increased ? "naik" : decreased ? "turun" : "tetap"} dibanding bulan lalu`
-          : `${increased ? "Naik" : decreased ? "Turun" : "Tetap"} ${formatPercent(Math.abs(comparison.percentage))} dibanding bulan lalu`
+          ? `Perubahan nominal ${increased ? "naik" : decreased ? "turun" : "tetap"} dibanding periode sebelumnya`
+          : `${increased ? "Naik" : decreased ? "Turun" : "Tetap"} ${formatPercent(Math.abs(comparison.percentage))} dibanding periode sebelumnya`
       }
     >
       <span className="dashboard-comparison-header-icon" aria-hidden="true">
@@ -267,7 +270,7 @@ function ComparisonHeader({ comparison }: { comparison: Comparison | null }) {
       </span>
       <strong>
         {comparison.percentage === null
-          ? "—"
+          ? "Baru"
           : `${increased ? "+" : decreased ? "−" : ""}${formatPercent(Math.abs(comparison.percentage))}`}
       </strong>
     </span>
@@ -283,7 +286,7 @@ function ComparisonDetail({
   if (!comparison) {
     return (
       <p className="dashboard-comparison-detail dashboard-comparison-detail--muted">
-        Perbandingan dengan bulan lalu belum tersedia.
+        Perbandingan dengan periode sebelumnya belum tersedia.
       </p>
     );
   }
@@ -305,13 +308,17 @@ function ComparisonDetail({
             ? "dashboard-comparison-detail--negative"
             : "dashboard-comparison-detail--neutral"
       }`}
-      title={`Nominal bulan lalu: ${formatCurrency(comparison.previous, currency)}`}
+      title={`Nominal periode sebelumnya: ${formatCurrency(comparison.previous, currency)}`}
     >
       <span>
         {sign}
         {amount}
       </span>
-      <span>vs bulan lalu</span>
+      <span>
+        {comparison.previous === 0 && comparison.current > 0
+          ? "belum ada pada periode sebelumnya"
+          : "vs periode sebelumnya"}
+      </span>
     </p>
   );
 }
@@ -494,6 +501,8 @@ function getPeriodLabel(startDate: string, endDate: string): string {
 
 export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [previousOverview, setPreviousOverview] =
+    useState<DashboardOverview | null>(null);
   const [incomeAnalytics, setIncomeAnalytics] =
     useState<CategoryAnalytics | null>(null);
   const [budgetLoaded, setBudgetLoaded] = useState(false);
@@ -519,6 +528,8 @@ export function DashboardPage() {
       ? getMonthRange(Number(selectedYear), Number(selectedMonth))
       : appliedCustomRange;
   const queryString = `?startDate=${encodeURIComponent(activeRange.startDate)}&endDate=${encodeURIComponent(activeRange.endDate)}`;
+  const previousRange = getPreviousPeriodRange(activeRange, periodMode);
+  const previousQueryString = `?startDate=${encodeURIComponent(previousRange.startDate)}&endDate=${encodeURIComponent(previousRange.endDate)}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -528,12 +539,14 @@ export function DashboardPage() {
       setErrorMessage(null);
       setBudgetLoaded(false);
 
-      const [overviewResult, incomeResult] = await Promise.allSettled([
-        apiClient.get<unknown>(`/dashboard/overview${queryString}`),
-        apiClient.get<unknown>(
-          `/dashboard/categories?type=INCOME&startDate=${encodeURIComponent(activeRange.startDate)}&endDate=${encodeURIComponent(activeRange.endDate)}`,
-        ),
-      ]);
+      const [overviewResult, incomeResult, previousOverviewResult] =
+        await Promise.allSettled([
+          apiClient.get<unknown>(`/dashboard/overview${queryString}`),
+          apiClient.get<unknown>(
+            `/dashboard/categories?type=INCOME&startDate=${encodeURIComponent(activeRange.startDate)}&endDate=${encodeURIComponent(activeRange.endDate)}`,
+          ),
+          apiClient.get<unknown>(`/dashboard/overview${previousQueryString}`),
+        ]);
 
       if (cancelled) return;
 
@@ -549,6 +562,18 @@ export function DashboardPage() {
       } else {
         setOverview(null);
         setErrorMessage(getErrorMessage(overviewResult.reason));
+      }
+
+      if (previousOverviewResult.status === "fulfilled") {
+        try {
+          setPreviousOverview(
+            parseDashboardOverview(previousOverviewResult.value),
+          );
+        } catch {
+          setPreviousOverview(null);
+        }
+      } else {
+        setPreviousOverview(null);
       }
 
       if (incomeResult.status === "fulfilled") {
@@ -570,7 +595,13 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, queryString, activeRange.startDate, activeRange.endDate]);
+  }, [
+    reloadKey,
+    queryString,
+    previousQueryString,
+    activeRange.startDate,
+    activeRange.endDate,
+  ]);
 
   const summary = overview?.summary;
   const monthlySummary = overview?.monthlyFinancialSummary;
@@ -612,13 +643,21 @@ export function DashboardPage() {
   );
 
   const incomeComparison = useMemo(
-    () => getMonthlyComparison(allMonths, "income"),
-    [allMonths],
+    () =>
+      getPeriodComparison(
+        summary?.totalIncome,
+        previousOverview?.summary.totalIncome,
+      ),
+    [summary?.totalIncome, previousOverview?.summary.totalIncome],
   );
 
   const expenseComparison = useMemo(
-    () => getMonthlyComparison(allMonths, "expense"),
-    [allMonths],
+    () =>
+      getPeriodComparison(
+        summary?.totalExpense,
+        previousOverview?.summary.totalExpense,
+      ),
+    [summary?.totalExpense, previousOverview?.summary.totalExpense],
   );
 
   const budgetTotals = useMemo(() => {
