@@ -152,6 +152,7 @@ export interface DashboardCashFlowResponse {
 
 export interface DashboardOverviewResponse {
   currency: string;
+  totalCurrentBalance: string;
   summary: DashboardSummaryResponse;
   income: DashboardIncomeAnalyticsResponse;
   expense: DashboardExpenseAnalyticsResponse;

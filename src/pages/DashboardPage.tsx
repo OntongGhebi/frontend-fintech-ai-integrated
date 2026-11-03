@@ -682,8 +682,8 @@ export function DashboardPage() {
         <article className="dashboard-balance-card">
           <div className="dashboard-balance-card-heading">
             <div>
-              <span className="dashboard-card-overline">YOUR CASH FLOW</span>
-              <h2>Ringkasan saldo bersih</h2>
+              <span className="dashboard-card-overline">CURRENT BALANCE</span>
+              <h2>Total saldo bersih</h2>
             </div>
             <span className="dashboard-card-icon dashboard-card-icon--light">
               ↗
@@ -697,29 +697,27 @@ export function DashboardPage() {
           >
             {isLoading && !overview ? (
               <span className="dashboard-skeleton dashboard-skeleton--balance" />
-            ) : summary ? (
-              formatCurrency(summary.netCashFlow, currency)
+            ) : overview ? (
+              formatCurrency(overview.totalCurrentBalance, currency)
             ) : (
               "—"
             )}
           </div>
 
           <p className="dashboard-balance-description">
-            Total pemasukan dikurangi pengeluaran pada periode ringkasan.
+            Akumulasi saldo terkini dari seluruh akun aktif Anda.
           </p>
 
           <div className="dashboard-balance-footer" aria-live="polite">
             <span className="dashboard-balance-footer-icon" aria-hidden="true">
-              {summary ? (cashFlow >= 0 ? "✓" : "!") : "…"}
+              {overview ? "✓" : "…"}
             </span>
             <span>
-              {summary
-                ? cashFlow >= 0
-                  ? "Arus kas bersih positif"
-                  : "Pengeluaran melebihi pemasukan"
+              {overview
+                ? "Saldo seluruh akun aktif · tidak terikat periode analitik"
                 : isLoading
-                  ? "Memuat arus kas…"
-                  : "Arus kas belum tersedia"}
+                  ? "Memuat saldo akun…"
+                  : "Saldo akun belum tersedia"}
             </span>
           </div>
         </article>

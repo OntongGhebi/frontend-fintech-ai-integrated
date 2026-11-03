@@ -69,6 +69,7 @@ export function parseDashboardOverview(
 
   if (
     !isString(value.currency) ||
+    !isMoney(value.totalCurrentBalance) ||
     !isRecord(summary) ||
     !isString(summary.currency) ||
     !isMoney(summary.totalIncome) ||
