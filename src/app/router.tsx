@@ -3,7 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 
-import { DashboardPage } from "../pages/DashboardPage";
+import { FinancialWellBeingDashboardPage } from "../pages/FinancialWellBeingDashboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <DashboardPage />,
+            element: <FinancialWellBeingDashboardPage />,
           },
           {
             path: "transactions",
