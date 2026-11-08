@@ -35,6 +35,7 @@ type LifecycleDialog =
   | { type: "reject"; recommendation: BudgetRecommendation }
   | { type: "defer"; recommendation: BudgetRecommendation }
   | { type: "apply"; recommendation: BudgetRecommendation }
+  | { type: "evaluate"; recommendation: BudgetRecommendation }
   | null;
 
 type MonthlySpending = {
@@ -42,6 +43,17 @@ type MonthlySpending = {
   amount: string | number;
   transactionCount: number;
 };
+
+interface RecommendationEvaluation {
+  targetMonth?: string;
+  actualSpend?: string | number;
+  proposedAllocation?: string | number;
+  previousAllocation?: string | number;
+  variance?: string | number;
+  utilizationPercentage?: string | number;
+  transactionCount?: number;
+  evaluatedAt?: string;
+}
 
 interface BudgetRecommendation {
   id: string;
@@ -73,7 +85,7 @@ interface BudgetRecommendation {
   appliedAt?: string | null;
   evaluatedAt?: string | null;
   evaluationStatus?: string | null;
-  evaluation?: Record<string, unknown> | null;
+  evaluation?: RecommendationEvaluation | null;
 }
 
 interface RecommendationListResponse {
@@ -177,6 +189,27 @@ function formatDate(value: string | null | undefined): string {
     dateStyle: "medium",
     timeZone: "Asia/Jakarta",
   }).format(date);
+}
+
+function getEvaluationStatusLabel(value: string | null | undefined): string {
+  const labels: Record<string, string> = {
+    WITHIN_ALLOCATION: "Sesuai alokasi",
+    OVER_ALLOCATION: "Melebihi alokasi",
+    NO_ACTIVITY: "Belum ada aktivitas",
+  };
+  return value
+    ? (labels[value] ?? "Hasil evaluasi tersedia")
+    : "Hasil evaluasi tersedia";
+}
+
+function isTargetMonthCompleted(targetMonth: string): boolean {
+  return Boolean(targetMonth) && targetMonth < getCurrentMonthKey();
+}
+
+function formatVariance(value: string | number | undefined): string {
+  if (value === undefined || value === null) return "—";
+  const amount = toNumber(value);
+  return `${amount > 0 ? "+" : ""}${formatCurrency(amount)}`;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -427,6 +460,45 @@ export function BudgetRecommendationsPage() {
       );
       await refreshAfterLifecycle(
         `Rekomendasi “${item.budgetName}” berhasil diterapkan ke alokasi anggaran.`,
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
+  const handleEvaluate = async () => {
+    if (
+      !lifecycleDialog ||
+      lifecycleDialog.type !== "evaluate" ||
+      isProcessingId
+    ) {
+      return;
+    }
+
+    const item = lifecycleDialog.recommendation;
+    if (
+      item.status !== "APPLIED" ||
+      !isTargetMonthCompleted(item.targetMonth)
+    ) {
+      setLifecycleDialog(null);
+      setError(
+        "Evaluasi hanya tersedia untuk rekomendasi yang sudah diterapkan setelah bulan target berakhir.",
+      );
+      return;
+    }
+
+    setIsProcessingId(item.id);
+    setError(null);
+    setNotice(null);
+
+    try {
+      await apiClient.post(
+        `/financial-analysis/budget-recommendations/${item.id}/evaluate`,
+      );
+      await refreshAfterLifecycle(
+        `Evaluasi rekomendasi “${item.budgetName}” untuk ${formatMonth(item.targetMonth)} berhasil disimpan.`,
       );
     } catch (requestError) {
       setError(getErrorMessage(requestError));
@@ -761,6 +833,128 @@ export function BudgetRecommendationsPage() {
                     )}
                   </footer>
 
+                  {item.status === "EVALUATED" && item.evaluation && (
+                    <section
+                      className="recommendation-evaluation-panel"
+                      aria-label="Hasil evaluasi rekomendasi"
+                    >
+                      <div className="recommendation-evaluation-heading">
+                        <div>
+                          <span className="recommendation-detail-label">
+                            HASIL PEMANTAUAN
+                          </span>
+                          <h5>
+                            {getEvaluationStatusLabel(item.evaluationStatus)}
+                          </h5>
+                        </div>
+                        <span
+                          className={`recommendation-evaluation-status recommendation-evaluation-status--${(item.evaluationStatus || "available").toLowerCase()}`}
+                        >
+                          <CheckCircle2 size={14} />
+                          Evaluasi selesai
+                        </span>
+                      </div>
+                      <div className="recommendation-evaluation-grid">
+                        <div>
+                          <span>Pengeluaran aktual</span>
+                          <strong>
+                            {formatCurrency(item.evaluation.actualSpend ?? 0)}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Alokasi usulan</span>
+                          <strong>
+                            {formatCurrency(
+                              item.evaluation.proposedAllocation ??
+                                item.proposedAllocation,
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Alokasi sebelumnya</span>
+                          <strong>
+                            {formatCurrency(
+                              item.evaluation.previousAllocation ??
+                                item.currentAllocation,
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Selisih pengeluaran</span>
+                          <strong>
+                            {formatVariance(item.evaluation.variance)}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Penggunaan alokasi</span>
+                          <strong>
+                            {formatPercent(
+                              item.evaluation.utilizationPercentage,
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Jumlah transaksi</span>
+                          <strong>
+                            {(
+                              item.evaluation.transactionCount ?? 0
+                            ).toLocaleString("id-ID")}
+                          </strong>
+                        </div>
+                      </div>
+                      <p className="recommendation-evaluation-footnote">
+                        Dievaluasi pada{" "}
+                        {formatDate(
+                          item.evaluatedAt || item.evaluation.evaluatedAt,
+                        )}
+                        .
+                        {item.evaluationStatus === "NO_ACTIVITY"
+                          ? " Tidak ditemukan transaksi pengeluaran pada kategori ini selama bulan target."
+                          : item.evaluationStatus === "WITHIN_ALLOCATION"
+                            ? " Pengeluaran aktual tidak melebihi alokasi yang diterapkan."
+                            : item.evaluationStatus === "OVER_ALLOCATION"
+                              ? " Pengeluaran aktual melampaui alokasi yang diterapkan."
+                              : ""}
+                      </p>
+                    </section>
+                  )}
+
+                  {item.status === "APPLIED" && (
+                    <div className="recommendation-lifecycle-actions recommendation-evaluation-actions">
+                      {isTargetMonthCompleted(item.targetMonth) ? (
+                        <>
+                          <button
+                            type="button"
+                            className="recommendation-action-button recommendation-action-button--apply"
+                            onClick={() =>
+                              openDialog({
+                                type: "evaluate",
+                                recommendation: item,
+                              })
+                            }
+                            disabled={Boolean(isProcessingId)}
+                          >
+                            {isProcessingId === item.id ? (
+                              <LoaderCircle size={15} className="is-spinning" />
+                            ) : (
+                              <CheckCircle2 size={15} />
+                            )}
+                            Evaluasi hasil
+                          </button>
+                          <span className="recommendation-evaluation-hint">
+                            Bandingkan pengeluaran aktual dengan alokasi yang
+                            diterapkan.
+                          </span>
+                        </>
+                      ) : (
+                        <span className="recommendation-evaluation-hint">
+                          Evaluasi tersedia setelah{" "}
+                          {formatMonth(item.targetMonth)} berakhir.
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {(item.status === "PENDING" ||
                     item.status === "DEFERRED" ||
                     item.status === "ACCEPTED") && (
@@ -914,7 +1108,9 @@ export function BudgetRecommendationsPage() {
                     ? "Tolak rekomendasi"
                     : lifecycleDialog.type === "defer"
                       ? "Tunda rekomendasi"
-                      : "Terapkan perubahan anggaran"}
+                      : lifecycleDialog.type === "evaluate"
+                        ? "Evaluasi hasil rekomendasi"
+                        : "Terapkan perubahan anggaran"}
                 </h3>
               </div>
               <button
@@ -932,7 +1128,9 @@ export function BudgetRecommendationsPage() {
                 ? `Anda akan menolak usulan untuk ${lifecycleDialog.recommendation.budgetName}. Alasan penolakan bersifat opsional.`
                 : lifecycleDialog.type === "defer"
                   ? `Pilih tanggal untuk meninjau kembali usulan ${lifecycleDialog.recommendation.budgetName}. Tanggal harus sebelum ${formatMonth(lifecycleDialog.recommendation.targetMonth)}.`
-                  : `Alokasi ${lifecycleDialog.recommendation.budgetName} akan diubah dari ${formatCurrency(lifecycleDialog.recommendation.currentAllocation)} menjadi ${formatCurrency(lifecycleDialog.recommendation.proposedAllocation)}. Perubahan ini akan memperbarui anggaran.`}
+                  : lifecycleDialog.type === "evaluate"
+                    ? `Sistem akan membandingkan pengeluaran aktual kategori ${lifecycleDialog.recommendation.categoryName || lifecycleDialog.recommendation.budgetName} selama ${formatMonth(lifecycleDialog.recommendation.targetMonth)} dengan alokasi yang diterapkan. Hasil evaluasi akan disimpan dan dapat ditinjau kembali.`
+                    : `Alokasi ${lifecycleDialog.recommendation.budgetName} akan diubah dari ${formatCurrency(lifecycleDialog.recommendation.currentAllocation)} menjadi ${formatCurrency(lifecycleDialog.recommendation.proposedAllocation)}. Perubahan ini akan memperbarui anggaran.`}
             </p>
 
             {lifecycleDialog.type === "reject" && (
@@ -987,6 +1185,25 @@ export function BudgetRecommendationsPage() {
               </div>
             )}
 
+            {lifecycleDialog.type === "evaluate" && (
+              <div className="recommendation-apply-summary">
+                <div>
+                  <span>Bulan target</span>
+                  <strong>
+                    {formatMonth(lifecycleDialog.recommendation.targetMonth)}
+                  </strong>
+                </div>
+                <div>
+                  <span>Alokasi yang diterapkan</span>
+                  <strong>
+                    {formatCurrency(
+                      lifecycleDialog.recommendation.proposedAllocation,
+                    )}
+                  </strong>
+                </div>
+              </div>
+            )}
+
             <footer>
               <button
                 type="button"
@@ -1002,6 +1219,8 @@ export function BudgetRecommendationsPage() {
                 onClick={() => {
                   if (lifecycleDialog.type === "reject") void handleReject();
                   else if (lifecycleDialog.type === "defer") void handleDefer();
+                  else if (lifecycleDialog.type === "evaluate")
+                    void handleEvaluate();
                   else void handleApply();
                 }}
                 disabled={
@@ -1015,6 +1234,8 @@ export function BudgetRecommendationsPage() {
                   <Ban size={15} />
                 ) : lifecycleDialog.type === "defer" ? (
                   <Clock3 size={15} />
+                ) : lifecycleDialog.type === "evaluate" ? (
+                  <CheckCircle2 size={15} />
                 ) : (
                   <Check size={15} />
                 )}
@@ -1024,7 +1245,9 @@ export function BudgetRecommendationsPage() {
                     ? "Ya, tolak"
                     : lifecycleDialog.type === "defer"
                       ? "Simpan penundaan"
-                      : "Ya, terapkan perubahan"}
+                      : lifecycleDialog.type === "evaluate"
+                        ? "Mulai evaluasi"
+                        : "Ya, terapkan perubahan"}
               </button>
             </footer>
           </section>
