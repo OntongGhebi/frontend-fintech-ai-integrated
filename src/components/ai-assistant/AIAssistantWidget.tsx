@@ -44,9 +44,30 @@ interface AIChatResponse {
 }
 
 const QUICK_PROMPTS = [
-  "Analisis pengeluaran saya bulan ini.",
-  "Apa kategori pengeluaran terbesar saya?",
-  "Bagaimana kondisi anggaran saya?",
+  {
+    title: "Financial Well-being",
+    description: "Pahami kondisi arus kas dan kesehatan anggaran.",
+    prompt:
+      "Jelaskan kondisi financial well-being saya bulan ini, termasuk arus kas, tingkat pengeluaran, dan kesehatan anggaran.",
+  },
+  {
+    title: "Insight Keuangan",
+    description: "Temukan hal penting yang perlu saya perhatikan.",
+    prompt:
+      "Apa insight keuangan paling penting dari kondisi keuangan saya saat ini, dan tindakan apa yang sebaiknya saya prioritaskan?",
+  },
+  {
+    title: "Rekomendasi Anggaran",
+    description: "Pahami usulan alokasi anggaran bulan depan.",
+    prompt:
+      "Apa rekomendasi anggaran untuk bulan depan? Jelaskan alasan, perubahan alokasi, dan manfaat setiap rekomendasi.",
+  },
+  {
+    title: "Status & Evaluasi",
+    description: "Tinjau tindak lanjut dan hasil rekomendasi.",
+    prompt:
+      "Bagaimana status rekomendasi anggaran saya, dan bagaimana hasil evaluasi rekomendasi yang sudah diterapkan?",
+  },
 ];
 
 function getErrorMessage(error: unknown): string {
@@ -456,7 +477,7 @@ export function AIAssistantWidget() {
 
               <div>
                 <h2 id="ai-widget-title">AI Assistant</h2>
-                <p>Asisten keuangan pribadi Anda</p>
+                <p>Asisten financial well-being pribadi Anda</p>
               </div>
             </div>
 
@@ -577,23 +598,34 @@ export function AIAssistantWidget() {
                   <Bot size={27} />
                 </span>
 
-                <h3>Apa yang ingin Anda ketahui?</h3>
+                <h3>Apa yang ingin Anda pahami?</h3>
 
                 <p>
-                  Saya siap membantu Anda memahami pemasukan, pengeluaran, dan
-                  anggaran berdasarkan data keuangan akun Anda.
+                  Saya dapat membantu membaca kondisi keuangan, menjelaskan
+                  insight, membahas rekomendasi anggaran, dan mengevaluasi hasil
+                  penerapannya berdasarkan konteks akun Anda.
                 </p>
 
+                <div className="ai-widget-prompt-heading">
+                  <span>Coba mulai dari sini</span>
+                  <small>Pilih topik untuk mengisi pesan</small>
+                </div>
+
                 <div className="ai-widget-prompts">
-                  {QUICK_PROMPTS.map((prompt) => (
+                  {QUICK_PROMPTS.map((item) => (
                     <button
                       type="button"
-                      key={prompt}
-                      onClick={() => handlePromptClick(prompt)}
+                      key={item.title}
+                      onClick={() => handlePromptClick(item.prompt)}
                       disabled={isSending}
                     >
-                      <Sparkles size={14} />
-                      <span>{prompt}</span>
+                      <span className="ai-widget-prompt-icon">
+                        <Sparkles size={14} />
+                      </span>
+                      <span className="ai-widget-prompt-copy">
+                        <strong>{item.title}</strong>
+                        <small>{item.description}</small>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -658,7 +690,7 @@ export function AIAssistantWidget() {
               ref={inputRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Tanyakan tentang keuangan Anda..."
+              placeholder="Tanyakan tentang kondisi keuangan, insight, atau rekomendasi Anda..."
               rows={2}
               maxLength={8000}
               disabled={isSending || isCreatingConversation}
@@ -690,8 +722,8 @@ export function AIAssistantWidget() {
           <footer className="ai-widget-footer">
             <ShieldCheck size={14} />
             <span>
-              Data Anda tetap dilindungi. Periksa kembali saran AI sebelum
-              mengambil keputusan keuangan.
+              Konteks keuangan berasal dari akun yang sedang login. Periksa
+              kembali saran AI sebelum mengambil keputusan keuangan.
             </span>
           </footer>
         </section>
