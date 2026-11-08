@@ -16,6 +16,7 @@ import {
   Crown,
   HandCoins,
   HeartPulse,
+  Lightbulb,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -60,6 +61,22 @@ const workspaceNavigation = [
 ];
 
 function getPageHeading(pathname: string) {
+  if (pathname === "/financial-well-being") {
+    return {
+      title: "Financial Well-being",
+      description:
+        "Pahami kesehatan keuangan dan tentukan langkah pengelolaan berikutnya.",
+    };
+  }
+
+  if (pathname === "/budget-recommendations") {
+    return {
+      title: "Rekomendasi Anggaran",
+      description:
+        "Tinjau usulan penyesuaian anggaran berdasarkan kondisi keuangan Anda.",
+    };
+  }
+
   if (pathname === "/transactions/new") {
     return {
       title: "Tambah transaksi",
@@ -127,13 +144,6 @@ function getPageHeading(pathname: string) {
     return {
       title: "Reports & Analytics",
       description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
-    };
-  }
-
-  if (pathname === "/financial-wellbeing") {
-    return {
-      title: "Financial Well-being",
-      description: "Pahami kesehatan keuangan dan tentukan langkah berikutnya.",
     };
   }
 
@@ -402,6 +412,23 @@ export function AppLayout() {
             onNavigate={closeMobileNavigation}
           />
 
+          <NavigationGroup
+            title="Financial Well-being"
+            items={[
+              {
+                label: "Financial Well-being",
+                icon: HeartPulse,
+                to: "/financial-well-being",
+              },
+              {
+                label: "Budget Recommendations",
+                icon: Lightbulb,
+                to: "/budget-recommendations",
+              },
+            ]}
+            onNavigate={closeMobileNavigation}
+          />
+
           <section className="layout-nav-group" aria-label="Finance">
             <button
               type="button"
@@ -468,18 +495,6 @@ export function AppLayout() {
                 label: "Reports & Analytics",
                 icon: ChartNoAxesCombined,
                 to: "/reports",
-              },
-            ]}
-            onNavigate={closeMobileNavigation}
-          />
-
-          <NavigationGroup
-            title="Financial Well-being"
-            items={[
-              {
-                label: "Financial Well-being",
-                icon: HeartPulse,
-                to: "/financial-wellbeing",
               },
             ]}
             onNavigate={closeMobileNavigation}

@@ -4,6 +4,8 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 
 import { DashboardPage } from "../pages/DashboardPage";
+import { FinancialWellBeingPage } from "../pages/FinancialWellBeingPage";
+import { BudgetRecommendationsPage } from "../pages/BudgetRecommendationsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
@@ -26,7 +28,6 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { BudgetsPage } from "../pages/BudgetsPage";
 import { RecurringTransactionsPage } from "../pages/RecurringTransactionsPage";
-import { FinancialWellBeingPage } from "../pages/FinancialWellBeingPage";
 
 export const router = createBrowserRouter([
   {
@@ -55,6 +56,14 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <DashboardPage />,
+          },
+          {
+            path: "financial-well-being",
+            element: <FinancialWellBeingPage />,
+          },
+          {
+            path: "budget-recommendations",
+            element: <BudgetRecommendationsPage />,
           },
           {
             path: "transactions",
@@ -91,10 +100,6 @@ export const router = createBrowserRouter([
           {
             path: "reports",
             element: <ReportsPage />,
-          },
-          {
-            path: "financial-wellbeing",
-            element: <FinancialWellBeingPage />,
           },
           {
             path: "notifications",
