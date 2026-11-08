@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
@@ -132,8 +132,14 @@ interface WellBeingResponse {
 }
 
 function getCurrentMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  return year && month ? `${year}-${month}` : "";
 }
 
 function toAmount(value: string | number | null | undefined): number {
@@ -167,14 +173,29 @@ function formatMonth(month: string): string {
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (error.status === 401)
+    if (error.status === 0) {
+      return "Server belum dapat dijangkau. Pastikan backend aktif dan koneksi Anda tersedia.";
+    }
+    if (error.status === 401) {
       return "Sesi Anda berakhir. Silakan login kembali.";
-    if (error.status >= 500)
-      return "Layanan sedang mengalami kendala. Silakan coba lagi.";
+    }
+    if (error.status === 403) {
+      return "Anda tidak memiliki izin untuk melihat data Financial Well-being ini.";
+    }
+    if (error.status === 404) {
+      return "Data Financial Well-being belum tersedia untuk periode yang dipilih.";
+    }
+    if (error.status === 429) {
+      return "Terlalu banyak permintaan. Tunggu sebentar sebelum mencoba kembali.";
+    }
+    if (error.status >= 500) {
+      return "Layanan sedang mengalami kendala. Silakan coba lagi beberapa saat.";
+    }
     return error.message || "Data Financial Well-being tidak dapat dimuat.";
   }
-  if (error instanceof TypeError)
+  if (error instanceof TypeError) {
     return "Tidak dapat terhubung ke server. Periksa koneksi Anda.";
+  }
   return "Terjadi kesalahan saat memuat Financial Well-being.";
 }
 
@@ -247,25 +268,37 @@ export function FinancialWellBeingPage() {
   const [data, setData] = useState<WellBeingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const requestSequenceRef = useRef(0);
 
   const loadData = useCallback(async () => {
+    const requestSequence = ++requestSequenceRef.current;
     setIsLoading(true);
     setError("");
+
     try {
       const response = await apiClient.get<WellBeingResponse>(
         `/financial-analysis/well-being?month=${encodeURIComponent(month)}`,
       );
+
+      if (requestSequence !== requestSequenceRef.current) return;
       setData(response);
     } catch (loadError) {
+      if (requestSequence !== requestSequenceRef.current) return;
       setError(getErrorMessage(loadError));
       setData(null);
     } finally {
-      setIsLoading(false);
+      if (requestSequence === requestSequenceRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [month]);
 
   useEffect(() => {
     void loadData();
+
+    return () => {
+      requestSequenceRef.current += 1;
+    };
   }, [loadData]);
 
   const analysis = data?.analysis;
@@ -317,8 +350,17 @@ export function FinancialWellBeingPage() {
             type="month"
             value={month}
             max={getCurrentMonth()}
-            onChange={(event) => setMonth(event.target.value)}
+            onChange={(event) => {
+              const nextMonth = event.target.value;
+              if (nextMonth && nextMonth <= getCurrentMonth()) {
+                setMonth(nextMonth);
+              }
+            }}
+            aria-describedby="wellbeing-period-help"
           />
+          <small id="wellbeing-period-help">
+            Analisis tersedia hingga bulan berjalan.
+          </small>
         </div>
       </section>
 
@@ -333,9 +375,9 @@ export function FinancialWellBeingPage() {
       )}
 
       {isLoading ? (
-        <div className="wellbeing-state">
+        <div className="wellbeing-state" role="status" aria-live="polite">
           <RefreshCw size={20} className="wellbeing-spin" />
-          <span>Memuat analisis keuangan...</span>
+          <span>Memuat analisis keuangan untuk {formatMonth(month)}...</span>
         </div>
       ) : data && analysis && summary && budgetHealth ? (
         <>
@@ -733,8 +775,17 @@ export function FinancialWellBeingPage() {
                 timeZone: "Asia/Jakarta",
               }).format(new Date(data.generatedAt))}
             </span>
-            <button type="button" onClick={() => void loadData()}>
-              <RefreshCw size={14} /> Perbarui analisis
+            <button
+              type="button"
+              onClick={() => void loadData()}
+              disabled={isLoading}
+              aria-label="Perbarui analisis keuangan"
+            >
+              <RefreshCw
+                size={14}
+                className={isLoading ? "wellbeing-spin" : ""}
+              />
+              {isLoading ? "Memperbarui..." : "Perbarui analisis"}
             </button>
           </div>
         </>
