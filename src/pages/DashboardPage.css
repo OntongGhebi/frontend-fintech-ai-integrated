@@ -3891,7 +3891,9 @@
   color: var(--dashboard-text);
   font-size: 12px;
   font-weight: 600;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .dashboard-page .dashboard-period-fields select:focus-visible,
@@ -3921,7 +3923,9 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .dashboard-page .dashboard-period-apply:hover {

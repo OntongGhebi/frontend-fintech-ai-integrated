@@ -1,0 +1,894 @@
+.wellbeing-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: 28px;
+  color: var(--text-primary, #20293a);
+}
+
+.wellbeing-intro {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 23px 25px;
+  background: linear-gradient(115deg, #f5f7ff 0%, #f8fbff 55%, #f4faf7 100%);
+  border: 1px solid #e8edf8;
+  border-radius: 16px;
+}
+
+.wellbeing-intro-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #e8edff;
+  color: #465bc4;
+}
+
+.wellbeing-intro-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.wellbeing-eyebrow {
+  display: block;
+  color: #7d88a0;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+}
+
+.wellbeing-intro-copy h2 {
+  margin: 6px 0 5px;
+  font-size: 19px;
+  line-height: 1.35;
+  font-weight: 730;
+  letter-spacing: -0.025em;
+}
+
+.wellbeing-intro-copy p {
+  margin: 0;
+  color: var(--text-muted, #7e8798);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.wellbeing-period-control {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 170px;
+}
+
+.wellbeing-period-control label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #687386;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.wellbeing-period-control input {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #dfe4ed;
+  border-radius: 9px;
+  background: #fff;
+  color: #30394a;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.wellbeing-period-control input:focus {
+  border-color: #8292e5;
+  box-shadow: 0 0 0 3px #8292e51c;
+}
+
+.wellbeing-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.wellbeing-section-heading h3,
+.wellbeing-panel-heading h3 {
+  margin: 5px 0 0;
+  font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.wellbeing-health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid #e2e8e5;
+  border-radius: 999px;
+  background: #f7faf8;
+  color: #477b66;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.wellbeing-health-pill > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ca47d;
+}
+
+.wellbeing-health-negative {
+  background: #fff7f6;
+  border-color: #f3dfdc;
+  color: #b35d55;
+}
+
+.wellbeing-health-negative > span {
+  background: #d46d64;
+}
+
+.wellbeing-health-no_income_data {
+  background: #f7f8fa;
+  color: #707b8d;
+}
+
+.wellbeing-health-no_income_data > span {
+  background: #9aa3b1;
+}
+
+.wellbeing-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.wellbeing-metric-card {
+  min-width: 0;
+  padding: 17px 17px 16px;
+  border: 1px solid var(--border-color, #e9edf2);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.wellbeing-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #788294;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.wellbeing-metric-icon,
+.wellbeing-panel-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+.wellbeing-metric-icon.income {
+  background: #eaf6ef;
+  color: #4d9870;
+}
+
+.wellbeing-metric-icon.expense {
+  background: #fff1ed;
+  color: #c77962;
+}
+
+.wellbeing-metric-icon.cashflow {
+  background: #eef1ff;
+  color: #6374ce;
+}
+
+.wellbeing-metric-icon.savings {
+  background: #f1f6e9;
+  color: #77994b;
+}
+
+.wellbeing-metric-card > strong {
+  display: block;
+  margin-top: 13px;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.wellbeing-metric-card > strong.is-negative {
+  color: #c2635c;
+}
+
+.wellbeing-metric-card > small {
+  display: block;
+  margin-top: 6px;
+  color: #98a0ad;
+  font-size: 10px;
+}
+
+.wellbeing-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 15px;
+}
+
+.wellbeing-panel {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border-color, #e9edf2);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.wellbeing-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wellbeing-panel-heading p {
+  margin: 6px 0 0;
+  color: #929aa8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.wellbeing-panel-icon {
+  background: #f1f3fb;
+  color: #6472bb;
+}
+
+.wellbeing-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 21px;
+}
+
+.wellbeing-category-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.wellbeing-category-meta,
+.wellbeing-category-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wellbeing-category-meta strong {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.wellbeing-category-meta span {
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.wellbeing-progress-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #edf0f4;
+}
+
+.wellbeing-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6684d7, #8fa0e6);
+  transition: width 0.25s ease;
+}
+
+.wellbeing-category-foot {
+  color: #98a0ad;
+  font-size: 10px;
+}
+
+.wellbeing-panel-footnote {
+  margin-top: 17px;
+  padding-top: 13px;
+  border-top: 1px solid #eff1f4;
+  color: #8b94a2;
+  font-size: 10px;
+}
+
+.wellbeing-panel-footnote strong {
+  color: #4f5b70;
+}
+
+.wellbeing-budget-total {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 22px;
+}
+
+.wellbeing-budget-total strong {
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+
+.wellbeing-budget-total span {
+  color: #929aa8;
+  font-size: 11px;
+}
+
+.wellbeing-budget-progress {
+  height: 9px;
+  margin-top: 13px;
+}
+
+.wellbeing-budget-progress > span {
+  background: linear-gradient(90deg, #6c9a80, #a5c99d);
+}
+
+.wellbeing-budget-utilization {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 9px;
+  color: #8b94a2;
+  font-size: 10px;
+}
+
+.wellbeing-budget-utilization strong {
+  color: #566276;
+}
+
+.wellbeing-budget-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 23px;
+}
+
+.wellbeing-budget-stats > div {
+  display: grid;
+  grid-template-columns: 8px auto;
+  align-items: center;
+  column-gap: 7px;
+  row-gap: 3px;
+}
+
+.wellbeing-budget-stats .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.dot-safe {
+  background: #6eaa83;
+}
+
+.dot-warning {
+  background: #d7a34e;
+}
+
+.dot-danger {
+  background: #d5766d;
+}
+
+.wellbeing-budget-stats strong {
+  font-size: 14px;
+}
+
+.wellbeing-budget-stats small {
+  grid-column: 2;
+  color: #969eab;
+  font-size: 9px;
+}
+
+.wellbeing-budget-remaining {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid #eff1f4;
+  color: #8992a0;
+  font-size: 11px;
+}
+
+.wellbeing-budget-remaining strong {
+  color: #465267;
+  font-size: 12px;
+}
+
+.wellbeing-signals-panel,
+.wellbeing-recommendations-panel {
+  padding: 20px;
+}
+
+.wellbeing-signal-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.wellbeing-signal-item {
+  display: flex;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid #edf0f4;
+  border-radius: 11px;
+  background: #fcfcfd;
+}
+
+.wellbeing-signal-indicator {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: #f0f2f7;
+  color: #758096;
+}
+
+.severity-warning .wellbeing-signal-indicator {
+  background: #fff5e8;
+  color: #b98538;
+}
+
+.severity-critical .wellbeing-signal-indicator {
+  background: #fff0ee;
+  color: #c5685e;
+}
+
+.wellbeing-signal-item > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.wellbeing-signal-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wellbeing-signal-title strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.wellbeing-signal-title span {
+  color: #929aa8;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.wellbeing-signal-item p {
+  margin: 6px 0 0;
+  color: #858e9d;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.wellbeing-empty-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px dashed #e5e9ee;
+  border-radius: 10px;
+  color: #929aa8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.wellbeing-positive-empty {
+  border-style: solid;
+  border-color: #e5eee8;
+  background: #f8fbf9;
+  color: #668b73;
+}
+
+.wellbeing-next-label {
+  color: #7f8ab4;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.wellbeing-recommendation-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+}
+
+.wellbeing-recommendation-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 1px solid #eff1f4;
+}
+
+.wellbeing-recommendation-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.wellbeing-recommendation-main strong {
+  font-size: 11px;
+}
+
+.wellbeing-recommendation-main span {
+  color: #929aa8;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.wellbeing-recommendation-value {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.wellbeing-recommendation-value strong {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.wellbeing-recommendation-value small {
+  color: #9aa2ae;
+  font-size: 9px;
+}
+
+.wellbeing-status-pill {
+  padding: 5px 8px;
+  border-radius: 99px;
+  background: #f5f6fb;
+  color: #747fa9;
+  font-size: 9px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.wellbeing-data-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8edf5;
+  border-radius: 11px;
+  background: #f8faff;
+  color: #758198;
+}
+
+.wellbeing-data-note > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: #6879bd;
+  font-size: 11px;
+}
+
+.wellbeing-data-note p {
+  margin: 1px 0 0;
+  color: #8791a2;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.wellbeing-refresh-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #a0a7b2;
+  font-size: 10px;
+}
+
+.wellbeing-refresh-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #6d7cc3;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.wellbeing-refresh-row button:hover {
+  background: #f2f4fc;
+}
+
+.wellbeing-state {
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed #e2e6ed;
+  border-radius: 13px;
+  color: #8993a3;
+  font-size: 12px;
+}
+
+.wellbeing-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.wellbeing-alert-error {
+  border: 1px solid #f0d9d6;
+  background: #fff8f7;
+  color: #b65f56;
+}
+
+.wellbeing-alert button {
+  margin-left: auto;
+  padding: 6px 9px;
+  border: 1px solid #e9c8c4;
+  border-radius: 7px;
+  background: #fff;
+  color: #a95b53;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.wellbeing-spin {
+  animation: wellbeing-spin 1s linear infinite;
+}
+
+@keyframes wellbeing-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.wellbeing-trends-panel {
+  padding: 20px;
+}
+
+.wellbeing-trend-legend {
+  display: flex;
+  gap: 17px;
+  margin-top: 18px;
+  color: #8992a0;
+  font-size: 10px;
+}
+
+.wellbeing-trend-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wellbeing-trend-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+}
+
+.trend-income {
+  background: #8295d9;
+}
+
+.trend-expense {
+  background: #d8a18b;
+}
+
+.wellbeing-monthly-chart {
+  height: 145px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 15px;
+  align-items: end;
+  margin-top: 10px;
+  padding: 0 10px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.wellbeing-month-column {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.wellbeing-month-bars {
+  height: 116px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+}
+
+.trend-bar {
+  width: min(19px, 35%);
+  min-height: 3px;
+  border-radius: 5px 5px 2px 2px;
+}
+
+.trend-bar-income {
+  background: #8295d9;
+}
+
+.trend-bar-expense {
+  background: #d8a18b;
+}
+
+.wellbeing-month-column small {
+  height: 17px;
+  color: #939baa;
+  font-size: 9px;
+}
+
+.wellbeing-trend-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.wellbeing-trend-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px;
+  border: 1px solid #eef0f4;
+  border-radius: 9px;
+}
+
+.wellbeing-trend-summary span {
+  color: #9099a7;
+  font-size: 10px;
+}
+
+.wellbeing-trend-summary strong {
+  font-size: 12px;
+}
+
+.wellbeing-trend-summary small {
+  color: #9aa2ae;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1100px) {
+  .wellbeing-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wellbeing-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .wellbeing-intro {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 18px;
+  }
+
+  .wellbeing-intro-copy {
+    flex-basis: calc(100% - 66px);
+  }
+
+  .wellbeing-intro-copy h2 {
+    font-size: 16px;
+  }
+
+  .wellbeing-period-control {
+    width: 100%;
+    padding-left: 65px;
+  }
+
+  .wellbeing-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wellbeing-metric-grid {
+    gap: 9px;
+  }
+
+  .wellbeing-metric-card {
+    padding: 13px;
+  }
+
+  .wellbeing-metric-card > strong {
+    font-size: 16px;
+  }
+
+  .wellbeing-metric-top {
+    font-size: 10px;
+  }
+
+  .wellbeing-signal-list {
+    grid-template-columns: 1fr;
+  }
+
+  .wellbeing-recommendation-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .wellbeing-status-pill {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .wellbeing-data-note {
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .wellbeing-refresh-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wellbeing-trend-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .wellbeing-monthly-chart {
+    gap: 6px;
+    padding: 0 2px;
+  }
+
+  .wellbeing-month-bars {
+    gap: 3px;
+  }
+}
+
+@media (max-width: 420px) {
+  .wellbeing-metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .wellbeing-budget-stats {
+    gap: 4px;
+  }
+
+  .wellbeing-budget-stats small {
+    font-size: 8px;
+  }
+
+  .wellbeing-panel {
+    padding: 15px;
+  }
+}

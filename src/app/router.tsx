@@ -3,7 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
 
-import { FinancialWellBeingDashboardPage } from "../pages/FinancialWellBeingDashboardPage";
+import { DashboardPage } from "../pages/DashboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { RegisterSuccessPage } from "../pages/RegisterSuccessPage";
@@ -26,6 +26,7 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { BudgetsPage } from "../pages/BudgetsPage";
 import { RecurringTransactionsPage } from "../pages/RecurringTransactionsPage";
+import { FinancialWellBeingPage } from "../pages/FinancialWellBeingPage";
 
 export const router = createBrowserRouter([
   {
@@ -53,7 +54,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <FinancialWellBeingDashboardPage />,
+            element: <DashboardPage />,
           },
           {
             path: "transactions",
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
           {
             path: "reports",
             element: <ReportsPage />,
+          },
+          {
+            path: "financial-wellbeing",
+            element: <FinancialWellBeingPage />,
           },
           {
             path: "notifications",

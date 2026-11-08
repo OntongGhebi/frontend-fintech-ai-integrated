@@ -15,6 +15,7 @@ import {
   CreditCard,
   Crown,
   HandCoins,
+  HeartPulse,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -126,6 +127,13 @@ function getPageHeading(pathname: string) {
     return {
       title: "Reports & Analytics",
       description: "Analisis pemasukan, pengeluaran, dan performa keuangan.",
+    };
+  }
+
+  if (pathname === "/financial-wellbeing") {
+    return {
+      title: "Financial Well-being",
+      description: "Pahami kesehatan keuangan dan tentukan langkah berikutnya.",
     };
   }
 
@@ -460,6 +468,18 @@ export function AppLayout() {
                 label: "Reports & Analytics",
                 icon: ChartNoAxesCombined,
                 to: "/reports",
+              },
+            ]}
+            onNavigate={closeMobileNavigation}
+          />
+
+          <NavigationGroup
+            title="Financial Well-being"
+            items={[
+              {
+                label: "Financial Well-being",
+                icon: HeartPulse,
+                to: "/financial-wellbeing",
               },
             ]}
             onNavigate={closeMobileNavigation}
