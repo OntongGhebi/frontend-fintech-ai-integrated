@@ -748,3 +748,252 @@
     min-width: calc(100% - 92px);
   }
 }
+
+/* F.3 — recommendation lifecycle controls */
+.recommendation-lifecycle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 13px;
+  border-top: 1px solid #eff2ef;
+}
+
+.recommendation-action-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid #e2e9e3;
+  border-radius: 9px;
+  background: #fff;
+  color: #647269;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.recommendation-action-button:hover:not(:disabled) {
+  border-color: #c5d7ca;
+  background: #f7faf7;
+}
+
+.recommendation-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.recommendation-action-button--accept,
+.recommendation-action-button--apply {
+  border-color: #347b67;
+  background: #347b67;
+  color: #fff;
+}
+
+.recommendation-action-button--accept:hover:not(:disabled),
+.recommendation-action-button--apply:hover:not(:disabled) {
+  border-color: #286b57;
+  background: #286b57;
+}
+
+.recommendation-action-button--reject {
+  color: #b45e54;
+}
+
+.recommendation-action-button--reject:hover:not(:disabled) {
+  border-color: #efd2ce;
+  background: #fff8f7;
+}
+
+.recommendation-rejection-reason {
+  flex-basis: 100%;
+  color: #a66c63;
+  line-height: 1.5;
+}
+
+.recommendation-dialog-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(21 32 25 / 42%);
+  backdrop-filter: blur(3px);
+}
+
+.recommendation-dialog {
+  display: flex;
+  width: min(100%, 470px);
+  max-height: min(90vh, 680px);
+  flex-direction: column;
+  gap: 17px;
+  overflow-y: auto;
+  padding: 22px;
+  border: 1px solid #e7ece7;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 24px 80px rgb(18 35 25 / 22%);
+}
+
+.recommendation-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.recommendation-dialog h3 {
+  margin: 5px 0 0;
+  color: #29372e;
+  font-size: 18px;
+  letter-spacing: -0.035em;
+}
+
+.recommendation-dialog-close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid #e7ece7;
+  border-radius: 9px;
+  background: #fff;
+  color: #7c8980;
+  cursor: pointer;
+}
+
+.recommendation-dialog-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.recommendation-dialog-description {
+  margin: 0;
+  color: #78847c;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.recommendation-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #526158;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.recommendation-dialog-field > span small {
+  color: #9aa39d;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.recommendation-dialog-field textarea,
+.recommendation-dialog-field input {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 11px;
+  border: 1px solid #e2e9e3;
+  border-radius: 9px;
+  outline: none;
+  background: #fcfdfc;
+  color: #35433a;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 450;
+}
+
+.recommendation-dialog-field textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.recommendation-dialog-field textarea:focus,
+.recommendation-dialog-field input:focus {
+  border-color: #80ad91;
+  box-shadow: 0 0 0 3px rgb(80 139 101 / 10%);
+}
+
+.recommendation-dialog-field > small {
+  align-self: flex-end;
+  color: #9aa39d;
+  font-size: 9px;
+  font-weight: 450;
+}
+
+.recommendation-apply-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid #e8eee9;
+  border-radius: 11px;
+  background: #f9fbf9;
+}
+
+.recommendation-apply-summary > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recommendation-apply-summary span {
+  color: #87928a;
+  font-size: 9px;
+}
+
+.recommendation-apply-summary strong {
+  overflow-wrap: anywhere;
+  color: #35433a;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.recommendation-dialog > footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 3px;
+}
+
+.recommendation-dialog-submit.is-danger {
+  border-color: #b45e54;
+  background: #b45e54;
+}
+
+.recommendation-dialog-submit.is-danger:hover:not(:disabled) {
+  background: #984b43;
+}
+
+@media (max-width: 480px) {
+  .recommendation-dialog {
+    padding: 17px;
+  }
+  .recommendation-apply-summary {
+    grid-template-columns: 1fr;
+  }
+  .recommendation-dialog > footer > button {
+    flex: 1;
+  }
+  .recommendation-lifecycle-actions > button {
+    flex: 1 1 auto;
+  }
+}
+
+.recommendation-no-apply-note {
+  color: #87928a;
+  font-size: 10px;
+  line-height: 1.5;
+}

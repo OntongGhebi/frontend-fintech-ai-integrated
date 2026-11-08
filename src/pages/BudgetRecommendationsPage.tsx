@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CalendarDays,
+  CalendarClock,
+  Check,
+  Ban,
+  X,
   CheckCircle2,
   Clock3,
   Info,
@@ -11,6 +15,7 @@ import {
   TrendingDown,
   TrendingUp,
   Wallet,
+  LoaderCircle,
 } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
@@ -26,6 +31,11 @@ type RecommendationStatus =
 
 type RecommendationAction = "INCREASE" | "DECREASE" | "MAINTAIN" | "REVIEW";
 type StatusFilter = "ALL" | RecommendationStatus;
+type LifecycleDialog =
+  | { type: "reject"; recommendation: BudgetRecommendation }
+  | { type: "defer"; recommendation: BudgetRecommendation }
+  | { type: "apply"; recommendation: BudgetRecommendation }
+  | null;
 
 type MonthlySpending = {
   month: string;
@@ -62,6 +72,8 @@ interface BudgetRecommendation {
   rejectionReason?: string | null;
   appliedAt?: string | null;
   evaluatedAt?: string | null;
+  evaluationStatus?: string | null;
+  evaluation?: Record<string, unknown> | null;
 }
 
 interface RecommendationListResponse {
@@ -151,6 +163,12 @@ function formatMonth(value: string): string {
   }).format(new Date(year, month - 1, 1));
 }
 
+function getLastDayBeforeMonth(monthKey: string): string {
+  const [year, month] = monthKey.split("-").map(Number);
+  if (!year || !month) return "";
+  return new Date(Date.UTC(year, month - 1, 0)).toISOString().slice(0, 10);
+}
+
 function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
@@ -205,6 +223,11 @@ export function BudgetRecommendationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [lifecycleDialog, setLifecycleDialog] = useState<LifecycleDialog>(null);
+  const [dialogReason, setDialogReason] = useState("");
+  const [deferDate, setDeferDate] = useState("");
+  const [minimumDeferDate, setMinimumDeferDate] = useState("");
+  const [isProcessingId, setIsProcessingId] = useState<string | null>(null);
 
   const loadRecommendations = useCallback(async () => {
     setIsLoading(true);
@@ -228,6 +251,14 @@ export function BudgetRecommendationsPage() {
   useEffect(() => {
     void loadRecommendations();
   }, [loadRecommendations, reloadKey]);
+
+  useEffect(() => {
+    setMinimumDeferDate(
+      new Date(Date.now() + 86400000).toLocaleDateString("en-CA", {
+        timeZone: "Asia/Jakarta",
+      }),
+    );
+  }, []);
 
   const statusCounts = useMemo(() => {
     const counts: Record<RecommendationStatus, number> = {
@@ -282,6 +313,134 @@ export function BudgetRecommendationsPage() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const closeLifecycleDialog = () => {
+    if (isProcessingId) return;
+    setLifecycleDialog(null);
+    setDialogReason("");
+    setDeferDate("");
+  };
+
+  const refreshAfterLifecycle = async (message: string) => {
+    setLifecycleDialog(null);
+    setDialogReason("");
+    setDeferDate("");
+    setNotice(message);
+    await loadRecommendations();
+  };
+
+  const handleAccept = async (item: BudgetRecommendation) => {
+    if (isProcessingId) return;
+    setIsProcessingId(item.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await apiClient.patch(
+        `/financial-analysis/budget-recommendations/${item.id}/accept`,
+      );
+      await refreshAfterLifecycle(
+        `Rekomendasi “${item.budgetName}” berhasil disetujui.`,
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!lifecycleDialog || lifecycleDialog.type !== "reject" || isProcessingId)
+      return;
+    const item = lifecycleDialog.recommendation;
+    setIsProcessingId(item.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await apiClient.patch(
+        `/financial-analysis/budget-recommendations/${item.id}/reject`,
+        dialogReason.trim() ? { reason: dialogReason.trim() } : {},
+      );
+      await refreshAfterLifecycle(
+        `Rekomendasi “${item.budgetName}” berhasil ditolak.`,
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
+  const handleDefer = async () => {
+    if (!lifecycleDialog || lifecycleDialog.type !== "defer" || isProcessingId)
+      return;
+    const item = lifecycleDialog.recommendation;
+    if (!deferDate) {
+      setError("Pilih tanggal tindak lanjut terlebih dahulu.");
+      return;
+    }
+    const today =
+      getCurrentMonthKey() +
+      "-" +
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Jakarta",
+        day: "2-digit",
+      }).format(new Date());
+    const targetStart = `${item.targetMonth}-01`;
+    if (deferDate <= today || deferDate >= targetStart) {
+      setError(
+        `Tanggal tindak lanjut harus setelah hari ini dan sebelum ${formatMonth(item.targetMonth)}.`,
+      );
+      return;
+    }
+    setIsProcessingId(item.id);
+    setError(null);
+    setNotice(null);
+    try {
+      const deferredUntil = new Date(
+        `${deferDate}T09:00:00+07:00`,
+      ).toISOString();
+      await apiClient.patch(
+        `/financial-analysis/budget-recommendations/${item.id}/defer`,
+        { deferredUntil },
+      );
+      await refreshAfterLifecycle(
+        `Rekomendasi “${item.budgetName}” ditunda hingga ${formatDate(deferredUntil)}.`,
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!lifecycleDialog || lifecycleDialog.type !== "apply" || isProcessingId)
+      return;
+    const item = lifecycleDialog.recommendation;
+    setIsProcessingId(item.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await apiClient.post(
+        `/financial-analysis/budget-recommendations/${item.id}/apply`,
+      );
+      await refreshAfterLifecycle(
+        `Rekomendasi “${item.budgetName}” berhasil diterapkan ke alokasi anggaran.`,
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
+  const openDialog = (dialog: Exclude<LifecycleDialog, null>) => {
+    setError(null);
+    setNotice(null);
+    setDialogReason("");
+    setDeferDate("");
+    setLifecycleDialog(dialog);
   };
 
   return (
@@ -595,7 +754,88 @@ export function BudgetRecommendationsPage() {
                         {formatDate(item.deferredUntil)}
                       </span>
                     )}
+                    {item.rejectionReason && (
+                      <span className="recommendation-rejection-reason">
+                        Alasan penolakan: {item.rejectionReason}
+                      </span>
+                    )}
                   </footer>
+
+                  {(item.status === "PENDING" ||
+                    item.status === "DEFERRED" ||
+                    item.status === "ACCEPTED") && (
+                    <div className="recommendation-lifecycle-actions">
+                      {(item.status === "PENDING" ||
+                        item.status === "DEFERRED") && (
+                        <>
+                          <button
+                            type="button"
+                            className="recommendation-action-button recommendation-action-button--accept"
+                            onClick={() => void handleAccept(item)}
+                            disabled={Boolean(isProcessingId)}
+                          >
+                            {isProcessingId === item.id ? (
+                              <LoaderCircle size={15} className="is-spinning" />
+                            ) : (
+                              <Check size={15} />
+                            )}{" "}
+                            Setujui
+                          </button>
+                          <button
+                            type="button"
+                            className="recommendation-action-button"
+                            onClick={() =>
+                              openDialog({
+                                type: "defer",
+                                recommendation: item,
+                              })
+                            }
+                            disabled={Boolean(isProcessingId)}
+                          >
+                            <CalendarClock size={15} /> Tunda
+                          </button>
+                          <button
+                            type="button"
+                            className="recommendation-action-button recommendation-action-button--reject"
+                            onClick={() =>
+                              openDialog({
+                                type: "reject",
+                                recommendation: item,
+                              })
+                            }
+                            disabled={Boolean(isProcessingId)}
+                          >
+                            <Ban size={15} /> Tolak
+                          </button>
+                        </>
+                      )}
+                      {item.status === "ACCEPTED" &&
+                        (item.action === "INCREASE" ||
+                          item.action === "DECREASE") && (
+                          <button
+                            type="button"
+                            className="recommendation-action-button recommendation-action-button--apply"
+                            onClick={() =>
+                              openDialog({
+                                type: "apply",
+                                recommendation: item,
+                              })
+                            }
+                            disabled={Boolean(isProcessingId)}
+                          >
+                            <Check size={15} /> Terapkan perubahan
+                          </button>
+                        )}
+                      {item.status === "ACCEPTED" &&
+                        item.action !== "INCREASE" &&
+                        item.action !== "DECREASE" && (
+                          <span className="recommendation-no-apply-note">
+                            Tidak ada perubahan alokasi yang perlu diterapkan
+                            untuk rekomendasi ini.
+                          </span>
+                        )}
+                    </div>
+                  )}
                 </article>
               );
             })}
@@ -650,16 +890,146 @@ export function BudgetRecommendationsPage() {
         )}
       </section>
 
-      <aside className="recommendations-phase-note">
-        <span>
-          <Info size={16} />
-        </span>
-        <p>
-          Halaman ini digunakan untuk meninjau rekomendasi. Keputusan menerima,
-          menolak, menunda, dan menerapkan rekomendasi akan tersedia pada tahap
-          pengelolaan berikutnya.
-        </p>
-      </aside>
+      {lifecycleDialog && (
+        <div
+          className="recommendation-dialog-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeLifecycleDialog();
+          }}
+        >
+          <section
+            className="recommendation-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="recommendation-dialog-title"
+          >
+            <header>
+              <div>
+                <span className="recommendations-section-kicker">
+                  TINDAK LANJUT REKOMENDASI
+                </span>
+                <h3 id="recommendation-dialog-title">
+                  {lifecycleDialog.type === "reject"
+                    ? "Tolak rekomendasi"
+                    : lifecycleDialog.type === "defer"
+                      ? "Tunda rekomendasi"
+                      : "Terapkan perubahan anggaran"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="recommendation-dialog-close"
+                onClick={closeLifecycleDialog}
+                disabled={Boolean(isProcessingId)}
+                aria-label="Tutup dialog"
+              >
+                <X size={18} />
+              </button>
+            </header>
+            <p className="recommendation-dialog-description">
+              {lifecycleDialog.type === "reject"
+                ? `Anda akan menolak usulan untuk ${lifecycleDialog.recommendation.budgetName}. Alasan penolakan bersifat opsional.`
+                : lifecycleDialog.type === "defer"
+                  ? `Pilih tanggal untuk meninjau kembali usulan ${lifecycleDialog.recommendation.budgetName}. Tanggal harus sebelum ${formatMonth(lifecycleDialog.recommendation.targetMonth)}.`
+                  : `Alokasi ${lifecycleDialog.recommendation.budgetName} akan diubah dari ${formatCurrency(lifecycleDialog.recommendation.currentAllocation)} menjadi ${formatCurrency(lifecycleDialog.recommendation.proposedAllocation)}. Perubahan ini akan memperbarui anggaran.`}
+            </p>
+
+            {lifecycleDialog.type === "reject" && (
+              <label className="recommendation-dialog-field">
+                <span>
+                  Alasan penolakan <small>(opsional)</small>
+                </span>
+                <textarea
+                  value={dialogReason}
+                  onChange={(event) => setDialogReason(event.target.value)}
+                  maxLength={500}
+                  rows={4}
+                  placeholder="Tuliskan alasan agar keputusan ini lebih mudah ditinjau…"
+                />
+                <small>{dialogReason.length}/500 karakter</small>
+              </label>
+            )}
+
+            {lifecycleDialog.type === "defer" && (
+              <label className="recommendation-dialog-field">
+                <span>Tanggal tindak lanjut</span>
+                <input
+                  type="date"
+                  value={deferDate}
+                  min={minimumDeferDate}
+                  max={getLastDayBeforeMonth(
+                    lifecycleDialog.recommendation.targetMonth,
+                  )}
+                  onChange={(event) => setDeferDate(event.target.value)}
+                />
+              </label>
+            )}
+
+            {lifecycleDialog.type === "apply" && (
+              <div className="recommendation-apply-summary">
+                <div>
+                  <span>Alokasi saat ini</span>
+                  <strong>
+                    {formatCurrency(
+                      lifecycleDialog.recommendation.currentAllocation,
+                    )}
+                  </strong>
+                </div>
+                <div>
+                  <span>Alokasi setelah diterapkan</span>
+                  <strong>
+                    {formatCurrency(
+                      lifecycleDialog.recommendation.proposedAllocation,
+                    )}
+                  </strong>
+                </div>
+              </div>
+            )}
+
+            <footer>
+              <button
+                type="button"
+                className="recommendations-secondary-button"
+                onClick={closeLifecycleDialog}
+                disabled={Boolean(isProcessingId)}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className={`recommendations-generate-button recommendation-dialog-submit${lifecycleDialog.type === "reject" ? " is-danger" : ""}`}
+                onClick={() => {
+                  if (lifecycleDialog.type === "reject") void handleReject();
+                  else if (lifecycleDialog.type === "defer") void handleDefer();
+                  else void handleApply();
+                }}
+                disabled={
+                  Boolean(isProcessingId) ||
+                  (lifecycleDialog.type === "defer" && !deferDate)
+                }
+              >
+                {isProcessingId ? (
+                  <LoaderCircle size={15} className="is-spinning" />
+                ) : lifecycleDialog.type === "reject" ? (
+                  <Ban size={15} />
+                ) : lifecycleDialog.type === "defer" ? (
+                  <Clock3 size={15} />
+                ) : (
+                  <Check size={15} />
+                )}
+                {isProcessingId
+                  ? "Memproses…"
+                  : lifecycleDialog.type === "reject"
+                    ? "Ya, tolak"
+                    : lifecycleDialog.type === "defer"
+                      ? "Simpan penundaan"
+                      : "Ya, terapkan perubahan"}
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
