@@ -28,6 +28,7 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { CategoriesPage } from "../pages/CategoriesPage";
 import { BudgetsPage } from "../pages/BudgetsPage";
 import { RecurringTransactionsPage } from "../pages/RecurringTransactionsPage";
+import DashboardReferencePrototype from "../pages/prototypes/DashboardReferencePrototype";
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +51,9 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
+        // path: "prototype",
+        // element: <DashboardReferencePrototype />,
+
         path: "/",
         element: <AppLayout />,
         children: [

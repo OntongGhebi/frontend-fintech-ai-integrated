@@ -15,18 +15,20 @@ import {
   CreditCard,
   Crown,
   HandCoins,
+  Headset,
   HeartPulse,
   Lightbulb,
   LayoutDashboard,
   LogOut,
   Menu,
+  Moon,
+  PiggyBank,
   ReceiptText,
   Repeat,
   Tags,
   Wallet,
-  X,
-  PiggyBank,
   Workflow,
+  X,
 } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -35,7 +37,24 @@ import "./AppLayout.css";
 import "./AppLayout.subscription.css";
 import { AIAssistantWidget } from "../ai-assistant/AIAssistantWidget";
 
-const primaryNavigation = [
+interface NavigationItem {
+  label: string;
+  icon: typeof LayoutDashboard;
+  to: string;
+  end?: boolean;
+}
+
+interface NavigationDropdownProps {
+  title: string;
+  icon: typeof LayoutDashboard;
+  items: NavigationItem[];
+  isOpen: boolean;
+  isActive: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+}
+
+const primaryNavigation: NavigationItem[] = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
@@ -44,17 +63,37 @@ const primaryNavigation = [
   },
 ];
 
-const financeOperationsNavigation = [
+const financeNavigation: NavigationItem[] = [
   { label: "Transactions", icon: HandCoins, to: "/transactions" },
+  { label: "Accounts", icon: Wallet, to: "/accounts" },
   { label: "Budgets", icon: PiggyBank, to: "/budgets" },
   {
     label: "Recurring",
     icon: Repeat,
     to: "/recurring-transactions",
   },
+  { label: "Categories", icon: Tags, to: "/categories" },
 ];
 
-const workspaceNavigation = [
+const insightsNavigation: NavigationItem[] = [
+  {
+    label: "Financial Well-being",
+    icon: HeartPulse,
+    to: "/financial-well-being",
+  },
+  {
+    label: "Budget Recommendations",
+    icon: Lightbulb,
+    to: "/budget-recommendations",
+  },
+  {
+    label: "Reports & Analytics",
+    icon: ChartNoAxesCombined,
+    to: "/reports",
+  },
+];
+
+const workspaceNavigation: NavigationItem[] = [
   { label: "Subscription", icon: CreditCard, to: "/subscription" },
   { label: "Payments", icon: ReceiptText, to: "/payments" },
   { label: "Integrations", icon: Workflow, to: "/integrations" },
@@ -191,6 +230,13 @@ function getPageHeading(pathname: string) {
     };
   }
 
+  if (pathname === "/helpdesk") {
+    return {
+      title: "Helpdesk",
+      description: "Temukan bantuan dan dukungan untuk penggunaan aplikasi.",
+    };
+  }
+
   if (
     pathname === "/recurring-transactions" ||
     pathname.startsWith("/recurring-transactions/")
@@ -207,42 +253,67 @@ function getPageHeading(pathname: string) {
   };
 }
 
-interface NavigationItem {
-  label: string;
-  icon: typeof LayoutDashboard;
-  to: string;
-  end?: boolean;
+function isPathInNavigation(
+  pathname: string,
+  items: NavigationItem[],
+): boolean {
+  return items.some(
+    (item) =>
+      pathname === item.to || (!item.end && pathname.startsWith(`${item.to}/`)),
+  );
 }
 
-interface NavigationGroupProps {
-  title: string;
-  items: NavigationItem[];
-  onNavigate: () => void;
-}
-
-function NavigationGroup({ title, items, onNavigate }: NavigationGroupProps) {
+function NavigationDropdown({
+  title,
+  icon: GroupIcon,
+  items,
+  isOpen,
+  isActive,
+  onToggle,
+  onNavigate,
+}: NavigationDropdownProps) {
   return (
     <section className="layout-nav-group" aria-label={title}>
-      <div className="layout-nav-items">
-        {items.map((item) => {
-          const Icon = item.icon;
+      <button
+        type="button"
+        className={`layout-nav-group-toggle${isActive ? " is-active" : ""}`}
+        aria-expanded={isOpen}
+        onClick={onToggle}
+      >
+        <span className="layout-nav-group-toggle-label">
+          <GroupIcon size={18} strokeWidth={1.8} aria-hidden="true" />
+          <span>{title}</span>
+        </span>
 
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end ?? false}
-              className={({ isActive }) =>
-                `layout-nav-link${isActive ? " is-active" : ""}`
-              }
-              onClick={onNavigate}
-            >
-              <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-              <span>{item.label}</span>
-            </NavLink>
-          );
-        })}
-      </div>
+        {isOpen ? (
+          <ChevronDown size={16} aria-hidden="true" />
+        ) : (
+          <ChevronRight size={16} aria-hidden="true" />
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="layout-nav-items layout-nav-subitems">
+          {items.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end ?? false}
+                className={({ isActive: linkIsActive }) =>
+                  `layout-nav-link${linkIsActive ? " is-active" : ""}`
+                }
+                onClick={onNavigate}
+              >
+                <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
@@ -253,41 +324,41 @@ export function AppLayout() {
   const location = useLocation();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const [mobileNavState, setMobileNavState] = useState({
     pathname: location.pathname,
     isOpen: false,
   });
 
-  const [financeState, setFinanceState] = useState(() => ({
+  const activeGroup = (() => {
+    if (isPathInNavigation(location.pathname, financeNavigation)) {
+      return "finance";
+    }
+
+    if (isPathInNavigation(location.pathname, insightsNavigation)) {
+      return "insights";
+    }
+
+    if (isPathInNavigation(location.pathname, workspaceNavigation)) {
+      return "workspace";
+    }
+
+    return null;
+  })();
+
+  const [expandedGroupState, setExpandedGroupState] = useState<{
+    pathname: string;
+    group: string | null;
+  }>({
     pathname: location.pathname,
-    isOpen: financeOperationsNavigation.some((item) =>
-      location.pathname.startsWith(item.to),
-    ),
-  }));
+    group: activeGroup,
+  });
 
-  const [workspaceState, setWorkspaceState] = useState(() => ({
-    pathname: location.pathname,
-    isOpen: workspaceNavigation.some((item) =>
-      location.pathname.startsWith(item.to),
-    ),
-  }));
-
-  const [logoutError, setLogoutError] = useState("");
-
-  const isFinanceOpen =
-    financeState.pathname === location.pathname
-      ? financeState.isOpen
-      : financeOperationsNavigation.some((item) =>
-          location.pathname.startsWith(item.to),
-        );
-
-  const isWorkspaceOpen =
-    workspaceState.pathname === location.pathname
-      ? workspaceState.isOpen
-      : workspaceNavigation.some((item) =>
-          location.pathname.startsWith(item.to),
-        );
+  const expandedGroup =
+    expandedGroupState.pathname === location.pathname
+      ? expandedGroupState.group
+      : activeGroup;
 
   const isMobileNavOpen =
     mobileNavState.pathname === location.pathname && mobileNavState.isOpen;
@@ -302,6 +373,17 @@ export function AppLayout() {
           ? next(current.pathname === location.pathname && current.isOpen)
           : next,
     }));
+  };
+
+  const closeMobileNavigation = () => {
+    setIsMobileNavOpen(false);
+  };
+
+  const toggleNavigationGroup = (group: string) => {
+    setExpandedGroupState({
+      pathname: location.pathname,
+      group: expandedGroup === group ? null : group,
+    });
   };
 
   async function handleLogout() {
@@ -326,18 +408,6 @@ export function AppLayout() {
 
   const showTransactionActions =
     location.pathname === "/" || location.pathname === "/transactions";
-
-  const financeIsActive = financeOperationsNavigation.some((item) =>
-    location.pathname.startsWith(item.to),
-  );
-
-  const workspaceIsActive = workspaceNavigation.some((item) =>
-    location.pathname.startsWith(item.to),
-  );
-
-  const closeMobileNavigation = () => {
-    setIsMobileNavOpen(false);
-  };
 
   return (
     <div className="app-shell">
@@ -366,6 +436,7 @@ export function AppLayout() {
           </button>
         </div>
 
+        {/* Brand */}
         <div className="layout-brand-row">
           <NavLink
             to="/"
@@ -382,22 +453,6 @@ export function AppLayout() {
               <span>Personal Finance</span>
             </span>
           </NavLink>
-          <NavLink
-            to="/plans"
-            className={({ isActive }) =>
-              `layout-brand-plan-link${isActive ? " is-active" : ""}`
-            }
-            aria-label="Lihat pilihan paket subscription"
-            title="Paket & harga"
-            onClick={closeMobileNavigation}
-          >
-            <Crown size={19} strokeWidth={1.9} aria-hidden="true" />
-          </NavLink>
-        </div>
-
-        <div className="layout-sidebar-caption">
-          <span className="layout-caption-dot" />
-          <span>Personal workspace</span>
         </div>
 
         {/* Global search */}
@@ -405,191 +460,132 @@ export function AppLayout() {
           <GlobalSearch onNavigate={closeMobileNavigation} />
         </div>
 
+        {/* Main navigation */}
         <nav className="layout-navigation" aria-label="Navigasi utama">
-          <NavigationGroup
-            title="Dashboard"
-            items={primaryNavigation}
+          <div className="layout-nav-items">
+            {primaryNavigation.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end ?? false}
+                  className={({ isActive }) =>
+                    `layout-nav-link${isActive ? " is-active" : ""}`
+                  }
+                  onClick={closeMobileNavigation}
+                >
+                  <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+
+          <NavigationDropdown
+            title="Finance"
+            icon={HandCoins}
+            items={financeNavigation}
+            isOpen={expandedGroup === "finance"}
+            isActive={isPathInNavigation(location.pathname, financeNavigation)}
+            onToggle={() => toggleNavigationGroup("finance")}
             onNavigate={closeMobileNavigation}
           />
 
-          <NavigationGroup
-            title="Financial Well-being"
-            items={[
-              {
-                label: "Financial Well-being",
-                icon: HeartPulse,
-                to: "/financial-well-being",
-              },
-              {
-                label: "Budget Recommendations",
-                icon: Lightbulb,
-                to: "/budget-recommendations",
-              },
-            ]}
+          <NavigationDropdown
+            title="Insights"
+            icon={ChartNoAxesCombined}
+            items={insightsNavigation}
+            isOpen={expandedGroup === "insights"}
+            isActive={isPathInNavigation(location.pathname, insightsNavigation)}
+            onToggle={() => toggleNavigationGroup("insights")}
             onNavigate={closeMobileNavigation}
           />
 
-          <section className="layout-nav-group" aria-label="Finance">
-            <button
-              type="button"
-              className={`layout-nav-group-toggle${
-                financeIsActive ? " is-active" : ""
-              }`}
-              aria-expanded={isFinanceOpen}
-              onClick={() =>
-                setFinanceState({
-                  pathname: location.pathname,
-                  isOpen: !isFinanceOpen,
-                })
-              }
-            >
-              <span className="layout-nav-group-toggle-label">
-                <HandCoins size={18} strokeWidth={1.8} aria-hidden="true" />
-                <span>Finance</span>
-              </span>
-
-              {isFinanceOpen ? (
-                <ChevronDown size={16} aria-hidden="true" />
-              ) : (
-                <ChevronRight size={16} aria-hidden="true" />
-              )}
-            </button>
-
-            {isFinanceOpen && (
-              <div className="layout-nav-items layout-nav-subitems">
-                {financeOperationsNavigation.map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      end={item.to === "/transactions"}
-                      className={({ isActive }) =>
-                        `layout-nav-link${isActive ? " is-active" : ""}`
-                      }
-                      onClick={closeMobileNavigation}
-                    >
-                      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-                      <span>{item.label}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
+          <NavigationDropdown
+            title="Workspace"
+            icon={Workflow}
+            items={workspaceNavigation}
+            isOpen={expandedGroup === "workspace"}
+            isActive={isPathInNavigation(
+              location.pathname,
+              workspaceNavigation,
             )}
-          </section>
-
-          <NavigationGroup
-            title="Accounts and Categories"
-            items={[
-              { label: "Accounts", icon: Wallet, to: "/accounts" },
-              { label: "Categories", icon: Tags, to: "/categories" },
-            ]}
+            onToggle={() => toggleNavigationGroup("workspace")}
             onNavigate={closeMobileNavigation}
           />
-
-          <NavigationGroup
-            title="Reports & Analytics"
-            items={[
-              {
-                label: "Reports & Analytics",
-                icon: ChartNoAxesCombined,
-                to: "/reports",
-              },
-            ]}
-            onNavigate={closeMobileNavigation}
-          />
-
-          <section className="layout-nav-group" aria-label="Workspace">
-            <button
-              type="button"
-              className={`layout-nav-group-toggle${
-                workspaceIsActive ? " is-active" : ""
-              }`}
-              aria-expanded={isWorkspaceOpen}
-              onClick={() =>
-                setWorkspaceState({
-                  pathname: location.pathname,
-                  isOpen: !isWorkspaceOpen,
-                })
-              }
-            >
-              <span className="layout-nav-group-toggle-label">
-                <Workflow size={18} strokeWidth={1.8} aria-hidden="true" />
-                <span>Workspace</span>
-              </span>
-
-              {isWorkspaceOpen ? (
-                <ChevronDown size={16} aria-hidden="true" />
-              ) : (
-                <ChevronRight size={16} aria-hidden="true" />
-              )}
-            </button>
-
-            {isWorkspaceOpen && (
-              <div className="layout-nav-items layout-nav-subitems">
-                {workspaceNavigation.map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={({ isActive }) =>
-                        `layout-nav-link${isActive ? " is-active" : ""}`
-                      }
-                      onClick={closeMobileNavigation}
-                    >
-                      <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
-                      <span>{item.label}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
-            )}
-          </section>
         </nav>
 
+        {/* Sidebar bottom */}
         <div className="layout-sidebar-bottom">
-          <div className="layout-workspace-status">
-            <span className="layout-caption-dot" />
-            <span>Workspace aktif</span>
-          </div>
+          <NavLink
+            to="/helpdesk"
+            className={({ isActive }) =>
+              `layout-helpdesk-link${isActive ? " is-active" : ""}`
+            }
+            onClick={closeMobileNavigation}
+          >
+            <Headset size={18} strokeWidth={1.8} aria-hidden="true" />
+            <span>Helpdesk</span>
+          </NavLink>
 
-          <div className="layout-sidebar-user">
-            <div className="layout-avatar" aria-hidden="true">
-              {initial}
-            </div>
-
-            <div className="layout-sidebar-user-copy">
-              <strong title={displayName}>{displayName}</strong>
-              <span title={user?.email}>{user?.email || "Akun pengguna"}</span>
-            </div>
-
-            <button
-              type="button"
-              className="layout-icon-button layout-logout-button"
-              onClick={() => void handleLogout()}
-              disabled={isLoggingOut}
-              aria-label="Logout"
-              title="Logout"
-            >
-              {isLoggingOut ? (
-                <span aria-hidden="true">…</span>
-              ) : (
-                <LogOut size={17} aria-hidden="true" />
-              )}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="layout-logout-link"
+            onClick={() => void handleLogout()}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <span className="layout-logout-loading" aria-hidden="true">
+                …
+              </span>
+            ) : (
+              <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
+            )}
+            <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
+          </button>
 
           {logoutError && (
             <p className="layout-logout-error" role="alert">
               {logoutError}
             </p>
           )}
+
+          <div className="layout-premium-card">
+            <div className="layout-premium-heading">
+              <strong>Upgrade Pro!</strong>
+              <Crown size={17} strokeWidth={1.9} aria-hidden="true" />
+            </div>
+
+            <p>
+              Tingkatkan pengalaman finansial dengan fitur dan analisis yang
+              lebih lengkap.
+            </p>
+
+            <div className="layout-premium-actions">
+              <NavLink
+                to="/plans"
+                className="layout-premium-button"
+                onClick={closeMobileNavigation}
+              >
+                <Crown size={13} aria-hidden="true" />
+                <span>Upgrade</span>
+              </NavLink>
+
+              <NavLink
+                to="/subscription"
+                className="layout-premium-learn"
+                onClick={closeMobileNavigation}
+              >
+                Learn more
+              </NavLink>
+            </div>
+          </div>
         </div>
       </aside>
 
+      {/* Main content */}
       <div className="main-column">
         <header className="topbar layout-topbar">
           <div className="topbar-heading-group">
@@ -638,6 +634,19 @@ export function AppLayout() {
             )}
 
             <div className="layout-account-actions">
+              {/* Dark mode placeholder */}
+              <button
+                type="button"
+                className="layout-theme-toggle"
+                disabled
+                aria-label="Dark mode segera hadir"
+                title="Dark mode segera hadir"
+              >
+                <Moon size={19} strokeWidth={1.8} aria-hidden="true" />
+                <span>Dark mode</span>
+                <span className="layout-coming-soon">Soon</span>
+              </button>
+
               <NavLink
                 to="/notifications"
                 className={({ isActive }) =>
@@ -684,6 +693,7 @@ export function AppLayout() {
           <span>Personal finance workspace · IDR</span>
         </footer>
       </div>
+
       <AIAssistantWidget />
     </div>
   );
