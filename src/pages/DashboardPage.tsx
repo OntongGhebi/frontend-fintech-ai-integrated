@@ -161,6 +161,13 @@ function getMonthRange(year: number, monthIndex: number) {
   };
 }
 
+function getUtcDateTimeRange(range: { startDate: string; endDate: string }) {
+  return {
+    startDate: `${range.startDate}T00:00:00.000Z`,
+    endDate: `${range.endDate}T23:59:59.999Z`,
+  };
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
     if (error.status === 0) {
@@ -359,9 +366,11 @@ export function DashboardPage() {
       setGranularCashFlowLoading(true);
       setGranularCashFlowError(null);
 
+      const dateRange = getUtcDateTimeRange(activeRange);
+
       const params = new URLSearchParams({
-        startDate: activeRange.startDate,
-        endDate: activeRange.endDate,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
         period: moneyFlowGranularity,
       });
 
