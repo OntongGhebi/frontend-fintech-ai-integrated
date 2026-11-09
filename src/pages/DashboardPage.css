@@ -6023,7 +6023,7 @@
   gap: 5px;
   margin-left: auto;
   color: #454d48;
-  font-size: 8px;
+  font-size: 10px;
   white-space: nowrap;
 }
 
@@ -6110,7 +6110,7 @@
 }
 
 .dashboard-page .dashboard-reference-budget-tile > strong span {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .dashboard-page .dashboard-reference-budget-tile > span {
@@ -6360,7 +6360,7 @@
   .dashboard-remaining-panel
   .dashboard-reference-budget-tile
   > span {
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
 }
 
@@ -6368,7 +6368,7 @@
   .dashboard-remaining-panel
   .dashboard-reference-budget-tile
   > small {
-  font-size: 7px;
+  font-size: 8px;
   line-height: 1.35;
 }
 
