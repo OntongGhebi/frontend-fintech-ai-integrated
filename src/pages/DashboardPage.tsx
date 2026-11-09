@@ -5,10 +5,12 @@ import { ApiRequestError, apiClient } from "../lib/api-client";
 import {
   parseCategoryAnalytics,
   parseDashboardOverview,
+  parseCashFlow,
 } from "../lib/dashboard/dashboard-contract";
 import type {
   DashboardCategoryAnalyticsResponse,
   DashboardOverviewResponse,
+  DashboardCashFlowResponse,
 } from "../types/dashboard";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
 import { CashFlowAnalyticsSection } from "./dashboard/CashFlowAnalyticsSection";
@@ -105,6 +107,27 @@ function formatPercent(value: number): string {
   return `${value.toLocaleString("id-ID", {
     maximumFractionDigits: 1,
   })}%`;
+}
+
+function formatDayLabel(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? String(Number(match[3])) : value;
+}
+
+function formatWeekLabel(
+  value: string,
+  range: { startDate: string; endDate: string },
+): string {
+  const weekStart = new Date(`${value}T00:00:00.000Z`);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+  const monthStart = new Date(`${range.startDate}T00:00:00.000Z`);
+  const monthEnd = new Date(`${range.endDate}T00:00:00.000Z`);
+  const visibleStart = weekStart < monthStart ? monthStart : weekStart;
+  const visibleEnd = weekEnd > monthEnd ? monthEnd : weekEnd;
+  const startDay = visibleStart.getUTCDate();
+  const endDay = visibleEnd.getUTCDate();
+  return startDay === endDay ? `${startDay}` : `${startDay}–${endDay}`;
 }
 
 function formatMonth(month: string): string {
@@ -220,6 +243,15 @@ export function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedPeriod, setSelectedPeriod] = useState<"6" | "12">("12");
+  const [moneyFlowGranularity, setMoneyFlowGranularity] = useState<
+    "DAY" | "WEEK"
+  >("DAY");
+  const [granularCashFlow, setGranularCashFlow] =
+    useState<DashboardCashFlowResponse | null>(null);
+  const [granularCashFlowLoading, setGranularCashFlowLoading] = useState(false);
+  const [granularCashFlowError, setGranularCashFlowError] = useState<
+    string | null
+  >(null);
   const now = new Date();
   const [periodMode, setPeriodMode] = useState<"month" | "custom">("month");
   const [selectedMonth, setSelectedMonth] = useState(String(now.getMonth()));
@@ -311,6 +343,54 @@ export function DashboardPage() {
     previousQueryString,
     activeRange.startDate,
     activeRange.endDate,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchGranularCashFlow() {
+      if (periodMode !== "month") {
+        setGranularCashFlow(null);
+        setGranularCashFlowError(null);
+        setGranularCashFlowLoading(false);
+        return;
+      }
+
+      setGranularCashFlowLoading(true);
+      setGranularCashFlowError(null);
+
+      const params = new URLSearchParams({
+        startDate: activeRange.startDate,
+        endDate: activeRange.endDate,
+        period: moneyFlowGranularity,
+      });
+
+      try {
+        const response = await apiClient.get<unknown>(
+          `/dashboard/cash-flow?${params.toString()}`,
+        );
+        const parsed = parseCashFlow(response);
+        if (!cancelled) setGranularCashFlow(parsed);
+      } catch (error) {
+        if (!cancelled) {
+          setGranularCashFlow(null);
+          setGranularCashFlowError(getErrorMessage(error));
+        }
+      } finally {
+        if (!cancelled) setGranularCashFlowLoading(false);
+      }
+    }
+
+    void fetchGranularCashFlow();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    periodMode,
+    activeRange.startDate,
+    activeRange.endDate,
+    moneyFlowGranularity,
+    reloadKey,
   ]);
 
   useEffect(() => {
@@ -486,23 +566,58 @@ export function DashboardPage() {
     };
   }, [months, overview, periodMode, selectedMonth, selectedYear, reloadKey]);
 
-  const chartMaximum = Math.max(
-    1,
-    ...months.flatMap((month) => [
-      toAmount(month.income),
-      toAmount(month.expense),
-      toAmount(monthlyBudgetAllocations[month.month]),
-    ]),
+  const isMonthlyRange = periodMode === "month";
+  const activeMonthlySpace = Math.max(
+    0,
+    toAmount(overview?.budgetPerformance?.totalBudgetAmount),
   );
-  // Reserve 12% headroom so the tallest column never touches the chart ceiling.
-  const chartScaleMaximum = chartMaximum / 0.88;
 
-  const hasMonthlyTransactions = months.some(
-    (month) => toAmount(month.income) > 0 || toAmount(month.expense) > 0,
+  const moneyFlowItems =
+    isMonthlyRange && granularCashFlow
+      ? granularCashFlow.cashFlows.map((item) => ({
+          key: item.period,
+          label:
+            moneyFlowGranularity === "DAY"
+              ? formatDayLabel(item.period)
+              : formatWeekLabel(item.period, activeRange),
+          title:
+            moneyFlowGranularity === "DAY"
+              ? new Intl.DateTimeFormat("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                  timeZone: "UTC",
+                }).format(new Date(`${item.period}T00:00:00.000Z`))
+              : `Minggu ${formatWeekLabel(item.period, activeRange)} ${formatMonth(`${selectedYear}-${String(Number(selectedMonth) + 1).padStart(2, "0")}`)}`,
+          income: toAmount(item.income),
+          expense: toAmount(item.expense),
+          // Monthly allocation is shown as one reference line, never split into daily/weekly values.
+          space: 0,
+        }))
+      : months.map((month) => ({
+          key: month.month,
+          label: formatMonth(month.month),
+          title: formatMonth(month.month),
+          income: toAmount(month.income),
+          expense: toAmount(month.expense),
+          space: Math.max(0, toAmount(monthlyBudgetAllocations[month.month])),
+        }));
+
+  const moneyFlowMaximum = Math.max(
+    1,
+    ...moneyFlowItems.flatMap((item) => [
+      item.income,
+      item.expense,
+      item.space,
+    ]),
+    ...(isMonthlyRange ? [activeMonthlySpace] : []),
   );
-  const hasMonthlyBudgets = months.some(
-    (month) => toAmount(monthlyBudgetAllocations[month.month]) > 0,
-  );
+  const moneyFlowScaleMaximum = moneyFlowMaximum / 0.88;
+  const hasMoneyFlowData =
+    moneyFlowItems.some(
+      (item) => item.income > 0 || item.expense > 0 || item.space > 0,
+    ) ||
+    (isMonthlyRange && activeMonthlySpace > 0);
 
   const income = toAmount(summary?.totalIncome);
   const cashFlow = toAmount(summary?.netCashFlow);
@@ -913,22 +1028,44 @@ export function DashboardPage() {
                 </span>
               </div>
 
-              <label className="dashboard-period-select">
-                <span className="sr-only">Periode grafik</span>
-                <select
-                  value={selectedPeriod}
-                  onChange={(event) =>
-                    setSelectedPeriod(event.target.value as "6" | "12")
-                  }
-                >
-                  <option value="6">6 bulan</option>
-                  <option value="12">12 bulan</option>
-                </select>
-              </label>
+              {periodMode === "month" ? (
+                <label className="dashboard-period-select dashboard-granularity-select">
+                  <span className="sr-only">
+                    Granularitas grafik Money Flow
+                  </span>
+                  <select
+                    aria-label="Granularitas grafik Money Flow"
+                    value={moneyFlowGranularity}
+                    onChange={(event) =>
+                      setMoneyFlowGranularity(
+                        event.target.value as "DAY" | "WEEK",
+                      )
+                    }
+                  >
+                    <option value="DAY">Daily</option>
+                    <option value="WEEK">Weekly</option>
+                  </select>
+                </label>
+              ) : (
+                <label className="dashboard-period-select">
+                  <span className="sr-only">Rentang grafik</span>
+                  <select
+                    value={selectedPeriod}
+                    onChange={(event) =>
+                      setSelectedPeriod(event.target.value as "6" | "12")
+                    }
+                  >
+                    <option value="6">6 bulan</option>
+                    <option value="12">12 bulan</option>
+                  </select>
+                </label>
+              )}
             </div>
           </div>
 
-          {isLoading && !overview ? (
+          {(
+            isMonthlyRange ? granularCashFlowLoading : isLoading && !overview
+          ) ? (
             <div className="dashboard-chart-loading" role="status">
               <span />
               <span />
@@ -937,12 +1074,18 @@ export function DashboardPage() {
               <span />
               <span />
             </div>
-          ) : !overview && errorMessage ? (
+          ) : (
+              isMonthlyRange ? granularCashFlowError : !overview && errorMessage
+            ) ? (
             <div className="dashboard-empty-state" role="status">
               <strong>Grafik belum tersedia</strong>
-              <p>Data grafik belum berhasil dimuat. Coba perbarui dashboard.</p>
+              <p>
+                {isMonthlyRange
+                  ? granularCashFlowError
+                  : (errorMessage ?? "Data grafik belum berhasil dimuat.")}
+              </p>
             </div>
-          ) : !hasMonthlyTransactions && !hasMonthlyBudgets ? (
+          ) : !hasMoneyFlowData ? (
             <div className="dashboard-empty-state">
               <span className="dashboard-empty-state-icon" aria-hidden="true">
                 ↗
@@ -957,10 +1100,10 @@ export function DashboardPage() {
             <div className="dashboard-chart">
               <div className="dashboard-chart-axis" aria-hidden="true">
                 <span>
-                  {formatCompactCurrency(chartScaleMaximum, currency)}
+                  {formatCompactCurrency(moneyFlowScaleMaximum, currency)}
                 </span>
                 <span>
-                  {formatCompactCurrency(chartScaleMaximum / 2, currency)}
+                  {formatCompactCurrency(moneyFlowScaleMaximum / 2, currency)}
                 </span>
                 <span>{formatCompactCurrency(0, currency)}</span>
               </div>
@@ -968,58 +1111,61 @@ export function DashboardPage() {
               <div
                 className="dashboard-chart-plot"
                 role="img"
-                aria-label={`Grafik perbandingan pemasukan, pengeluaran, dan total alokasi anggaran bulanan selama ${months.length} bulan.`}
+                aria-label={
+                  isMonthlyRange
+                    ? `Grafik pemasukan dan pengeluaran secara ${moneyFlowGranularity === "DAY" ? "harian" : "mingguan"}, dengan total alokasi anggaran bulanan ${formatCurrency(activeMonthlySpace, currency)} sebagai referensi.`
+                    : `Grafik perbandingan pemasukan, pengeluaran, dan total alokasi anggaran selama ${moneyFlowItems.length} bulan.`
+                }
               >
                 <div className="dashboard-chart-gridline dashboard-chart-gridline--one" />
                 <div className="dashboard-chart-gridline dashboard-chart-gridline--two" />
                 <div className="dashboard-chart-gridline dashboard-chart-gridline--three" />
+                {isMonthlyRange && activeMonthlySpace > 0 && (
+                  <div
+                    className="dashboard-chart-space-reference"
+                    style={{
+                      bottom: `calc(17px + ${(activeMonthlySpace / moneyFlowScaleMaximum) * 100}%)`,
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
 
                 <div
                   className="dashboard-chart-columns"
                   style={{
-                    gridTemplateColumns: `repeat(${Math.max(months.length, 1)}, minmax(0, 1fr))`,
+                    gridTemplateColumns: `repeat(${Math.max(moneyFlowItems.length, 1)}, minmax(0, 1fr))`,
                   }}
                 >
-                  {months.map((month) => {
-                    const monthlyIncome = Math.max(0, toAmount(month.income));
-                    const monthlyExpense = Math.max(0, toAmount(month.expense));
-
-                    // Space is the total active monthly budget allocation, not net cash flow.
-                    const monthlySpace = Math.max(
-                      0,
-                      toAmount(monthlyBudgetAllocations[month.month]),
-                    );
-
-                    const monthTitle = formatMonth(month.month);
+                  {moneyFlowItems.map((item) => {
                     const chartSeries = [
                       {
                         key: "income",
-                        value: monthlyIncome,
+                        value: item.income,
                         className: "dashboard-chart-bar--income",
                       },
                       {
                         key: "expense",
-                        value: monthlyExpense,
+                        value: item.expense,
                         className: "dashboard-chart-bar--expense",
                       },
                     ].sort((first, second) => second.value - first.value);
 
                     return (
-                      <div className="dashboard-chart-column" key={month.month}>
+                      <div className="dashboard-chart-column" key={item.key}>
                         <div
                           className="dashboard-chart-bars dashboard-chart-bars--overlapped"
                           title={[
-                            monthTitle,
-                            `Pemasukan: ${formatCurrency(monthlyIncome, currency)}`,
-                            `Pengeluaran: ${formatCurrency(monthlyExpense, currency)}`,
-                            `Alokasi anggaran: ${formatCurrency(monthlySpace, currency)}`,
+                            item.title,
+                            `Pemasukan: ${formatCurrency(item.income, currency)}`,
+                            `Pengeluaran: ${formatCurrency(item.expense, currency)}`,
+                            `Alokasi anggaran bulanan: ${formatCurrency(item.space, currency)}`,
                           ].join(" — ")}
                         >
-                          {monthlySpace > 0 && (
+                          {item.space > 0 && (
                             <div
                               className="dashboard-chart-bar dashboard-chart-bar--space"
                               style={{
-                                height: `${Math.min(88, Math.max(0, (monthlySpace / chartScaleMaximum) * 100))}%`,
+                                height: `${Math.min(88, Math.max(0, (item.space / moneyFlowScaleMaximum) * 100))}%`,
                                 zIndex: 1,
                               }}
                               aria-hidden="true"
@@ -1030,16 +1176,15 @@ export function DashboardPage() {
                               key={series.key}
                               className={`dashboard-chart-bar ${series.className}`}
                               style={{
-                                height: `${Math.min(88, Math.max(0, (series.value / chartScaleMaximum) * 100))}%`,
+                                height: `${Math.min(88, Math.max(0, (series.value / moneyFlowScaleMaximum) * 100))}%`,
                                 zIndex: index + 2,
                               }}
                               aria-hidden="true"
                             />
                           ))}
                         </div>
-
                         <span className="dashboard-chart-month">
-                          {monthTitle}
+                          {item.label}
                         </span>
                       </div>
                     );
