@@ -19,10 +19,10 @@
   display: flex;
   width: 100%;
   min-width: 0;
-  height: 42px;
+  height: 31px;
   align-items: center;
-  gap: 10px;
-  padding: 0 11px;
+  gap: 8px;
+  padding: 0 8px;
   border: 1px solid #e4eae4;
   border-radius: 12px;
   background: #f8faf7;
@@ -56,7 +56,7 @@
   background: transparent;
   color: #26352c;
   font: inherit;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .global-search__field input::placeholder {

@@ -4517,3 +4517,1927 @@
     gap: 10px;
   }
 }
+
+/* =========================================================
+   FR.2 VISUAL DIRECTION — restrained, reference-led fintech UI
+   Remove decorative gradients and excessive color surfaces.
+   ========================================================= */
+.dashboard-page {
+  --dashboard-background: #f5f6f4;
+  --dashboard-border: #e7eae6;
+  --dashboard-forest: #285f4e;
+  --dashboard-emerald: #347b67;
+  --dashboard-emerald-mid: #4a927a;
+  --dashboard-emerald-light: #a9cbb9;
+  --dashboard-lime: #a9d83b;
+  --dashboard-coral: #c97868;
+  gap: 16px;
+}
+
+.dashboard-page .dashboard-top-heading {
+  padding: 2px 0 5px;
+}
+
+.dashboard-page .dashboard-eyebrow,
+.dashboard-page .dashboard-card-overline {
+  color: #668477;
+}
+
+.dashboard-page .dashboard-heading-copy h1 {
+  color: #202823;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-page .dashboard-heading-copy p {
+  color: #818a83;
+}
+
+/* Summary cards: neutral surfaces, green used only as an accent. */
+.dashboard-page .dashboard-balance-card,
+.dashboard-page .dashboard-stat-card {
+  min-height: 238px;
+  border: 1px solid #e7eae6;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #202823;
+  box-shadow: 0 1px 3px rgb(24 39 30 / 3%);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.dashboard-page .dashboard-balance-card:hover,
+.dashboard-page .dashboard-stat-card:hover {
+  transform: none;
+  border-color: #d7e2da;
+  box-shadow: 0 3px 10px rgb(24 39 30 / 5%);
+}
+
+.dashboard-page .dashboard-balance-card::before,
+.dashboard-page .dashboard-balance-card::after,
+.dashboard-page .dashboard-stat-card::before {
+  display: none;
+  content: none;
+}
+
+.dashboard-page .dashboard-balance-card {
+  padding: 21px;
+  border-color: #e2e9e3;
+  background: #ffffff;
+}
+
+.dashboard-page .dashboard-balance-card .dashboard-card-overline,
+.dashboard-page .dashboard-balance-card h2 {
+  color: #69756d;
+}
+
+.dashboard-page .dashboard-balance-card h2 {
+  font-weight: 650;
+}
+
+.dashboard-page .dashboard-balance-value,
+.dashboard-page .dashboard-balance-card .dashboard-balance-value {
+  color: #202823;
+  text-shadow: none;
+  font-weight: 720;
+  letter-spacing: -0.05em;
+}
+
+.dashboard-page .dashboard-balance-description {
+  color: #818a83;
+}
+
+.dashboard-page .dashboard-card-icon--light {
+  border: 1px solid #e5ece6;
+  background: #f5f8f5;
+  color: #477a65;
+  backdrop-filter: none;
+}
+
+.dashboard-page .dashboard-balance-footer {
+  border: 1px solid #e8eee9;
+  background: #f8faf8;
+  color: #647168;
+  backdrop-filter: none;
+}
+
+.dashboard-page .dashboard-balance-footer-icon {
+  background: #eaf3e7;
+  color: #4d8062;
+}
+
+.dashboard-page .dashboard-stat-card--lime,
+.dashboard-page .dashboard-stat-card--coral {
+  border-color: #e7eae6;
+  background: #ffffff;
+  color: #202823;
+}
+
+.dashboard-page .dashboard-stat-card-heading,
+.dashboard-page .dashboard-stat-card--coral .dashboard-stat-card-heading {
+  color: #69756d;
+  font-weight: 650;
+}
+
+.dashboard-page .dashboard-stat-card--lime .dashboard-stat-value,
+.dashboard-page .dashboard-stat-card--coral .dashboard-stat-value {
+  color: #202823;
+}
+
+.dashboard-page .dashboard-stat-card--lime .dashboard-stat-icon {
+  border: 1px solid #e4edd9;
+  background: #f2f7ed;
+  color: #64834a;
+}
+
+.dashboard-page .dashboard-stat-card--coral .dashboard-stat-icon {
+  border: 1px solid #f0e4df;
+  background: #fbf5f2;
+  color: #b97868;
+}
+
+.dashboard-page .dashboard-comparison,
+.dashboard-page .dashboard-comparison-detail,
+.dashboard-page .dashboard-stat-card--coral .dashboard-comparison,
+.dashboard-page .dashboard-stat-card--coral .dashboard-comparison-detail {
+  color: #77827a;
+}
+
+.dashboard-page .dashboard-income-category-card {
+  border-color: #e8ede8;
+  background: #fafbfa;
+  backdrop-filter: none;
+}
+
+.dashboard-page .dashboard-income-category-card:hover {
+  border-color: #dce7de;
+  background: #f5f8f5;
+}
+
+.dashboard-page .dashboard-income-category-name,
+.dashboard-page .dashboard-income-category-amount {
+  color: #34463b;
+}
+
+.dashboard-page .dashboard-income-category-count {
+  color: #89928b;
+}
+
+.dashboard-page .dashboard-stat-card--coral .dashboard-budget-progress-heading,
+.dashboard-page .dashboard-stat-card--coral .dashboard-budget-progress-details,
+.dashboard-page .dashboard-stat-card--coral .dashboard-budget-remaining {
+  color: #77827a;
+}
+
+.dashboard-page .dashboard-stat-card--coral .dashboard-budget-progress-track {
+  background: #edf0ed;
+}
+
+/* Analytics panels: white, flat and separated by fine borders. */
+.dashboard-page .dashboard-panel {
+  border: 1px solid #e7eae6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(24 39 30 / 3%);
+}
+
+.dashboard-page .dashboard-money-flow {
+  background: #ffffff;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-panel-heading h3,
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading h3,
+.dashboard-page .dashboard-recent-heading h3 {
+  color: #29342d;
+  font-weight: 680;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-legend > span {
+  color: #77827a;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income {
+  background: #347b67;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  background: #a9d83b;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--target,
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--budget {
+  border: 1px solid #e1e8e2;
+  background: repeating-linear-gradient(
+    135deg,
+    #eef2ee 0,
+    #eef2ee 5px,
+    #f8faf8 5px,
+    #f8faf8 10px
+  );
+}
+
+/* Remaining monthly: keep a light panel and make the progress the accent. */
+.dashboard-page .dashboard-remaining-panel {
+  position: relative;
+  overflow: hidden;
+  border-color: #e3e9e3;
+  background: #ffffff;
+  color: #202823;
+  box-shadow: 0 1px 3px rgb(24 39 30 / 3%);
+}
+
+.dashboard-page .dashboard-remaining-panel::after {
+  display: none;
+  content: none;
+}
+
+.dashboard-page .dashboard-remaining-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading h3,
+.dashboard-page .dashboard-remaining-panel .dashboard-remaining-percent {
+  color: #202823;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-link {
+  color: #347b67;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-link:hover {
+  color: #225d4d;
+}
+
+.dashboard-page .dashboard-remaining-main > div:first-child > span,
+.dashboard-page .dashboard-remaining-copy > span {
+  color: #818a83;
+}
+
+.dashboard-page .dashboard-remaining-copy strong {
+  color: #347b67;
+}
+
+.dashboard-page .dashboard-remaining-track {
+  background: #edf1ed;
+}
+
+.dashboard-page .dashboard-remaining-track > span {
+  background: #a9d83b;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-remaining-total > div {
+  border: 1px solid #e8ede8;
+  background: #fafbfa;
+  backdrop-filter: none;
+}
+
+.dashboard-page .dashboard-remaining-total span,
+.dashboard-page .dashboard-remaining-footnote {
+  color: #818a83;
+}
+
+.dashboard-page .dashboard-remaining-total strong {
+  color: #29342d;
+}
+
+.dashboard-page .dashboard-remaining-total strong.is-over-budget {
+  color: #bd6754;
+}
+
+.dashboard-page .dashboard-remaining-footnote-dot {
+  background: #a9d83b;
+  box-shadow: none;
+}
+
+/* Transaction history: restrained table treatment. */
+.dashboard-page .dashboard-recent-transactions {
+  overflow: hidden;
+  border-color: #e7eae6;
+  background: #ffffff;
+}
+
+.dashboard-page .dashboard-recent-heading {
+  background: #ffffff;
+}
+
+.dashboard-page .dashboard-recent-table th {
+  background: #f7f8f7;
+  color: #68746d;
+}
+
+.dashboard-page .dashboard-recent-table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.dashboard-page .dashboard-recent-table tbody tr:hover {
+  background: #f8faf8;
+}
+
+.dashboard-page .dashboard-recent-status {
+  border-radius: 6px;
+}
+
+.dashboard-page .dashboard-recent-amount--income {
+  color: #347b67;
+}
+
+.dashboard-page .dashboard-recent-amount--expense {
+  color: #a96659;
+}
+
+.dashboard-page .dashboard-recent-action {
+  color: #347b67;
+}
+
+.dashboard-page .dashboard-recent-action:hover {
+  color: #225d4d;
+}
+
+.dashboard-page .dashboard-error {
+  border-color: #efd8d3;
+  background: #fff8f6;
+}
+
+@media (max-width: 640px) {
+  .dashboard-page .dashboard-balance-card,
+  .dashboard-page .dashboard-stat-card {
+    min-height: 210px;
+  }
+
+  .dashboard-page .dashboard-remaining-panel {
+    min-height: 290px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page .dashboard-balance-card,
+  .dashboard-page .dashboard-stat-card {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   FR.2 — MONEY FLOW OVERLAPPED SERIES
+   Income, Expense, and Space share one x-position and baseline.
+   The component assigns z-index dynamically from largest to smallest.
+   ========================================================= */
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars--overlapped {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: calc(100% - 27px);
+  isolation: isolate;
+}
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-bars--overlapped
+  .dashboard-chart-bar {
+  position: absolute;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  display: block;
+  width: clamp(9px, 1.05vw, 14px);
+  min-width: 0;
+  max-width: 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px 5px 1px 1px;
+  transform: translateX(-50%);
+  transform-origin: bottom center;
+  box-sizing: border-box;
+  transition:
+    height 220ms ease,
+    filter 160ms ease;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income {
+  background: #397e6d;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  background: #a6d82d;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--space {
+  border: 1px solid #dcebe3;
+  background: repeating-linear-gradient(
+    145deg,
+    #eff7f2 0,
+    #eff7f2 5px,
+    #e4f0e9 5px,
+    #e4f0e9 8px
+  );
+  box-shadow: none;
+}
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-legend--inline
+  .dashboard-legend-dot--space {
+  border: 1px solid #dcebe3;
+  background: repeating-linear-gradient(
+    145deg,
+    #eff7f2 0,
+    #eff7f2 3px,
+    #e4f0e9 3px,
+    #e4f0e9 5px
+  );
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar:hover {
+  filter: brightness(1.04);
+}
+
+@media (max-width: 820px) {
+  .dashboard-page .dashboard-money-flow .dashboard-chart-bars--overlapped {
+    height: calc(100% - 25px);
+  }
+
+  .dashboard-page
+    .dashboard-money-flow
+    .dashboard-chart-bars--overlapped
+    .dashboard-chart-bar {
+    width: clamp(8px, 1.7vw, 12px);
+    max-width: 12px;
+  }
+}
+
+/* =========================================================
+   FR.2 — DASHBOARD REFERENCE INTEGRATION (CONTENT AREA)
+   Keep AppLayout navigation and navbar untouched.
+   ========================================================= */
+
+.dashboard-page {
+  gap: 11px;
+  --dashboard-border: #ededed;
+  --dashboard-muted: #929994;
+  --dashboard-text: #202722;
+  color: #202722;
+}
+
+/* Compact period controls: keep existing filtering and refresh behavior,
+   but reduce the visual weight so the summary cards lead the page. */
+.dashboard-page .dashboard-toolbar {
+  min-height: 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 1px;
+}
+
+.dashboard-page .dashboard-toolbar-context {
+  gap: 6px;
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-toolbar-label {
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-period-pill__value {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-period-fields {
+  gap: 5px;
+}
+
+.dashboard-page .dashboard-period-fields select,
+.dashboard-page .dashboard-period-fields input[type="date"] {
+  min-height: 29px;
+  padding: 4px 8px;
+  border-color: #eeeeee;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #555e58;
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-refresh-button {
+  min-height: 29px;
+  padding: 4px 9px;
+  border-color: #eeeeee;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #68736c;
+  font-size: 10px;
+}
+
+/* The page title is already rendered by the shared AppLayout navbar. */
+.dashboard-page .dashboard-section-title {
+  display: none;
+}
+
+/* Three equal summary cards, matching the prototype's first content row. */
+.dashboard-page .dashboard-summary-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 9px;
+}
+
+.dashboard-page .dashboard-stat-stack {
+  display: contents;
+}
+
+.dashboard-page .dashboard-balance-card,
+.dashboard-page .dashboard-stat-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 231px;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid #ededed;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #202722;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-balance-card {
+  justify-content: flex-start;
+}
+
+.dashboard-page .dashboard-balance-card::before,
+.dashboard-page .dashboard-balance-card::after,
+.dashboard-page .dashboard-stat-card::before,
+.dashboard-page .dashboard-stat-card::after {
+  display: none;
+  content: none;
+}
+
+.dashboard-page .dashboard-balance-card-heading,
+.dashboard-page .dashboard-stat-card-heading {
+  min-height: 20px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-page .dashboard-card-overline {
+  color: #96999e;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+}
+
+.dashboard-page .dashboard-balance-card h2 {
+  margin-top: 3px;
+  color: #292e2b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-card-icon,
+.dashboard-page .dashboard-stat-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+  background: #f8f9f8;
+  color: #648474;
+  font-size: 12px;
+}
+
+.dashboard-page .dashboard-balance-value {
+  margin-top: auto;
+  padding-top: 37px;
+  color: #171a18;
+  font-size: clamp(25px, 2.35vw, 35px);
+  font-weight: 550;
+  letter-spacing: -0.055em;
+  line-height: 1.08;
+}
+
+.dashboard-page .dashboard-balance-description {
+  margin-top: 7px;
+  color: #96999e;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.dashboard-page .dashboard-balance-footer {
+  align-self: stretch;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 7px;
+  background: #f8f9f8;
+  color: #777e79;
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.dashboard-page .dashboard-balance-footer-icon {
+  width: 14px;
+  height: 14px;
+  background: #e7f1e9;
+  color: #397e6d;
+}
+
+.dashboard-page .dashboard-stat-card-heading {
+  color: #747d77;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-stat-card-heading > span:first-child {
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-stat-heading-right {
+  gap: 6px;
+}
+
+.dashboard-page .dashboard-stat-value {
+  margin-top: 12px;
+  color: #202722;
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 550;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+}
+
+.dashboard-page .dashboard-comparison,
+.dashboard-page .dashboard-comparison-detail {
+  color: #8b938d;
+  font-size: 9px;
+}
+
+.dashboard-page .dashboard-income-categories {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.dashboard-page .dashboard-income-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.dashboard-page .dashboard-income-category-card {
+  min-width: 0;
+  min-height: 58px;
+  padding: 6px;
+  border: 0;
+  border-left: 2px solid #d6eaa2;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-income-category-topline {
+  margin-bottom: 3px;
+}
+
+.dashboard-page .dashboard-income-category-icon {
+  display: none;
+}
+
+.dashboard-page .dashboard-income-category-topline > span:last-child {
+  color: #929894;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-income-category-name {
+  display: block;
+  overflow: hidden;
+  color: #929894;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-income-category-amount {
+  display: block;
+  margin-top: 2px;
+  color: #29342d;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-income-category-count {
+  display: none;
+}
+
+.dashboard-page .dashboard-budget-progress {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.dashboard-page .dashboard-budget-progress-heading,
+.dashboard-page .dashboard-budget-progress-details,
+.dashboard-page .dashboard-budget-remaining {
+  font-size: 9px;
+}
+
+.dashboard-page .dashboard-budget-progress-track {
+  height: 34px;
+  margin-top: 8px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(90deg, #f0f5df 0 6px, #ffffff 6px 8px);
+}
+
+.dashboard-page .dashboard-budget-progress-track > span {
+  border-radius: 6px;
+  background: #a6d82d;
+}
+
+/* Prototype's middle row: Money Flow is wider, Remaining Monthly is narrower. */
+.dashboard-page .dashboard-primary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(290px, 1fr);
+  align-items: stretch;
+  gap: 9px;
+}
+
+.dashboard-page .dashboard-panel {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #ededed;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow,
+.dashboard-page .dashboard-remaining-panel {
+  min-height: 315px;
+}
+
+.dashboard-page .dashboard-panel-heading {
+  min-height: 20px;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-page .dashboard-panel-heading h3 {
+  margin: 0;
+  color: #292e2b;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.dashboard-page .dashboard-panel-heading p {
+  margin: 3px 0 0;
+  color: #96999e;
+  font-size: 9px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-panel-heading {
+  align-items: center;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-money-flow-header-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-legend > span {
+  gap: 5px;
+  color: #858b87;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.dashboard-page .dashboard-legend-dot--space {
+  border: 1px solid #dcebe3;
+  background: repeating-linear-gradient(145deg, #eff7f2 0 3px, #e4f0e9 3px 5px);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-period-select select {
+  min-height: 27px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: #f8f9f8;
+  color: #555d58;
+  font-size: 9px;
+}
+
+/* Remove the redundant y-axis column: prototype uses three full-width guides. */
+.dashboard-page .dashboard-money-flow .dashboard-chart {
+  display: block;
+  height: 250px;
+  min-height: 0;
+  margin-top: 12px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-axis {
+  display: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-plot {
+  width: 100%;
+  height: 250px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-gridline {
+  border-top: 1px dashed #edf0ed;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-gridline--three {
+  border-top-style: solid;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-columns {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-column {
+  height: 100%;
+  gap: 0;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars--overlapped {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(100% - 17px);
+  min-width: 0;
+  isolation: isolate;
+}
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-bars--overlapped
+  .dashboard-chart-bar {
+  position: absolute;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  display: block;
+  width: 100%;
+  max-width: 48px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px 7px 3px 3px;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  transition:
+    height 220ms ease,
+    filter 160ms ease;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income {
+  background: #397e6d;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  background: #a6d82d;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--space {
+  border: 1px solid #dcebe3;
+  background: repeating-linear-gradient(145deg, #f0f8f4 0 5px, #e7f2ed 5px 7px);
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-month {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  color: #8d928e;
+  font-size: 8px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Remaining Monthly: match the reference hierarchy without replacing real totals. */
+.dashboard-page .dashboard-remaining-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 14px;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading {
+  align-items: center;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-link {
+  color: #454d48;
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.dashboard-page .dashboard-remaining-main {
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.dashboard-page .dashboard-remaining-percent {
+  color: #202722;
+  font-size: clamp(39px, 3.3vw, 48px);
+  font-weight: 450;
+  letter-spacing: -0.06em;
+}
+
+.dashboard-page .dashboard-remaining-main > div:first-child > span,
+.dashboard-page .dashboard-remaining-copy > span {
+  color: #929994;
+  font-size: 9px;
+}
+
+.dashboard-page .dashboard-remaining-copy {
+  max-width: 145px;
+  gap: 4px;
+}
+
+.dashboard-page .dashboard-remaining-copy strong {
+  color: #397e6d;
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-remaining-track {
+  height: 9px;
+  border-radius: 8px;
+  background: #edf2ed;
+}
+
+.dashboard-page .dashboard-remaining-track > span {
+  border-radius: inherit;
+  background: #397e6d;
+}
+
+.dashboard-page .dashboard-remaining-total {
+  gap: 4px;
+}
+
+.dashboard-page .dashboard-remaining-total > div {
+  min-height: 68px;
+  padding: 8px 7px;
+  border: 0;
+  border-radius: 8px;
+  background: #f7f9f7;
+}
+
+.dashboard-page .dashboard-remaining-total > div:nth-child(2) {
+  background: #f5f8e9;
+}
+
+.dashboard-page .dashboard-remaining-total > div:nth-child(3) {
+  background: #eff8f3;
+}
+
+.dashboard-page .dashboard-remaining-total span {
+  color: #858b87;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-remaining-total strong {
+  color: #29342d;
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-remaining-footnote {
+  margin-top: auto;
+  color: #858b87;
+  font-size: 8px;
+}
+
+/* Transaction history is the next full-width panel, as in the prototype. */
+.dashboard-page .dashboard-recent-transactions {
+  grid-column: 1 / -1;
+  padding: 0;
+  border: 1px solid #ededed;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.dashboard-page .dashboard-recent-heading {
+  min-height: 43px;
+  padding: 0 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dashboard-page .dashboard-recent-heading h3 {
+  color: #292e2b;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.dashboard-page .dashboard-recent-heading p {
+  display: none;
+}
+
+.dashboard-page .dashboard-recent-table {
+  min-width: 680px;
+}
+
+.dashboard-page .dashboard-recent-table th {
+  height: 31px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #414843;
+  font-size: 8px;
+  font-weight: 550;
+}
+
+.dashboard-page .dashboard-recent-table td {
+  height: 39px;
+  padding: 0 12px;
+  color: #626a65;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-recent-name strong,
+.dashboard-page .dashboard-recent-amount {
+  font-size: 9px;
+}
+
+.dashboard-page .dashboard-recent-type,
+.dashboard-page .dashboard-recent-status {
+  padding: 4px 7px;
+  font-size: 8px;
+}
+
+/* Keep the additional analytics sections intact below the reference-led
+   first screen. They remain available and retain their existing behavior. */
+@media (max-width: 1050px) {
+  .dashboard-page .dashboard-summary-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-page .dashboard-balance-card {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-page .dashboard-primary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-page {
+    gap: 10px;
+  }
+
+  .dashboard-page .dashboard-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-page .dashboard-period-fields {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-page .dashboard-summary-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-page .dashboard-balance-card {
+    grid-column: auto;
+  }
+
+  .dashboard-page .dashboard-balance-card,
+  .dashboard-page .dashboard-stat-card {
+    min-height: 205px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-money-flow-header-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart {
+    height: 220px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot {
+    height: 220px;
+  }
+
+  .dashboard-page .dashboard-remaining-panel {
+    min-height: 290px;
+  }
+
+  .dashboard-page .dashboard-recent-heading {
+    padding: 10px 11px;
+  }
+}
+
+/* =========================================================
+   DASHBOARD REFERENCE MATCH — summary cards and chart layering
+   ========================================================= */
+.dashboard-page .dashboard-reference-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  align-items: stretch;
+}
+
+.dashboard-page .dashboard-reference-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 231px;
+  height: auto;
+  flex-direction: column;
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid #ededed;
+  border-radius: 17px;
+  background: #fff;
+  color: #171a18;
+  box-shadow: none;
+}
+
+.dashboard-page .dashboard-reference-card::before,
+.dashboard-page .dashboard-reference-card::after {
+  display: none;
+}
+
+.dashboard-page .dashboard-reference-card-top {
+  display: flex;
+  min-height: 15px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #252b27;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-reference-period,
+.dashboard-page .dashboard-reference-card-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #555b57;
+  font-size: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-muted {
+  display: block;
+  color: #96999e;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.dashboard-page .dashboard-reference-balance-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: auto;
+  padding-top: 38px;
+}
+
+.dashboard-page .dashboard-reference-balance-value {
+  display: block;
+  max-width: 100%;
+  margin: 3px 0 13px;
+  overflow: hidden;
+  color: #171a18;
+  font-size: clamp(25px, 2.35vw, 37px);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-page .dashboard-reference-mini-stat {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 22px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: #f8f9f8;
+  color: #777e79;
+  font-size: 8px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-mini-icon {
+  display: inline-grid;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #8d9290;
+  font-size: 11px;
+}
+
+.dashboard-page .dashboard-reference-mini-stat strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #42a982;
+  font-size: 8px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+}
+
+.dashboard-page .dashboard-reference-mini-stat strong.is-negative {
+  color: #df7a83;
+}
+
+.dashboard-page
+  .dashboard-reference-balance-content
+  > .dashboard-reference-mini-stat {
+  margin-top: 6px;
+}
+
+.dashboard-page .dashboard-reference-income-content {
+  display: flex;
+  min-height: 126px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 13px;
+}
+
+.dashboard-page .dashboard-reference-income-value {
+  display: block;
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #171a18;
+  font-size: clamp(20px, 2vw, 29px);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-mini-bars {
+  display: flex;
+  height: 38px;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  gap: 3px;
+  padding-bottom: 2px;
+}
+
+.dashboard-page .dashboard-reference-mini-bars i {
+  width: 6px;
+  min-height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: #d9f0d9;
+}
+
+.dashboard-page .dashboard-reference-mini-bars i:nth-child(3n) {
+  background: #b5e5b4;
+}
+
+.dashboard-page .dashboard-reference-mini-bars i:nth-child(3n + 2) {
+  background: #c6ebbd;
+}
+
+.dashboard-page .dashboard-reference-income-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.dashboard-page .dashboard-reference-income-sources {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 9px;
+}
+
+.dashboard-page .dashboard-reference-income-sources > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 8px;
+  border-left: 2px solid #d6eaa2;
+}
+
+.dashboard-page .dashboard-reference-income-sources > div:first-child {
+  border-left-color: #c9dfcf;
+}
+
+.dashboard-page .dashboard-reference-income-sources > div:nth-child(3) {
+  border-left-color: #b5e5b4;
+}
+
+.dashboard-page .dashboard-reference-income-sources span {
+  overflow: hidden;
+  color: #929894;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-income-sources strong {
+  overflow: hidden;
+  color: #29342d;
+  font-size: 10px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-income-sources p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #929894;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-reference-expense-card {
+  padding-top: 14px;
+}
+
+.dashboard-page .dashboard-reference-expense-value {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 3px;
+  overflow: hidden;
+  color: #171a18;
+  font-size: clamp(25px, 2.3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-expense-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dashboard-page .dashboard-reference-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  margin: 16px 0 6px;
+  color: #737975;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-reference-expense-meter {
+  display: grid;
+  height: 60px;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  align-items: end;
+  gap: 3px;
+}
+
+.dashboard-page .dashboard-reference-expense-meter i {
+  height: 100%;
+  border-radius: 10px;
+  background: #f0f5df;
+}
+
+.dashboard-page .dashboard-reference-expense-meter i.filled {
+  background: #a6d82d;
+}
+
+.dashboard-page .dashboard-reference-expense-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  color: #727975;
+  font-size: 8px;
+}
+
+.dashboard-page .dashboard-reference-expense-footer span:last-child {
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Money Flow: Space is the full-width background silhouette. Only Income
+   and Expense are the two narrower foreground bars and compete for z-order. */
+.dashboard-page .dashboard-money-flow .dashboard-chart-bars--overlapped {
+  overflow: visible;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--space {
+  right: 0;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  transform: none;
+  border: 1px solid #dcebe3;
+  border-radius: 8px 8px 5px 5px;
+  background: repeating-linear-gradient(145deg, #f0f8f4 0 5px, #e7f2ed 5px 7px);
+  opacity: 0.92;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income,
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  left: 50%;
+  width: calc(50% - 1px);
+  max-width: 22px;
+  border-radius: 8px 8px 5px 5px;
+  transform: translateX(-50%);
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income {
+  background: #397e6d;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  background: #a6d82d;
+}
+
+/* Remaining Monthly follows the reference's large percentage + three vertical
+   allocation tiles, while the tile values remain derived from real budgets. */
+.dashboard-page .dashboard-remaining-panel {
+  display: flex;
+  min-height: 315px;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading {
+  min-height: 20px;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading h3 {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-heading p {
+  display: none;
+}
+
+.dashboard-page .dashboard-remaining-panel .dashboard-panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: #454d48;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-remaining-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dashboard-page .dashboard-remaining-percent {
+  display: block;
+  color: #202722;
+  font-size: 48px;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.dashboard-page .dashboard-reference-additional-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  color: #777e79;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-additional-stat strong {
+  color: #42a982;
+  font-weight: 600;
+}
+
+.dashboard-page .dashboard-remaining-copy {
+  max-width: 145px;
+  margin: 0 3px 0 0;
+  color: #525a55;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.dashboard-page .dashboard-reference-budget-tiles {
+  display: grid;
+  height: 134px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 9px;
+}
+
+.dashboard-page .dashboard-reference-budget-tile {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 3px;
+  overflow: hidden;
+  padding: 9px 8px;
+  border-radius: 9px;
+  color: #fff;
+}
+
+.dashboard-page .dashboard-reference-budget-tile--total {
+  background: #397e6d;
+}
+
+.dashboard-page .dashboard-reference-budget-tile--used {
+  background: #a6d82d;
+}
+
+.dashboard-page .dashboard-reference-budget-tile--remaining {
+  background: #26b995;
+}
+
+.dashboard-page .dashboard-reference-budget-tile > strong {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.dashboard-page .dashboard-reference-budget-tile > strong span {
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-reference-budget-tile > span {
+  overflow: hidden;
+  font-size: 8px;
+  opacity: 0.92;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-budget-tile > small {
+  margin-top: auto;
+  overflow: hidden;
+  padding-top: 5px;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-page .dashboard-reference-budget-track {
+  height: 3px;
+  margin-top: 5px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 25%);
+}
+
+.dashboard-page .dashboard-reference-budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+}
+
+@media (max-width: 820px) {
+  .dashboard-page .dashboard-reference-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-page .dashboard-reference-summary > .dashboard-balance-card {
+    grid-column: auto;
+  }
+
+  .dashboard-page .dashboard-reference-expense-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-page .dashboard-reference-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-page .dashboard-reference-expense-card {
+    grid-column: auto;
+  }
+
+  .dashboard-page .dashboard-reference-card {
+    min-height: 205px;
+    padding: 14px;
+  }
+
+  .dashboard-page .dashboard-reference-balance-content {
+    padding-top: 28px;
+  }
+
+  .dashboard-page .dashboard-reference-income-content {
+    min-height: 105px;
+  }
+
+  .dashboard-page .dashboard-remaining-main {
+    align-items: flex-start;
+  }
+
+  .dashboard-page .dashboard-reference-budget-tiles {
+    height: 125px;
+  }
+}
+
+/* Keep the navbar directly adjacent to the summary row. The global period
+   filter now lives in the existing My Balance card header. */
+.dashboard-page {
+  gap: 9px;
+}
+
+.dashboard-page .dashboard-inline-period {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.dashboard-page .dashboard-inline-period label {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.dashboard-page .dashboard-inline-period select,
+.dashboard-page .dashboard-inline-period input[type="date"] {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  height: 25px;
+  padding: 2px 5px;
+  border: 1px solid #ecefec;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #626b65;
+  font-family: inherit;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.dashboard-page .dashboard-inline-period-mode select {
+  max-width: 82px;
+}
+
+.dashboard-page .dashboard-inline-period button {
+  min-height: 25px;
+  padding: 2px 6px;
+  border: 1px solid #e8eee9;
+  border-radius: 6px;
+  background: #f7faf7;
+  color: #397e6d;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dashboard-page .dashboard-inline-period select:focus-visible,
+.dashboard-page .dashboard-inline-period input[type="date"]:focus-visible,
+.dashboard-page .dashboard-inline-period button:focus-visible {
+  outline: 2px solid #8bb8a2;
+  outline-offset: 2px;
+}
+
+.dashboard-page .dashboard-inline-period-separator {
+  color: #9aa19c;
+  font-size: 10px;
+}
+
+.dashboard-page .dashboard-reference-card-top {
+  gap: 5px;
+}
+
+.dashboard-page .dashboard-period-error {
+  margin: 5px 0 0;
+  color: #bd4d4d;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-page .dashboard-inline-period {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-page .dashboard-inline-period {
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .dashboard-page .dashboard-inline-period select,
+  .dashboard-page .dashboard-inline-period input[type="date"] {
+    height: 27px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-page .dashboard-reference-card-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-page .dashboard-inline-period {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Dashboard refinements: Remaining Monthly now combines spending breakdown
+   with budget management, and highlights the three most-used allocations. */
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-remaining-percent-caption {
+  display: block;
+  margin-top: 3px;
+  color: #858d87;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.dashboard-page .dashboard-reference-additional-stat strong.is-positive {
+  color: #268b68;
+}
+
+.dashboard-page .dashboard-reference-additional-stat strong.is-negative {
+  color: #c16b54;
+}
+
+.dashboard-page .dashboard-reference-additional-stat strong.is-muted {
+  color: #8b928d;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tiles--top-budgets {
+  height: 134px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-1 {
+  background: #397e6d;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-2 {
+  background: #a6d82d;
+  color: #26351d;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-3 {
+  background: #26b995;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile
+  > strong {
+  font-size: clamp(15px, 1.4vw, 19px);
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile
+  > span {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile
+  > small {
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-2
+  > small {
+  border-top-color: rgb(38 53 29 / 18%);
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-2
+  .dashboard-reference-budget-track {
+  background: rgb(38 53 29 / 18%);
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-2
+  .dashboard-reference-budget-track
+  i {
+  background: #26351d;
+}
+
+.dashboard-page .dashboard-remaining-no-budgets {
+  display: grid;
+  grid-column: 1 / -1;
+  place-items: center;
+  padding: 12px;
+  border: 1px dashed #dce5de;
+  border-radius: 9px;
+  color: #8b938d;
+  font-size: 8px;
+  text-align: center;
+}
+
+/* The allocation layer remains visible around the two foreground bars. */
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--income,
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--expense {
+  width: calc(50% - 1px);
+  max-width: 22px;
+}
+
+.dashboard-page .dashboard-money-flow .dashboard-chart-bar--space {
+  width: 100%;
+  max-width: none;
+  opacity: 1;
+}
+
+@media (max-width: 560px) {
+  .dashboard-page
+    .dashboard-remaining-panel
+    .dashboard-reference-budget-tiles--top-budgets {
+    height: 125px;
+  }
+
+  .dashboard-page .dashboard-remaining-panel .dashboard-reference-budget-tile {
+    padding: 8px 6px;
+  }
+}
+
+.dashboard-page .dashboard-activity-card-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 14px;
+}
+
+.dashboard-page .dashboard-activity-card-section .dashboard-expense-card {
+  width: 100%;
+  max-width: 420px;
+}
