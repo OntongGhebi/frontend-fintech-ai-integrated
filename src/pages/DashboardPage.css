@@ -6050,7 +6050,7 @@
   gap: 5px;
   margin-top: 9px;
   color: #777e79;
-  font-size: 8px;
+  font-size: 9px;
   white-space: nowrap;
 }
 
@@ -6060,10 +6060,10 @@
 }
 
 .dashboard-page .dashboard-remaining-copy {
-  max-width: 145px;
+  max-width: 150px;
   margin: 0 3px 0 0;
   color: #525a55;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.55;
 }
 
@@ -6306,7 +6306,7 @@
   display: block;
   margin-top: 3px;
   color: #858d87;
-  font-size: 8px;
+  font-size: 9px;
   line-height: 1.35;
 }
 
@@ -6327,7 +6327,19 @@
   .dashboard-reference-budget-tiles--top-budgets {
   height: 134px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: stretch;
+  align-items: end;
+}
+
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-1,
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-2,
+.dashboard-page
+  .dashboard-remaining-panel
+  .dashboard-reference-budget-tile--top-3 {
+  min-height: 104px;
 }
 
 .dashboard-page

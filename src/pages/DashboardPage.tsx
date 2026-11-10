@@ -252,7 +252,7 @@ export function DashboardPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<"6" | "12">("12");
   const [moneyFlowGranularity, setMoneyFlowGranularity] = useState<
     "DAY" | "WEEK"
-  >("DAY");
+  >("WEEK");
   const [granularCashFlow, setGranularCashFlow] =
     useState<DashboardCashFlowResponse | null>(null);
   const [granularCashFlowLoading, setGranularCashFlowLoading] = useState(false);
@@ -1051,8 +1051,8 @@ export function DashboardPage() {
                       )
                     }
                   >
-                    <option value="DAY">Daily</option>
                     <option value="WEEK">Weekly</option>
+                    <option value="DAY">Daily</option>
                   </select>
                 </label>
               ) : (
@@ -1269,6 +1269,7 @@ export function DashboardPage() {
                   <div
                     className={`dashboard-reference-budget-tile dashboard-reference-budget-tile--top-${index + 1}`}
                     key={budget.budgetId}
+                    style={{ height: `${78 + cappedUsage * 0.22}%` }}
                   >
                     <strong>{formatPercent(usage)}</strong>
                     <span title={budget.categoryName}>
