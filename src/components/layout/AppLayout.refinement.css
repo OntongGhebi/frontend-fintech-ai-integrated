@@ -195,7 +195,7 @@
   min-height: 72px;
   padding: 10px 28px;
   gap: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 0;
   background: var(--color-surface);
 }
 
@@ -263,6 +263,45 @@
   font-size: 9px;
 }
 
+@media (min-width: 901px) {
+  .app-shell .layout-topbar .layout-transfer-button,
+  .app-shell .layout-topbar .layout-add-transaction-button {
+    height: 32px;
+    min-height: 32px;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-radius: var(--radius-xs);
+    font-size: 11px;
+  }
+
+  .app-shell .layout-topbar .layout-add-icon {
+    font-size: 16px;
+  }
+
+  .app-shell .layout-topbar .layout-theme-toggle {
+    height: 32px;
+    min-height: 32px;
+    gap: 6px;
+    padding: 0 8px;
+    border-radius: var(--radius-xs);
+    font-size: 9px;
+  }
+
+  .app-shell .layout-topbar .layout-coming-soon {
+    padding: 2px 4px;
+    font-size: 7px;
+  }
+
+  .app-shell .layout-topbar .layout-notification-button {
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    border-radius: var(--radius-xs);
+  }
+}
+
 /* Keep the content column flexible and prevent accidental horizontal scroll. */
 .app-shell .main-column {
   min-width: 0;
@@ -272,6 +311,12 @@
 
 .app-shell .page-content {
   min-width: 0;
+}
+
+@media (min-width: 901px) {
+  .app-shell .page-content {
+    padding: 8px 16px 24px;
+  }
 }
 
 /* Tablet and mobile navigation retain the existing slide-in behavior. */
