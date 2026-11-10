@@ -576,6 +576,12 @@ export function DashboardPage() {
   }, [months, overview, periodMode, selectedMonth, selectedYear, reloadKey]);
 
   const isMonthlyRange = periodMode === "month";
+  const moneyFlowBarMode =
+    isMonthlyRange && moneyFlowGranularity === "DAY"
+      ? "daily"
+      : isMonthlyRange
+        ? "weekly"
+        : "custom-monthly";
   const activeMonthlySpace = Math.max(
     0,
     toAmount(overview?.budgetPerformance?.totalBudgetAmount),
@@ -619,9 +625,12 @@ export function DashboardPage() {
       item.expense,
       item.space,
     ]),
-    ...(isMonthlyRange ? [activeMonthlySpace] : []),
   );
   const moneyFlowScaleMaximum = moneyFlowMaximum / 0.88;
+  const monthlySpaceReferenceHeight = Math.min(
+    88,
+    (activeMonthlySpace / moneyFlowScaleMaximum) * 100,
+  );
   const hasMoneyFlowData =
     moneyFlowItems.some(
       (item) => item.income > 0 || item.expense > 0 || item.space > 0,
@@ -1133,14 +1142,14 @@ export function DashboardPage() {
                   <div
                     className="dashboard-chart-space-reference"
                     style={{
-                      bottom: `calc(17px + ${(activeMonthlySpace / moneyFlowScaleMaximum) * 100}%)`,
+                      bottom: `calc(17px + ${monthlySpaceReferenceHeight}%)`,
                     }}
                     aria-hidden="true"
                   />
                 )}
 
                 <div
-                  className="dashboard-chart-columns"
+                  className={`dashboard-chart-columns dashboard-chart-columns--${moneyFlowBarMode}`}
                   style={{
                     gridTemplateColumns: `repeat(${Math.max(moneyFlowItems.length, 1)}, minmax(0, 1fr))`,
                   }}

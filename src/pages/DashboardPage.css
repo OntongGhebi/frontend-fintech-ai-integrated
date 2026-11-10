@@ -6525,3 +6525,32 @@
   position: relative;
   z-index: 2;
 }
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-columns:is(
+    .dashboard-chart-columns--daily,
+    .dashboard-chart-columns--weekly,
+    .dashboard-chart-columns--custom-monthly
+  )
+  .dashboard-chart-bar:is(
+    .dashboard-chart-bar--income,
+    .dashboard-chart-bar--expense,
+    .dashboard-chart-bar--space
+  ) {
+  width: 100%;
+  max-width: none;
+}
+
+.dashboard-page
+  .dashboard-money-flow
+  .dashboard-chart-columns:is(
+    .dashboard-chart-columns--daily,
+    .dashboard-chart-columns--weekly,
+    .dashboard-chart-columns--custom-monthly
+  )
+  .dashboard-chart-bar--space {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
