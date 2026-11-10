@@ -3,6 +3,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, LoaderCircle, Save } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import {
+  InputField,
+  SelectField,
+  TextareaField,
+} from "../components/ui/FormControls";
 import "./EditTransactionPage.css";
 import "./TransactionFormPage.css";
 import "./TransactionDetailPage.css";
@@ -529,7 +534,7 @@ export function EditTransactionPage() {
 
           <div className="edit-transaction-field">
             <label htmlFor="edit-transaction-account">Rekening</label>
-            <select
+            <SelectField
               id="edit-transaction-account"
               value={form.accountId}
               onChange={(event) => updateField("accountId", event.target.value)}
@@ -548,7 +553,7 @@ export function EditTransactionPage() {
                     {account.currency !== "IDR" ? ` (${account.currency})` : ""}
                   </option>
                 ))}
-            </select>
+            </SelectField>
             <small>
               Rekening tujuan harus aktif dan menggunakan mata uang IDR.
             </small>
@@ -558,7 +563,7 @@ export function EditTransactionPage() {
             <label htmlFor="edit-transaction-amount">Nominal transaksi</label>
             <div className="transaction-form-amount-input">
               <span>Rp</span>
-              <input
+              <InputField
                 id="edit-transaction-amount"
                 name="amount"
                 type="number"
@@ -590,7 +595,7 @@ export function EditTransactionPage() {
             <label htmlFor="edit-transaction-category">
               Kategori <span>(opsional)</span>
             </label>
-            <select
+            <SelectField
               id="edit-transaction-category"
               value={form.categoryId}
               onChange={(event) =>
@@ -610,7 +615,7 @@ export function EditTransactionPage() {
                     {category.name}
                   </option>
                 ))}
-            </select>
+            </SelectField>
             <small>
               Pilih kategori aktif yang sesuai. Kategori transaksi yang sudah
               ada dipertahankan jika tidak diganti; penghapusan kategori belum
@@ -620,7 +625,7 @@ export function EditTransactionPage() {
 
           <div className="edit-transaction-field">
             <label htmlFor="edit-transaction-date">Tanggal dan waktu</label>
-            <input
+            <InputField
               id="edit-transaction-date"
               type="datetime-local"
               value={form.transactionDate}
@@ -637,7 +642,7 @@ export function EditTransactionPage() {
             <label htmlFor="edit-transaction-description">
               Deskripsi <span>(opsional)</span>
             </label>
-            <textarea
+            <TextareaField
               id="edit-transaction-description"
               value={form.description}
               onChange={(event) =>

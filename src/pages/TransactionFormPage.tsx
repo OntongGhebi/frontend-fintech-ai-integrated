@@ -4,6 +4,11 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import {
+  InputField,
+  SelectField,
+  TextareaField,
+} from "../components/ui/FormControls";
 import "./TransactionFormPage.css";
 import "./TransactionDetailPage.css";
 
@@ -400,7 +405,7 @@ export function TransactionFormPage() {
             <label htmlFor="transaction-amount">Nominal transaksi</label>
             <div className="transaction-form-amount-input">
               <span>Rp</span>
-              <input
+              <InputField
                 id="transaction-amount"
                 name="amount"
                 type="number"
@@ -433,7 +438,7 @@ export function TransactionFormPage() {
               <label htmlFor="transaction-account">
                 Akun <span aria-hidden="true">*</span>
               </label>
-              <select
+              <SelectField
                 id="transaction-account"
                 name="accountId"
                 value={form.accountId}
@@ -453,7 +458,7 @@ export function TransactionFormPage() {
                     {account.name} · {account.currency}
                   </option>
                 ))}
-              </select>
+              </SelectField>
               {!isLoadingOptions && accounts.length === 0 && !loadError && (
                 <small className="transaction-form-field-note">
                   Belum ada akun IDR aktif. Buat atau aktifkan akun terlebih
@@ -464,7 +469,7 @@ export function TransactionFormPage() {
 
             <div className="transaction-form-field">
               <label htmlFor="transaction-category">Kategori</label>
-              <select
+              <SelectField
                 id="transaction-category"
                 name="categoryId"
                 value={form.categoryId}
@@ -484,7 +489,7 @@ export function TransactionFormPage() {
                     {category.name}
                   </option>
                 ))}
-              </select>
+              </SelectField>
               <small className="transaction-form-field-note">
                 {eligibleCategories.length === 0
                   ? `Belum ada kategori ${form.type === "INCOME" ? "pemasukan" : "pengeluaran"} aktif. Kategori bisa ditambahkan nanti.`
@@ -496,7 +501,7 @@ export function TransactionFormPage() {
               <label htmlFor="transaction-date">
                 Tanggal dan waktu <span aria-hidden="true">*</span>
               </label>
-              <input
+              <InputField
                 id="transaction-date"
                 name="transactionDate"
                 type="datetime-local"
@@ -514,7 +519,7 @@ export function TransactionFormPage() {
 
             <div className="transaction-form-field">
               <label htmlFor="transaction-description">Deskripsi</label>
-              <textarea
+              <TextareaField
                 id="transaction-description"
                 name="description"
                 rows={4}

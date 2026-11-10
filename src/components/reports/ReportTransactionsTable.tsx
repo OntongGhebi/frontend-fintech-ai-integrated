@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "../ui/Button";
 import "./ReportTransactionsTable.css";
 
 export interface ReportTransaction {
@@ -107,6 +108,7 @@ export function ReportTransactionsTable({
   }
 
   const firstItem = meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
+
   const lastItem = Math.min(meta.page * meta.limit, meta.total);
 
   return (
@@ -117,25 +119,26 @@ export function ReportTransactionsTable({
       <div className="report-transactions__header">
         <div>
           <span className="report-transactions__eyebrow">DETAIL LAPORAN</span>
+
           <h2 id="report-transactions-title">Transaksi dalam laporan</h2>
+
           <p>
             Rincian transaksi berdasarkan filter periode dan tipe yang dipilih.
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="md"
           className="report-transactions__export"
           onClick={handleExport}
-          disabled={isExporting || isLoading}
+          disabled={isLoading}
+          loading={isExporting}
+          leadingIcon={<Download size={17} aria-hidden="true" />}
         >
-          {isExporting ? (
-            <RefreshCw size={17} className="report-transactions__spin" />
-          ) : (
-            <Download size={17} />
-          )}
           {isExporting ? "Mengunduh..." : "Export CSV"}
-        </button>
+        </Button>
       </div>
 
       {exportError && (
@@ -147,21 +150,26 @@ export function ReportTransactionsTable({
       {isLoading ? (
         <div className="report-transactions__state" role="status">
           <RefreshCw size={22} className="report-transactions__spin" />
+
           <strong>Memuat transaksi laporan...</strong>
           <span>Mohon tunggu sebentar.</span>
         </div>
       ) : error ? (
         <div className="report-transactions__state report-transactions__state--error">
           <strong>Transaksi laporan tidak dapat dimuat</strong>
+
           <span>{error}</span>
-          <button type="button" onClick={onRetry}>
+
+          <Button type="button" variant="secondary" size="sm" onClick={onRetry}>
             Coba lagi
-          </button>
+          </Button>
         </div>
       ) : transactions.length === 0 ? (
         <div className="report-transactions__state">
           <FileSpreadsheet size={30} />
+
           <strong>Belum ada transaksi</strong>
+
           <span>
             Tidak ada transaksi yang sesuai dengan filter laporan saat ini.
           </span>
@@ -176,6 +184,7 @@ export function ReportTransactionsTable({
                   <th scope="col">Deskripsi</th>
                   <th scope="col">Tipe</th>
                   <th scope="col">Sumber</th>
+
                   <th scope="col" className="report-transactions__amount">
                     Jumlah
                   </th>
@@ -196,6 +205,7 @@ export function ReportTransactionsTable({
                         <strong>
                           {transaction.description?.trim() || "Tanpa deskripsi"}
                         </strong>
+
                         <span>ID: {transaction.id.slice(0, 8)}</span>
                       </td>
 
@@ -212,6 +222,7 @@ export function ReportTransactionsTable({
                           ) : (
                             <ArrowUp size={14} />
                           )}
+
                           {isIncome ? "Pemasukan" : "Pengeluaran"}
                         </span>
                       </td>
@@ -230,6 +241,7 @@ export function ReportTransactionsTable({
                         }`}
                       >
                         {isIncome ? "+" : "−"}
+
                         {formatCurrency(
                           transaction.amount,
                           transaction.currency,
@@ -249,27 +261,33 @@ export function ReportTransactionsTable({
             </span>
 
             <div className="report-transactions__pagination">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
+                iconOnly
                 aria-label="Halaman sebelumnya"
                 onClick={() => onPageChange(meta.page - 1)}
                 disabled={!meta.hasPreviousPage || isLoading}
               >
-                <ChevronLeft size={17} />
-              </button>
+                <ChevronLeft size={17} aria-hidden="true" />
+              </Button>
 
               <span>
                 Halaman {meta.page} dari {Math.max(meta.totalPages, 1)}
               </span>
 
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
+                iconOnly
                 aria-label="Halaman berikutnya"
                 onClick={() => onPageChange(meta.page + 1)}
                 disabled={!meta.hasNextPage || isLoading}
               >
-                <ChevronRight size={17} />
-              </button>
+                <ChevronRight size={17} aria-hidden="true" />
+              </Button>
             </div>
           </div>
         </>

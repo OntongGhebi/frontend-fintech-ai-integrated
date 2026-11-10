@@ -18,6 +18,7 @@ import {
   BudgetFormModal,
   type BudgetFormValues,
 } from "./budgets/BudgetFormModal";
+import { InputField, SelectField } from "../components/ui/FormControls";
 import "./BudgetsPage.css";
 import { BudgetAlertsPanel } from "./budgets/BudgetAlertsPanel";
 
@@ -498,7 +499,7 @@ export function BudgetsPage() {
           <label className="budgets-search">
             <Search size={18} aria-hidden="true" />
             <span className="budgets-visually-hidden">Cari anggaran</span>
-            <input
+            <InputField
               type="search"
               placeholder="Cari nama atau kategori..."
               value={search}
@@ -508,7 +509,7 @@ export function BudgetsPage() {
 
           <label className="budgets-status-filter">
             <span>Status</span>
-            <select
+            <SelectField
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(event.target.value as StatusFilter)
@@ -518,7 +519,7 @@ export function BudgetsPage() {
               <option value="ACTIVE">Aktif</option>
               <option value="PAUSED">Dijeda</option>
               <option value="COMPLETED">Selesai</option>
-            </select>
+            </SelectField>
           </label>
         </div>
 

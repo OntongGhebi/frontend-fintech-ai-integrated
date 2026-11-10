@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
+import { InputField, SelectField } from "../components/ui/FormControls";
 import "./AccountsPage.css";
 import { Link } from "react-router-dom";
 import { Archive, Eye, Pencil } from "lucide-react";
@@ -490,7 +491,7 @@ export function AccountsPage() {
         <div className="accounts-toolbar">
           <label className="accounts-search">
             <span aria-hidden="true">⌕</span>
-            <input
+            <InputField
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -501,7 +502,7 @@ export function AccountsPage() {
 
           <label className="accounts-filter">
             <span>Status</span>
-            <select
+            <SelectField
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(
@@ -512,7 +513,7 @@ export function AccountsPage() {
               <option value="ALL">Semua akun</option>
               <option value="ACTIVE">Aktif</option>
               <option value="ARCHIVED">Diarsipkan</option>
-            </select>
+            </SelectField>
           </label>
         </div>
 
@@ -711,7 +712,7 @@ export function AccountsPage() {
 
               <label className="accounts-form-field">
                 <span>Nama akun</span>
-                <input
+                <InputField
                   type="text"
                   value={form.name}
                   onChange={(event) => updateField("name", event.target.value)}
@@ -725,7 +726,7 @@ export function AccountsPage() {
 
               <label className="accounts-form-field">
                 <span>Jenis akun</span>
-                <select
+                <SelectField
                   value={form.type}
                   onChange={(event) =>
                     updateField("type", event.target.value as AccountType)
@@ -737,13 +738,13 @@ export function AccountsPage() {
                       {type.label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
 
               {formMode === "create" ? (
                 <label className="accounts-form-field">
                   <span>Saldo awal (IDR)</span>
-                  <input
+                  <InputField
                     type="number"
                     min="0"
                     max="999999999999999.9999"

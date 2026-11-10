@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { AlertCircle, LoaderCircle, X } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../../lib/api-client";
+import { InputField, SelectField } from "../../components/ui/FormControls";
 import "./BudgetFormModal.css";
 
 export type BudgetPeriod = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM";
@@ -314,7 +315,7 @@ export function BudgetFormModal({
 
           <div className="budget-form-field">
             <label htmlFor="budget-name">Nama budget</label>
-            <input
+            <InputField
               id="budget-name"
               name="name"
               type="text"
@@ -333,7 +334,7 @@ export function BudgetFormModal({
             <label htmlFor="budget-amount">Batas pengeluaran (IDR)</label>
             <div className="budget-form-amount">
               <span>Rp</span>
-              <input
+              <InputField
                 id="budget-amount"
                 name="amount"
                 type="number"
@@ -354,7 +355,7 @@ export function BudgetFormModal({
 
           <div className="budget-form-field">
             <label htmlFor="budget-period">Periode</label>
-            <select
+            <SelectField
               id="budget-period"
               name="period"
               value={form.period}
@@ -369,13 +370,13 @@ export function BudgetFormModal({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
 
           <div className="budget-form-dates">
             <div className="budget-form-field">
               <label htmlFor="budget-start-date">Tanggal mulai</label>
-              <input
+              <InputField
                 id="budget-start-date"
                 name="startDate"
                 type="date"
@@ -393,7 +394,7 @@ export function BudgetFormModal({
                 Tanggal selesai
                 <span className="budget-form-optional">Opsional</span>
               </label>
-              <input
+              <InputField
                 id="budget-end-date"
                 name="endDate"
                 type="date"
@@ -407,7 +408,7 @@ export function BudgetFormModal({
 
           <div className="budget-form-field">
             <label htmlFor="budget-category">Kategori pengeluaran</label>
-            <select
+            <SelectField
               id="budget-category"
               name="categoryId"
               value={form.categoryId}
@@ -422,7 +423,7 @@ export function BudgetFormModal({
                   {category.name}
                 </option>
               ))}
-            </select>
+            </SelectField>
 
             {loadingCategories && (
               <span className="budget-form-hint">Memuat kategori...</span>

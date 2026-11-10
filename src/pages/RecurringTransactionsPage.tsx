@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { InputField, SelectField } from "../components/ui/FormControls";
 import "./RecurringTransactionsPage.css";
 
 type TransactionType = "INCOME" | "EXPENSE";
@@ -445,14 +446,14 @@ export function RecurringTransactionsPage() {
         <div className="recurring-filters">
           <label className="recurring-search">
             <Search size={17} />
-            <input
+            <InputField
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Cari nama, akun, atau kategori"
               aria-label="Cari jadwal"
             />
           </label>
-          <select
+          <SelectField
             aria-label="Filter tipe"
             value={typeFilter}
             onChange={(event) =>
@@ -462,8 +463,8 @@ export function RecurringTransactionsPage() {
             <option value="ALL">Semua tipe</option>
             <option value="INCOME">Pemasukan</option>
             <option value="EXPENSE">Pengeluaran</option>
-          </select>
-          <select
+          </SelectField>
+          <SelectField
             aria-label="Filter status"
             value={activeFilter}
             onChange={(event) =>
@@ -473,7 +474,7 @@ export function RecurringTransactionsPage() {
             <option value="ALL">Semua status</option>
             <option value="ACTIVE">Aktif</option>
             <option value="INACTIVE">Nonaktif</option>
-          </select>
+          </SelectField>
         </div>
         {isLoading ? (
           <div className="recurring-loading" role="status">
@@ -698,7 +699,7 @@ export function RecurringTransactionsPage() {
               </div>
               <label>
                 Nama / deskripsi{" "}
-                <input
+                <InputField
                   maxLength={500}
                   value={form.description}
                   onChange={(event) =>
@@ -710,7 +711,7 @@ export function RecurringTransactionsPage() {
               <div className="recurring-form-grid">
                 <label>
                   Nominal (IDR)
-                  <input
+                  <InputField
                     required
                     inputMode="decimal"
                     value={form.amount}
@@ -722,7 +723,7 @@ export function RecurringTransactionsPage() {
                 </label>
                 <label>
                   Frekuensi
-                  <select
+                  <SelectField
                     value={form.frequency}
                     onChange={(event) =>
                       updateForm("frequency", event.target.value as Frequency)
@@ -733,12 +734,12 @@ export function RecurringTransactionsPage() {
                         {frequency.label}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
               </div>
               <label>
                 Akun{" "}
-                <select
+                <SelectField
                   required
                   value={form.accountId}
                   onChange={(event) =>
@@ -751,7 +752,7 @@ export function RecurringTransactionsPage() {
                       {account.name}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
               {accounts.length === 0 && (
                 <p className="recurring-field-hint">
@@ -764,7 +765,7 @@ export function RecurringTransactionsPage() {
               )}
               <label>
                 Kategori (opsional)
-                <select
+                <SelectField
                   value={form.categoryId}
                   onChange={(event) =>
                     updateForm("categoryId", event.target.value)
@@ -776,12 +777,12 @@ export function RecurringTransactionsPage() {
                       {category.name}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
               <div className="recurring-form-grid">
                 <label>
                   Tanggal mulai
-                  <input
+                  <InputField
                     type="date"
                     required
                     value={form.startDate}
@@ -792,7 +793,7 @@ export function RecurringTransactionsPage() {
                 </label>
                 <label>
                   Tanggal akhir (opsional)
-                  <input
+                  <InputField
                     type="date"
                     min={form.startDate || undefined}
                     value={form.endDate}
