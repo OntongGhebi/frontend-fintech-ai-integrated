@@ -6484,7 +6484,9 @@
   font-family: inherit;
 }
 
-.dashboard-page .dashboard-transaction-modules-grid .dashboard-recent-transactions {
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .dashboard-recent-transactions {
   grid-column: auto;
   align-self: stretch;
 }
@@ -6535,9 +6537,7 @@
   letter-spacing: -0.025em;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-refresh-button {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-refresh-button {
   min-height: 30px;
   padding: 0 9px;
   border-radius: 8px;
@@ -6591,22 +6591,15 @@
   box-shadow: none;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-list-heading {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-list-heading {
   padding: 10px 12px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-list-heading
-  h3 {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-list-heading h3 {
   font-size: 13px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-list-items {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-list-items {
   max-height: 130px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -6617,9 +6610,7 @@
   padding: 10px 12px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-item-symbol {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-item-symbol {
   width: 32px;
   height: 32px;
   flex-basis: 32px;
@@ -6627,10 +6618,7 @@
   font-size: 16px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-item-main
-  strong,
+.dashboard-page .dashboard-transaction-modules-grid .recurring-item-main strong,
 .dashboard-page
   .dashboard-transaction-modules-grid
   .recurring-item-end
@@ -6638,14 +6626,8 @@
   font-size: 12px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-item-main
-  > span,
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-item-main
-  small {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-item-main > span,
+.dashboard-page .dashboard-transaction-modules-grid .recurring-item-main small {
   font-size: 11px;
 }
 
@@ -6654,9 +6636,7 @@
   font-size: 10px;
 }
 
-.dashboard-page
-  .dashboard-transaction-modules-grid
-  .recurring-empty-state {
+.dashboard-page .dashboard-transaction-modules-grid .recurring-empty-state {
   margin: 10px;
   padding: 18px 12px;
   border: 0;
@@ -6667,9 +6647,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .dashboard-page
-    .dashboard-transaction-modules-grid
-    .recurring-list-items {
+  .dashboard-page .dashboard-transaction-modules-grid .recurring-list-items {
     max-height: 240px;
   }
 
