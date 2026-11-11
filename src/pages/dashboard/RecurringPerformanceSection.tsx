@@ -115,7 +115,6 @@ export function RecurringPerformanceSection() {
   }, [loadItems, reloadKey]);
 
   const activeItems = items.filter((item) => item.isActive);
-  const inactiveCount = items.length - activeItems.length;
 
   const monthlyIncomeEstimate = activeItems.reduce(
     (total, item) =>
@@ -188,7 +187,7 @@ export function RecurringPerformanceSection() {
             <article className="recurring-summary-card">
               <span>Transaksi aktif</span>
               <strong>{isLoading ? "…" : activeItems.length}</strong>
-              <small>Dari {items.length} transaksi berulang</small>
+              <small>Jadwal yang sedang berjalan</small>
             </article>
 
             <article className="recurring-summary-card recurring-summary-card--income">
@@ -208,66 +207,64 @@ export function RecurringPerformanceSection() {
             </article>
           </div>
 
-          {!isLoading && items.length === 0 ? (
+          {!isLoading && activeItems.length === 0 ? (
             <div className="recurring-empty-state">
               <span aria-hidden="true">↻</span>
-              <strong>Belum ada transaksi berulang</strong>
+              <strong>Belum ada transaksi berulang aktif</strong>
               <p>
                 Jadwal pemasukan rutin dan pengeluaran berulang akan ditampilkan
-                di sini setelah dibuat.
+                di sini setelah diaktifkan.
               </p>
             </div>
           ) : (
             !isLoading && (
               <div className="recurring-list">
                 <div className="recurring-list-heading">
-                  <h3>Jadwal transaksi</h3>
-                  <span>{inactiveCount} tidak aktif</span>
+                  <h3>Jadwal aktif</h3>
+                  <span>{activeItems.length} jadwal</span>
                 </div>
 
-                {items.map((item) => (
-                  <article className="recurring-item" key={item.id}>
-                    <div className="recurring-item-symbol" aria-hidden="true">
-                      {item.type === "INCOME" ? "↗" : "↘"}
-                    </div>
+                <div className="recurring-list-items">
+                  {activeItems.map((item) => (
+                    <article className="recurring-item" key={item.id}>
+                      <div className="recurring-item-symbol" aria-hidden="true">
+                        {item.type === "INCOME" ? "↗" : "↘"}
+                      </div>
 
-                    <div className="recurring-item-main">
-                      <strong>
-                        {item.description?.trim() ||
-                          (item.type === "INCOME"
-                            ? "Pemasukan rutin"
-                            : "Pengeluaran rutin")}
-                      </strong>
-                      <span>
-                        {getFrequencyLabel(item.frequency)}
-                        {item.category?.name ? ` · ${item.category.name}` : ""}
-                      </span>
-                      <small>Berikutnya: {formatDate(item.nextRunAt)}</small>
-                    </div>
+                      <div className="recurring-item-main">
+                        <strong>
+                          {item.description?.trim() ||
+                            (item.type === "INCOME"
+                              ? "Pemasukan rutin"
+                              : "Pengeluaran rutin")}
+                        </strong>
+                        <span>
+                          {getFrequencyLabel(item.frequency)}
+                          {item.category?.name
+                            ? ` · ${item.category.name}`
+                            : ""}
+                        </span>
+                        <small>Berikutnya: {formatDate(item.nextRunAt)}</small>
+                      </div>
 
-                    <div className="recurring-item-end">
-                      <strong
-                        className={
-                          item.type === "INCOME"
-                            ? "recurring-amount--income"
-                            : "recurring-amount--expense"
-                        }
-                      >
-                        {item.type === "INCOME" ? "+" : "−"}
-                        {formatCurrency(Number(item.amount))}
-                      </strong>
-                      <span
-                        className={
-                          item.isActive
-                            ? "recurring-status recurring-status--active"
-                            : "recurring-status recurring-status--inactive"
-                        }
-                      >
-                        {item.isActive ? "Aktif" : "Nonaktif"}
-                      </span>
-                    </div>
-                  </article>
-                ))}
+                      <div className="recurring-item-end">
+                        <strong
+                          className={
+                            item.type === "INCOME"
+                              ? "recurring-amount--income"
+                              : "recurring-amount--expense"
+                          }
+                        >
+                          {item.type === "INCOME" ? "+" : "−"}
+                          {formatCurrency(Number(item.amount))}
+                        </strong>
+                        <span className="recurring-status recurring-status--active">
+                          Aktif
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               </div>
             )
           )}

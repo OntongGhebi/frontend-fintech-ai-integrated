@@ -5545,14 +5545,14 @@
 }
 
 .dashboard-page .dashboard-recent-heading {
-  min-height: 43px;
+  min-height: 46px;
   padding: 0 14px;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .dashboard-page .dashboard-recent-heading h3 {
   color: #292e2b;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 650;
 }
 
@@ -5562,33 +5562,34 @@
 
 .dashboard-page .dashboard-recent-table {
   min-width: 680px;
+  font-family: inherit;
 }
 
 .dashboard-page .dashboard-recent-table th {
-  height: 31px;
+  height: 36px;
   padding: 0 12px;
   background: #ffffff;
   color: #414843;
-  font-size: 8px;
-  font-weight: 550;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .dashboard-page .dashboard-recent-table td {
-  height: 39px;
+  height: 44px;
   padding: 0 12px;
   color: #626a65;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .dashboard-page .dashboard-recent-name strong,
 .dashboard-page .dashboard-recent-amount {
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .dashboard-page .dashboard-recent-type,
 .dashboard-page .dashboard-recent-status {
   padding: 4px 7px;
-  font-size: 8px;
+  font-size: 10px;
 }
 
 /* Keep the additional analytics sections intact below the reference-led
@@ -6069,7 +6070,7 @@
 
 .dashboard-page .dashboard-reference-budget-tiles {
   display: grid;
-  height: 134px;
+  height: 170px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
   gap: 4px;
@@ -6325,7 +6326,7 @@
 .dashboard-page
   .dashboard-remaining-panel
   .dashboard-reference-budget-tiles--top-budgets {
-  height: 134px;
+  height: 170px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
 }
@@ -6435,23 +6436,12 @@
   .dashboard-page
     .dashboard-remaining-panel
     .dashboard-reference-budget-tiles--top-budgets {
-    height: 125px;
+    height: 160px;
   }
 
   .dashboard-page .dashboard-remaining-panel .dashboard-reference-budget-tile {
     padding: 8px 6px;
   }
-}
-
-.dashboard-page .dashboard-activity-card-section {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  margin-top: 14px;
-}
-
-.dashboard-page .dashboard-activity-card-section .dashboard-expense-card {
-  width: 100%;
-  max-width: 420px;
 }
 
 /* Money Flow: daily / weekly month view */
@@ -6478,6 +6468,211 @@
 .dashboard-page .dashboard-money-flow-space-note {
   margin: 7px 0 0;
   color: var(--dashboard-muted);
+}
+
+.dashboard-page .dashboard-transaction-modules-grid {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.95fr);
+  align-items: stretch;
+  gap: 12px;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid > * {
+  min-width: 0;
+  font-family: inherit;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .dashboard-recent-transactions {
+  grid-column: auto;
+  align-self: stretch;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .dashboard-module-section {
+  align-self: stretch;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-performance {
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #ededed;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-performance-heading {
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-performance-heading
+  .eyebrow,
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-performance-heading
+  p {
+  display: none;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-performance-heading
+  h2 {
+  margin: 0;
+  color: #292e2b;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-refresh-button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 10px 0;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-summary-card {
+  gap: 4px;
+  padding: 8px;
+  border-color: #edf1ed;
+  border-radius: 8px;
+  background: #fbfcfb;
+  box-shadow: none;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-summary-card
+  > span {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-summary-card
+  > strong {
+  font-size: 12px;
+  letter-spacing: -0.2px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-summary-card
+  > small {
+  display: none;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-list {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  border-color: #edf1ed;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-list-heading {
+  padding: 10px 12px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-list-heading
+  h3 {
+  font-size: 13px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-list-items {
+  max-height: 130px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-item {
+  gap: 9px;
+  padding: 10px 12px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-item-symbol {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+  border-radius: 9px;
+  font-size: 16px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-item-main
+  strong,
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-item-end
+  > strong {
+  font-size: 12px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-item-main
+  > span,
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-item-main
+  small {
+  font-size: 11px;
+}
+
+.dashboard-page .dashboard-transaction-modules-grid .recurring-status {
+  padding: 3px 6px;
+  font-size: 10px;
+}
+
+.dashboard-page
+  .dashboard-transaction-modules-grid
+  .recurring-empty-state {
+  margin: 10px;
+  padding: 18px 12px;
+  border: 0;
+}
+
+@media (max-width: 1050px) {
+  .dashboard-page .dashboard-transaction-modules-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-page
+    .dashboard-transaction-modules-grid
+    .recurring-list-items {
+    max-height: 240px;
+  }
+
   font-size: 10px;
   line-height: 1.55;
 }
@@ -6540,6 +6735,20 @@
   ) {
   width: 100%;
   max-width: none;
+}
+
+@media (min-width: 1051px) {
+  .dashboard-page .dashboard-money-flow,
+  .dashboard-page .dashboard-remaining-panel {
+    min-height: 350px;
+  }
+
+  .dashboard-page .dashboard-money-flow .dashboard-chart,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-axis,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-plot,
+  .dashboard-page .dashboard-money-flow .dashboard-chart-loading {
+    height: 280px;
+  }
 }
 
 .dashboard-page

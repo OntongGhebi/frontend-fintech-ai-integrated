@@ -13,7 +13,6 @@ import type {
   DashboardCashFlowResponse,
 } from "../types/dashboard";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
-import { CashFlowAnalyticsSection } from "./dashboard/CashFlowAnalyticsSection";
 import "./DashboardPage.css";
 
 type DashboardOverview = DashboardOverviewResponse;
@@ -97,10 +96,6 @@ function formatCompactCurrency(
   }
 
   return formatCurrency(amount, currency);
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("id-ID").format(value);
 }
 
 function formatPercent(value: number): string {
@@ -636,11 +631,6 @@ export function DashboardPage() {
       (item) => item.income > 0 || item.expense > 0 || item.space > 0,
     ) ||
     (isMonthlyRange && activeMonthlySpace > 0);
-
-  const income = toAmount(summary?.totalIncome);
-  const cashFlow = toAmount(summary?.netCashFlow);
-  const savingsRate =
-    income > 0 ? Math.max(0, Math.min(100, (cashFlow / income) * 100)) : 0;
 
   return (
     <main className="dashboard-page">
@@ -1278,7 +1268,7 @@ export function DashboardPage() {
                   <div
                     className={`dashboard-reference-budget-tile dashboard-reference-budget-tile--top-${index + 1}`}
                     key={budget.budgetId}
-                    style={{ height: `${78 + cappedUsage * 0.22}%` }}
+                    style={{ height: `${66 + cappedUsage * 0.34}%` }}
                   >
                     <strong>{formatPercent(usage)}</strong>
                     <span title={budget.categoryName}>
@@ -1305,222 +1295,166 @@ export function DashboardPage() {
         </article>
       </section>
 
-      <section
-        className="dashboard-panel dashboard-recent-transactions"
-        aria-labelledby="dashboard-recent-transactions-title"
-      >
-        <div className="dashboard-panel-heading dashboard-recent-heading">
-          <div>
-            <h3 id="dashboard-recent-transactions-title">
-              Transaction History
-            </h3>
-            <p>Lima transaksi terbaru dari aktivitas keuangan Anda.</p>
+      <section className="dashboard-transaction-modules-grid">
+        <section
+          className="dashboard-panel dashboard-recent-transactions"
+          aria-labelledby="dashboard-recent-transactions-title"
+        >
+          <div className="dashboard-panel-heading dashboard-recent-heading">
+            <div>
+              <h3 id="dashboard-recent-transactions-title">
+                Transaction History
+              </h3>
+              <p>Lima transaksi terbaru dari aktivitas keuangan Anda.</p>
+            </div>
+            <Link className="dashboard-panel-link" to="/transactions">
+              Semua transaksi <span aria-hidden="true">→</span>
+            </Link>
           </div>
-          <Link className="dashboard-panel-link" to="/transactions">
-            Semua transaksi <span aria-hidden="true">→</span>
-          </Link>
-        </div>
 
-        <div className="dashboard-recent-table-wrap">
-          <table className="dashboard-recent-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Transaction</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentTransactionsLoading ? (
+          <div className="dashboard-recent-table-wrap">
+            <table className="dashboard-recent-table">
+              <thead>
                 <tr>
-                  <td colSpan={6}>
-                    <div className="dashboard-recent-state" role="status">
-                      Memuat transaksi terbaru…
-                    </div>
-                  </td>
+                  <th>Name</th>
+                  <th>Date</th>
+                  <th>Transaction</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ) : recentTransactionsError ? (
-                <tr>
-                  <td colSpan={6}>
-                    <div
-                      className="dashboard-recent-state dashboard-recent-state--error"
-                      role="status"
-                    >
-                      {recentTransactionsError}
-                    </div>
-                  </td>
-                </tr>
-              ) : recentTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <div className="dashboard-recent-state">
-                      Belum ada transaksi aktif.
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                recentTransactions.map((transaction) => {
-                  const typeLabel =
-                    transaction.type === "INCOME"
-                      ? "Pemasukan"
-                      : transaction.type === "EXPENSE"
-                        ? "Pengeluaran"
-                        : "Transfer";
-                  const dateLabel = new Intl.DateTimeFormat("id-ID", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: "Asia/Jakarta",
-                  }).format(new Date(transaction.transactionDate));
-                  return (
-                    <tr key={transaction.id}>
-                      <td>
-                        <div className="dashboard-recent-name">
+              </thead>
+              <tbody>
+                {recentTransactionsLoading ? (
+                  <tr>
+                    <td colSpan={6}>
+                      <div className="dashboard-recent-state" role="status">
+                        Memuat transaksi terbaru…
+                      </div>
+                    </td>
+                  </tr>
+                ) : recentTransactionsError ? (
+                  <tr>
+                    <td colSpan={6}>
+                      <div
+                        className="dashboard-recent-state dashboard-recent-state--error"
+                        role="status"
+                      >
+                        {recentTransactionsError}
+                      </div>
+                    </td>
+                  </tr>
+                ) : recentTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>
+                      <div className="dashboard-recent-state">
+                        Belum ada transaksi aktif.
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  recentTransactions.map((transaction) => {
+                    const typeLabel =
+                      transaction.type === "INCOME"
+                        ? "Pemasukan"
+                        : transaction.type === "EXPENSE"
+                          ? "Pengeluaran"
+                          : "Transfer";
+                    const dateLabel = new Intl.DateTimeFormat("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "Asia/Jakarta",
+                    }).format(new Date(transaction.transactionDate));
+                    return (
+                      <tr key={transaction.id}>
+                        <td>
+                          <div className="dashboard-recent-name">
+                            <span
+                              className={`dashboard-recent-type-icon dashboard-recent-type-icon--${transaction.type.toLowerCase()}`}
+                            >
+                              {transaction.type === "INCOME"
+                                ? "↗"
+                                : transaction.type === "EXPENSE"
+                                  ? "↘"
+                                  : "⇄"}
+                            </span>
+                            <strong>
+                              {transaction.description?.trim() || typeLabel}
+                            </strong>
+                          </div>
+                        </td>
+                        <td>{dateLabel}</td>
+                        <td>
                           <span
-                            className={`dashboard-recent-type-icon dashboard-recent-type-icon--${transaction.type.toLowerCase()}`}
+                            className={`dashboard-recent-type dashboard-recent-type--${transaction.type.toLowerCase()}`}
+                          >
+                            {typeLabel}
+                          </span>
+                        </td>
+                        <td>
+                          <strong
+                            className={`dashboard-recent-amount dashboard-recent-amount--${transaction.type.toLowerCase()}`}
                           >
                             {transaction.type === "INCOME"
-                              ? "↗"
+                              ? "+"
                               : transaction.type === "EXPENSE"
-                                ? "↘"
-                                : "⇄"}
-                          </span>
-                          <strong>
-                            {transaction.description?.trim() || typeLabel}
+                                ? "−"
+                                : ""}
+                            {formatCurrency(
+                              transaction.amount,
+                              transaction.currency,
+                            )}
                           </strong>
-                        </div>
-                      </td>
-                      <td>{dateLabel}</td>
-                      <td>
-                        <span
-                          className={`dashboard-recent-type dashboard-recent-type--${transaction.type.toLowerCase()}`}
-                        >
-                          {typeLabel}
-                        </span>
-                      </td>
-                      <td>
-                        <strong
-                          className={`dashboard-recent-amount dashboard-recent-amount--${transaction.type.toLowerCase()}`}
-                        >
-                          {transaction.type === "INCOME"
-                            ? "+"
-                            : transaction.type === "EXPENSE"
-                              ? "−"
-                              : ""}
-                          {formatCurrency(
-                            transaction.amount,
-                            transaction.currency,
-                          )}
-                        </strong>
-                      </td>
-                      <td>
-                        <span
-                          className={`dashboard-recent-status dashboard-recent-status--${transaction.status.toLowerCase()}`}
-                        >
-                          {transaction.status === "ACTIVE"
-                            ? "Aktif"
-                            : transaction.status === "VOIDED"
-                              ? "Dibatalkan"
-                              : transaction.status}
-                        </span>
-                      </td>
-                      <td>
-                        <Link
-                          className="dashboard-recent-action"
-                          to={`/transactions/${encodeURIComponent(transaction.id)}`}
-                          aria-label={`Lihat transaksi ${transaction.description || typeLabel}`}
-                        >
-                          Detail <span aria-hidden="true">→</span>
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section
-        className="dashboard-activity-card-section"
-        aria-label="Aktivitas keuangan"
-      >
-        <article className="dashboard-expense-card">
-          <div className="dashboard-expense-card-heading">
-            <div>
-              <span className="dashboard-card-overline">ACTIVITY</span>
-              <h2>Aktivitas keuangan</h2>
-            </div>
-            <span className="dashboard-expense-icon" aria-hidden="true">
-              ◷
-            </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`dashboard-recent-status dashboard-recent-status--${transaction.status.toLowerCase()}`}
+                          >
+                            {transaction.status === "ACTIVE"
+                              ? "Aktif"
+                              : transaction.status === "VOIDED"
+                                ? "Dibatalkan"
+                                : transaction.status}
+                          </span>
+                        </td>
+                        <td>
+                          <Link
+                            className="dashboard-recent-action"
+                            to={`/transactions/${encodeURIComponent(transaction.id)}`}
+                            aria-label={`Lihat transaksi ${transaction.description || typeLabel}`}
+                          >
+                            Detail <span aria-hidden="true">→</span>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
+        </section>
 
-          <div className="dashboard-transaction-count">
-            <strong>
-              {isLoading && !overview
-                ? "—"
-                : summary
-                  ? formatNumber(summary.transactionCount)
-                  : "—"}
-            </strong>
-            <span>transaksi tercatat</span>
-          </div>
-
-          <div className="dashboard-activity-meter">
-            <div className="dashboard-activity-meter-track">
-              <span style={{ width: `${savingsRate}%` }} />
-            </div>
-            <div className="dashboard-activity-meter-labels">
-              <span>Arus kas tersisa</span>
-              <strong>{summary ? formatPercent(savingsRate) : "—"}</strong>
-            </div>
-          </div>
-
-          <p className="dashboard-expense-card-note">
-            Persentase dihitung dari arus kas bersih dibandingkan pemasukan.
-          </p>
-        </article>
+        <section
+          className="dashboard-module-section"
+          aria-label="Transaksi berulang"
+        >
+          <RecurringPerformanceSection />
+        </section>
       </section>
 
-      <section
-        className="dashboard-module-section"
-        aria-label="Transaksi berulang"
-      >
-        <RecurringPerformanceSection />
-      </section>
-
-      <section
-        className="dashboard-module-section"
-        aria-label="Analitik arus kas"
-      >
-        <CashFlowAnalyticsSection
-          cashFlow={overview?.cashFlow ?? null}
-          isLoading={isLoading}
-          errorMessage={errorMessage}
-          onRefresh={() => setReloadKey((current) => current + 1)}
-        />
-      </section>
-
-      <footer className="dashboard-footer">
+      {/* <footer className="dashboard-footer">
         <span className="dashboard-footer-mark" aria-hidden="true">
           ✳
         </span>
         <div>
           <strong>Keuangan lebih terarah, keputusan lebih baik.</strong>
-          <p>
-            Angka dan analitik mengikuti data yang dikembalikan oleh backend
-            Anda.
-          </p>
         </div>
         <span className="dashboard-footer-currency">{currency}</span>
-      </footer>
+      </footer> */}
     </main>
   );
 }

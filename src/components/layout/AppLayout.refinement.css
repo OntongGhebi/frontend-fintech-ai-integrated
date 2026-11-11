@@ -325,6 +325,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .app-shell .layout-mobile-menu-button {
+    display: inline-flex;
+  }
+
   .app-shell .layout-sidebar {
     position: fixed;
     z-index: 1002;
