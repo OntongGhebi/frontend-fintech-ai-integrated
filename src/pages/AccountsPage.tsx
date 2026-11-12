@@ -10,7 +10,19 @@ import { ApiRequestError, apiClient } from "../lib/api-client";
 import { InputField, SelectField } from "../components/ui/FormControls";
 import "./AccountsPage.css";
 import { Link } from "react-router-dom";
-import { Archive, Eye, Pencil } from "lucide-react";
+import {
+  Archive,
+  Banknote,
+  CreditCard,
+  Eye,
+  Landmark,
+  Layers,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Wallet,
+} from "lucide-react";
 
 type AccountType = "CASH" | "BANK" | "E_WALLET" | "CREDIT_CARD" | "OTHER";
 
@@ -75,6 +87,37 @@ function formatDate(value: string): string {
 
 function getAccountTypeLabel(type: AccountType): string {
   return ACCOUNT_TYPES.find((item) => item.value === type)?.label ?? type;
+}
+
+function getAccountBrand(name: string): string | null {
+  const normalizedName = name.toLocaleLowerCase("id-ID");
+  const brands = [
+    { name: "BCA", pattern: /\bbca\b/ },
+    { name: "BRI", pattern: /\bbri\b/ },
+    { name: "mandiri", pattern: /\bmandiri\b/ },
+    { name: "JAGO", pattern: /\bjago\b/ },
+    { name: "DANA", pattern: /\bdana\b/ },
+    { name: "GoPay", pattern: /\bgo\s?pay\b/ },
+  ];
+
+  return brands.find((brand) => brand.pattern.test(normalizedName))?.name ?? null;
+}
+
+function AccountTypeIcon({ type }: { type: AccountType }) {
+  const iconProps = { size: 18, strokeWidth: 1.8, "aria-hidden": true as const };
+
+  switch (type) {
+    case "CASH":
+      return <Banknote {...iconProps} />;
+    case "BANK":
+      return <Landmark {...iconProps} />;
+    case "E_WALLET":
+      return <Wallet {...iconProps} />;
+    case "CREDIT_CARD":
+      return <CreditCard {...iconProps} />;
+    case "OTHER":
+      return <Layers {...iconProps} />;
+  }
 }
 
 function getErrorMessage(error: unknown): string {
@@ -411,40 +454,46 @@ export function AccountsPage() {
 
       <div className="accounts-summary-grid">
         <article className="accounts-summary-card">
-          <span className="accounts-summary-icon accounts-summary-icon-green">
-            ◫
-          </span>
           <div>
             <p>Total akun aktif</p>
-            <strong>{activeAccounts.length}</strong>
+            <div className="accounts-summary-value">
+              <span className="accounts-summary-icon accounts-summary-icon-green">
+                <Wallet size={19} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <strong>{activeAccounts.length}</strong>
+            </div>
             <span>Rekening yang belum diarsipkan</span>
           </div>
         </article>
 
         <article className="accounts-summary-card">
-          <span className="accounts-summary-icon accounts-summary-icon-lime">
-            Rp
-          </span>
           <div>
             <p>Total saldo berjalan</p>
-            <strong>
-              {activeCurrentBalance === null
-                ? "—"
-                : formatCurrency(activeCurrentBalance)}
-            </strong>
+            <div className="accounts-summary-value">
+              <span className="accounts-summary-icon accounts-summary-icon-lime">
+                <Banknote size={19} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <strong>
+                {activeCurrentBalance === null
+                  ? "—"
+                  : formatCurrency(activeCurrentBalance)}
+              </strong>
+            </div>
             <span>Saldo terkini seluruh akun aktif</span>
           </div>
         </article>
 
         <article className="accounts-summary-card">
-          <span className="accounts-summary-icon accounts-summary-icon-gray">
-            ▤
-          </span>
           <div>
             <p>Jenis akun</p>
-            <strong>
-              {new Set(activeAccounts.map((account) => account.type)).size}
-            </strong>
+            <div className="accounts-summary-value">
+              <span className="accounts-summary-icon accounts-summary-icon-gray">
+                <Layers size={19} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <strong>
+                {new Set(activeAccounts.map((account) => account.type)).size}
+              </strong>
+            </div>
             <span>Jenis akun yang sedang digunakan</span>
           </div>
         </article>
@@ -464,20 +513,27 @@ export function AccountsPage() {
           <div className="accounts-list-heading-actions">
             <button
               type="button"
-              className="accounts-button accounts-button-secondary"
+              className="accounts-button accounts-button-secondary accounts-topbar-action"
               onClick={() => void loadAccounts()}
               disabled={loading}
               aria-label="Segarkan daftar akun"
             >
-              {loading ? "Memuat…" : "↻ Segarkan"}
+              {loading ? (
+                "Memuat…"
+              ) : (
+                <>
+                  <RefreshCw size={15} strokeWidth={1.8} aria-hidden="true" />
+                  Segarkan
+                </>
+              )}
             </button>
 
             <button
               type="button"
-              className="accounts-button accounts-button-primary"
+              className="accounts-button accounts-button-primary accounts-topbar-action"
               onClick={openCreateForm}
             >
-              <span aria-hidden="true">＋</span>
+              <Plus size={16} strokeWidth={2} aria-hidden="true" />
               Tambah akun
             </button>
           </div>
@@ -485,12 +541,12 @@ export function AccountsPage() {
 
         <div className="accounts-toolbar">
           <label className="accounts-search">
-            <span aria-hidden="true">⌕</span>
-            <InputField
+            <Search size={16} strokeWidth={1.8} aria-hidden="true" />
+            <input
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari nama atau jenis akun"
+              placeholder="Cari akun berdasarkan nama atau jenis"
               aria-label="Cari nama atau jenis akun"
             />
           </label>
@@ -562,24 +618,29 @@ export function AccountsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAccounts.map((account) => (
+                {filteredAccounts.map((account) => {
+                  const brand = getAccountBrand(account.name);
+
+                  return (
                   <tr key={account.id}>
                     <td>
                       <div className="accounts-name-cell">
-                        <span
-                          className={`accounts-type-icon accounts-type-icon-${account.type.toLowerCase()}`}
-                          aria-hidden="true"
-                        >
-                          {account.type === "CASH"
-                            ? "◉"
-                            : account.type === "BANK"
-                              ? "▤"
-                              : account.type === "E_WALLET"
-                                ? "▣"
-                                : account.type === "CREDIT_CARD"
-                                  ? "▱"
-                                  : "◈"}
-                        </span>
+                        {brand ? (
+                          <span
+                            className={`accounts-brand-mark accounts-brand-mark-${brand.toLowerCase()}`}
+                            role="img"
+                            aria-label={`Merek ${brand}`}
+                          >
+                            {brand}
+                          </span>
+                        ) : (
+                          <span
+                            className={`accounts-type-icon accounts-type-icon-${account.type.toLowerCase()}`}
+                            aria-hidden="true"
+                          >
+                            <AccountTypeIcon type={account.type} />
+                          </span>
+                        )}
                         <div>
                           <strong>{account.name}</strong>
                           <span>{account.currency}</span>
@@ -641,7 +702,8 @@ export function AccountsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
