@@ -25,7 +25,7 @@ export function LoginPage() {
     return (
       <main className="auth-v2-screen" aria-live="polite">
         <div className="auth-v2-status">
-          <div className="auth-v2-status-icon">F</div>
+          <div className="auth-v2-status-icon">N</div>
           <p>Memeriksa sesi akunmu...</p>
         </div>
       </main>
@@ -61,12 +61,16 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      eyebrow="WELCOME BACK"
+      mode="login"
+      eyebrow="SELAMAT DATANG KEMBALI"
       title="Masuk ke akunmu"
       description="Masuk untuk melihat ringkasan dan mengelola keuangan pribadimu."
       footer={
         <>
-          Belum punya akun? <Link to="/register">Daftar sekarang</Link>
+          Belum punya akun?{" "}
+          <Link to="/register" viewTransition>
+            Daftar sekarang
+          </Link>
         </>
       }
     >
@@ -114,11 +118,13 @@ export function LoginPage() {
           </button>
         </div>
 
-        {error && (
-          <p className="auth-v2-error" role="alert">
-            {error}
-          </p>
-        )}
+        <p
+          className={`auth-v2-error${error ? "" : " is-empty"}`}
+          role={error ? "alert" : undefined}
+          aria-live="polite"
+        >
+          {error || "\u00a0"}
+        </p>
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Memproses..." : "Masuk ke akun"}

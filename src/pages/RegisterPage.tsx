@@ -25,7 +25,7 @@ export function RegisterPage() {
     return (
       <main className="auth-v2-screen" aria-live="polite">
         <div className="auth-v2-status">
-          <div className="auth-v2-status-icon">F</div>
+          <div className="auth-v2-status-icon">N</div>
           <p>Memeriksa sesi akunmu...</p>
         </div>
       </main>
@@ -71,12 +71,16 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      eyebrow="GET STARTED"
+      mode="register"
+      eyebrow="MULAI PERJALANANMU"
       title="Buat akun baru"
       description="Mulai kelola pemasukan, pengeluaran, dan anggaran dalam satu tempat."
       footer={
         <>
-          Sudah memiliki akun? <Link to="/login">Masuk</Link>
+          Sudah memiliki akun?{" "}
+          <Link to="/login" viewTransition>
+            Masuk
+          </Link>
         </>
       }
     >
@@ -170,11 +174,13 @@ export function RegisterPage() {
           </button>
         </div>
 
-        {error && (
-          <p className="auth-v2-error" role="alert">
-            {error}
-          </p>
-        )}
+        <p
+          className={`auth-v2-error${error ? "" : " is-empty"}`}
+          role={error ? "alert" : undefined}
+          aria-live="polite"
+        >
+          {error || "\u00a0"}
+        </p>
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Membuat akun..." : "Buat akun"}
