@@ -1,4 +1,3 @@
-
 /* ========================================================
    01 — Global styles and legacy foundations
    Source: src/styles/global.css
@@ -2099,7 +2098,6 @@ a {
   }
 }
 
-
 /* ========================================================
    02 — UI refinement
    Source: src/styles/ui-refinement-v2.css
@@ -2506,7 +2504,6 @@ a {
     transition: none;
   }
 }
-
 
 /* ========================================================
    03 — Responsive and accessibility
@@ -3164,7 +3161,6 @@ a {
   }
 }
 
-
 /* ========================================================
    04 — Design tokens and application shell
    Source: src/styles/design-system.css
@@ -3691,7 +3687,7 @@ button {
   color: #8b968e;
 }
 
-.ui-badge {
+/* .ui-badge {
   min-height: 23px;
   display: inline-flex;
   align-items: center;
@@ -3734,7 +3730,7 @@ button {
   border-color: #d4e6ed;
   background: #eff7fa;
   color: #376b80;
-}
+} */
 
 .ui-field-help {
   margin: 5px 0 0;
@@ -3749,7 +3745,6 @@ button {
   border: 0;
   background: var(--color-border);
 }
-
 
 /* ========================================================
    05 — Application layout refinement
@@ -4168,7 +4163,6 @@ button {
   }
 }
 
-
 /* ========================================================
    06 — Shared UI primitives
    Source: src/styles/ui-primitives.css
@@ -4407,7 +4401,7 @@ input.ui-field[type="radio"] {
    BADGES
    --------------------------------------------------------- */
 
-.ui-badge {
+/* .ui-badge {
   flex: 0 0 auto;
 }
 
@@ -4439,7 +4433,7 @@ input.ui-field[type="radio"] {
   min-height: 27px;
   padding: 4px 11px;
   font-size: var(--font-size-sm);
-}
+} */
 
 /* ---------------------------------------------------------
    CARDS
