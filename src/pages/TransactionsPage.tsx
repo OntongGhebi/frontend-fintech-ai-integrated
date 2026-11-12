@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import {
+  ArrowDownRight,
+  ArrowDownUp,
+  ArrowUpRight,
+  ListFilter,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-
+import { CATEGORY_ICON_MAP } from "../components/categories/CategoryIconPicker";
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import "./TransactionsPage.css";
 
@@ -45,6 +51,8 @@ interface Category {
   id: string;
   name: string;
   type: string;
+  icon: string | null;
+  color: string | null;
   isActive: boolean;
   deletedAt?: string | null;
 }
@@ -197,8 +205,8 @@ export function TransactionsPage() {
     [accounts],
   );
 
-  const categoryNames = useMemo(
-    () => new Map(categories.map((category) => [category.id, category.name])),
+  const categoriesById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
     [categories],
   );
 
@@ -343,75 +351,67 @@ export function TransactionsPage() {
 
   return (
     <section className="transactions-page" aria-labelledby="transactions-title">
-      <div className="transactions-page-heading">
-        <div>
-          <span className="transactions-eyebrow">FINANCIAL ACTIVITY</span>
-          <h2 id="transactions-title">Semua transaksi</h2>
-          <p>
-            Lihat pemasukan, pengeluaran, dan perpindahan dana dalam satu
-            tampilan.
-          </p>
-        </div>
-
-        <div className="transactions-heading-actions">
-          <div className="transactions-total-chip">
-            <span className="transactions-total-chip__dot" />
-            <span>{meta.total.toLocaleString("id-ID")} transaksi</span>
-          </div>
-        </div>
-      </div>
-
       <section
         className="transactions-overview"
         aria-label="Ringkasan daftar transaksi"
       >
         <article className="transactions-overview-card">
-          <span className="transactions-overview-icon transactions-overview-icon--all">
-            ↕
-          </span>
           <div>
-            <span>Total hasil filter</span>
-            <strong>{meta.total.toLocaleString("id-ID")}</strong>
+            <span>Total transaksi</span>
+            <div className="transactions-overview-value">
+              <span className="transactions-overview-icon transactions-overview-icon--all">
+                <ArrowDownUp size={18} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <strong>{meta.total.toLocaleString("id-ID")}</strong>
+            </div>
             <small>Transaksi sesuai filter aktif</small>
           </div>
         </article>
 
         <article className="transactions-overview-card">
-          <span className="transactions-overview-icon transactions-overview-icon--income">
-            ↗
-          </span>
           <div>
             <span>Pemasukan di halaman ini</span>
-            <strong>
-              {formatCurrency(
-                transactions
-                  .filter((transaction) => transaction.type === "INCOME")
-                  .reduce(
-                    (sum, transaction) => sum + Number(transaction.amount),
-                    0,
-                  ),
-              )}
-            </strong>
+            <div className="transactions-overview-value">
+              <span className="transactions-overview-icon transactions-overview-icon--income">
+                <ArrowUpRight size={18} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <strong>
+                {formatCurrency(
+                  transactions
+                    .filter((transaction) => transaction.type === "INCOME")
+                    .reduce(
+                      (sum, transaction) => sum + Number(transaction.amount),
+                      0,
+                    ),
+                )}
+              </strong>
+            </div>
             <small>Halaman yang sedang ditampilkan</small>
           </div>
         </article>
 
         <article className="transactions-overview-card">
-          <span className="transactions-overview-icon transactions-overview-icon--expense">
-            ↘
-          </span>
           <div>
             <span>Pengeluaran di halaman ini</span>
-            <strong>
-              {formatCurrency(
-                transactions
-                  .filter((transaction) => transaction.type === "EXPENSE")
-                  .reduce(
-                    (sum, transaction) => sum + Number(transaction.amount),
-                    0,
-                  ),
-              )}
-            </strong>
+            <div className="transactions-overview-value">
+              <span className="transactions-overview-icon transactions-overview-icon--expense">
+                <ArrowDownRight
+                  size={18}
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              </span>
+              <strong>
+                {formatCurrency(
+                  transactions
+                    .filter((transaction) => transaction.type === "EXPENSE")
+                    .reduce(
+                      (sum, transaction) => sum + Number(transaction.amount),
+                      0,
+                    ),
+                )}
+              </strong>
+            </div>
             <small>Halaman yang sedang ditampilkan</small>
           </div>
         </article>
@@ -426,7 +426,7 @@ export function TransactionsPage() {
             </p>
           </div>
           <span className="transactions-panel-heading__icon" aria-hidden="true">
-            ☷
+            <ListFilter size={18} strokeWidth={1.8} />
           </span>
         </div>
 
@@ -616,102 +616,137 @@ export function TransactionsPage() {
 
               {!isLoading &&
                 !error &&
-                transactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <td>
-                      <div className="transactions-description-cell">
-                        <span
-                          className={`transactions-type-icon transactions-type-icon--${transaction.type.toLowerCase()}`}
-                          aria-hidden="true"
-                        >
-                          {transaction.type === "INCOME"
-                            ? "↗"
-                            : transaction.type === "EXPENSE"
-                              ? "↘"
-                              : "⇄"}
-                        </span>
-                        <div>
-                          <strong>
-                            {transaction.description?.trim() ||
-                              getTypeLabel(transaction.type)}
-                          </strong>
-                          <span>{getTypeLabel(transaction.type)}</span>
+                transactions.map((transaction) => {
+                  const category = transaction.categoryId
+                    ? categoriesById.get(transaction.categoryId)
+                    : undefined;
+
+                  const CategoryIcon = category
+                    ? (CATEGORY_ICON_MAP[category.icon ?? ""] ??
+                      CATEGORY_ICON_MAP.Tag)
+                    : null;
+
+                  const categoryColor =
+                    category?.color && /^#[0-9A-Fa-f]{6}$/.test(category.color)
+                      ? category.color
+                      : undefined;
+
+                  return (
+                    <tr key={transaction.id}>
+                      <td>
+                        <div className="transactions-description-cell">
+                          <span
+                            className={`transactions-type-icon transactions-type-icon--${transaction.type.toLowerCase()}`}
+                            style={
+                              categoryColor
+                                ? { color: categoryColor }
+                                : undefined
+                            }
+                            title={
+                              category
+                                ? `Kategori: ${category.name}`
+                                : getTypeLabel(transaction.type)
+                            }
+                            aria-label={
+                              category
+                                ? `Ikon kategori ${category.name}`
+                                : undefined
+                            }
+                            aria-hidden={category ? undefined : true}
+                          >
+                            {CategoryIcon ? (
+                              <CategoryIcon size={17} strokeWidth={1.9} />
+                            ) : transaction.type === "INCOME" ? (
+                              "↗"
+                            ) : transaction.type === "EXPENSE" ? (
+                              "↘"
+                            ) : (
+                              "⇄"
+                            )}
+                          </span>
+
+                          <div>
+                            <strong>
+                              {transaction.description?.trim() ||
+                                getTypeLabel(transaction.type)}
+                            </strong>
+                            <span>{getTypeLabel(transaction.type)}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td>
-                      <div className="transactions-account-cell">
-                        <strong>
-                          {accountNames.get(transaction.accountId) ||
-                            "Akun tidak ditemukan"}
-                        </strong>
-                        <span>
-                          {transaction.categoryId
-                            ? categoryNames.get(transaction.categoryId) ||
-                              "Kategori tidak ditemukan"
-                            : transaction.type === "TRANSFER"
-                              ? "Transfer antar akun"
-                              : "Tanpa kategori"}
+                      <td>
+                        <div className="transactions-account-cell">
+                          <strong>
+                            {accountNames.get(transaction.accountId) ||
+                              "Akun tidak ditemukan"}
+                          </strong>
+                          <span>
+                            {transaction.categoryId
+                              ? category?.name || "Kategori tidak ditemukan"
+                              : transaction.type === "TRANSFER"
+                                ? "Transfer antar akun"
+                                : "Tanpa kategori"}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span className="transactions-date">
+                          {formatDate(transaction.transactionDate)}
                         </span>
-                      </div>
-                    </td>
+                        <span className="transactions-date-time">
+                          {formatDateTime(transaction.transactionDate)}
+                        </span>
+                      </td>
 
-                    <td>
-                      <span className="transactions-date">
-                        {formatDate(transaction.transactionDate)}
-                      </span>
-                      <span className="transactions-date-time">
-                        {formatDateTime(transaction.transactionDate)}
-                      </span>
-                    </td>
+                      <td>
+                        <span className="transactions-source">
+                          {transaction.source}
+                        </span>
+                      </td>
 
-                    <td>
-                      <span className="transactions-source">
-                        {transaction.source}
-                      </span>
-                    </td>
+                      <td>
+                        <span
+                          className={`transactions-status transactions-status--${transaction.status.toLowerCase()}`}
+                        >
+                          <span />
+                          {transaction.status === "ACTIVE"
+                            ? "Aktif"
+                            : transaction.status === "VOIDED"
+                              ? "Dibatalkan"
+                              : transaction.status}
+                        </span>
+                      </td>
 
-                    <td>
-                      <span
-                        className={`transactions-status transactions-status--${transaction.status.toLowerCase()}`}
-                      >
-                        <span />
-                        {transaction.status === "ACTIVE"
-                          ? "Aktif"
-                          : transaction.status === "VOIDED"
-                            ? "Dibatalkan"
-                            : transaction.status}
-                      </span>
-                    </td>
+                      <td className="transactions-table-amount">
+                        <strong
+                          className={`transactions-amount ${getTransactionAmountClass(transaction.type)}`}
+                        >
+                          {getTransactionAmountPrefix(transaction.type)}
+                          {formatCurrency(
+                            transaction.amount,
+                            transaction.currency,
+                          )}
+                        </strong>
+                      </td>
 
-                    <td className="transactions-table-amount">
-                      <strong
-                        className={`transactions-amount ${getTransactionAmountClass(transaction.type)}`}
-                      >
-                        {getTransactionAmountPrefix(transaction.type)}
-                        {formatCurrency(
-                          transaction.amount,
-                          transaction.currency,
-                        )}
-                      </strong>
-                    </td>
-
-                    <td className="transactions-table-action">
-                      <Link
-                        to={`/transactions/${encodeURIComponent(transaction.id)}`}
-                        className="transactions-detail-link"
-                        aria-label={`Lihat detail transaksi ${
-                          transaction.description?.trim() ||
-                          getTypeLabel(transaction.type)
-                        }`}
-                        title="Lihat detail transaksi"
-                      >
-                        Lihat detail <span aria-hidden="true">→</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="transactions-table-action">
+                        <Link
+                          to={`/transactions/${encodeURIComponent(transaction.id)}`}
+                          className="transactions-detail-link"
+                          aria-label={`Lihat detail transaksi ${
+                            transaction.description?.trim() ||
+                            getTypeLabel(transaction.type)
+                          }`}
+                          title="Lihat detail transaksi"
+                        >
+                          Lihat detail <span aria-hidden="true">→</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
 
               {!isLoading && !error && transactions.length === 0 && (
                 <tr>

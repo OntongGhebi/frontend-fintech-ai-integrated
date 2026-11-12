@@ -302,9 +302,9 @@
 }
 
 .accounts-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   padding: 16px 22px;
   border-bottom: 1px solid #eff1ef;
@@ -312,10 +312,9 @@
 
 .accounts-search {
   display: flex;
-  flex: 0 1 380px;
   align-items: center;
   gap: 8px;
-  width: min(100%, 380px);
+  width: min(100%, 420px);
   min-width: 0;
   height: 36px;
   padding: 0 9px;
@@ -365,8 +364,10 @@
 
 .accounts-filter {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
   color: var(--color-muted, #858b87);
   font-size: 11px;
 }
@@ -804,13 +805,14 @@
   }
 
   .accounts-toolbar {
+    grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
-    flex-direction: column;
     padding: 14px;
   }
 
   .accounts-search {
     width: 100%;
+    max-width: none;
   }
 
   .accounts-filter {
@@ -871,6 +873,18 @@
 
   .accounts-form-actions {
     flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .accounts-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+  }
+
+  .accounts-search {
+    width: 100%;
+    max-width: none;
   }
 }
 
