@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import {
   ArrowLeftRight,
-  Bell,
   ChartNoAxesCombined,
   ChevronDown,
   ChevronRight,
@@ -36,6 +35,7 @@ import { GlobalSearch } from "./GlobalSearch";
 import "./AppLayout.css";
 import "./AppLayout.subscription.css";
 import { AIAssistantWidget } from "../ai-assistant/AIAssistantWidget";
+import { NotificationBell } from "./NotificationBell";
 
 interface NavigationItem {
   label: string;
@@ -647,16 +647,7 @@ export function AppLayout() {
                 <span className="layout-coming-soon">Soon</span>
               </button>
 
-              <NavLink
-                to="/notifications"
-                className={({ isActive }) =>
-                  `layout-notification-button${isActive ? " is-active" : ""}`
-                }
-                aria-label="Buka notifikasi"
-                title="Notifications"
-              >
-                <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
-              </NavLink>
+              <NotificationBell />
 
               <NavLink
                 to="/settings"
