@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { Tag } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../lib/api-client";
 import {
@@ -13,6 +14,7 @@ import type {
   DashboardCashFlowResponse,
 } from "../types/dashboard";
 import { RecurringPerformanceSection } from "./dashboard/RecurringPerformanceSection";
+import { CATEGORY_ICON_MAP } from "../components/categories/CategoryIconPicker";
 import "./DashboardPage.css";
 
 type DashboardOverview = DashboardOverviewResponse;
@@ -35,10 +37,35 @@ interface RecentTransaction {
   description: string | null;
   transactionDate: string;
   status: string;
+  categoryId?: string | null;
 }
 
 interface RecentTransactionResponse {
   data: RecentTransaction[];
+}
+
+interface DashboardCategory {
+  id: string;
+  name: string;
+  type: "INCOME" | "EXPENSE";
+  icon: string | null;
+  color: string | null;
+  isActive: boolean;
+  deletedAt: string | null;
+}
+
+interface DashboardCategoryEnvelope {
+  data: DashboardCategory[];
+}
+
+function unwrapCategoryData(
+  response: DashboardCategory[] | DashboardCategoryEnvelope,
+): DashboardCategory[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response.data) ? response.data : [];
 }
 
 function toAmount(value: string | number | null | undefined): number {
@@ -232,6 +259,9 @@ export function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<
     RecentTransaction[]
   >([]);
+  const [transactionCategories, setTransactionCategories] = useState<
+    DashboardCategory[]
+  >([]);
   const [recentTransactionsLoading, setRecentTransactionsLoading] =
     useState(true);
   const [recentTransactionsError, setRecentTransactionsError] = useState<
@@ -404,24 +434,39 @@ export function DashboardPage() {
       setRecentTransactionsLoading(true);
       setRecentTransactionsError(null);
 
-      try {
-        const response = await apiClient.get<RecentTransactionResponse>(
+      const [transactionsResult, categoriesResult] = await Promise.allSettled([
+        apiClient.get<RecentTransactionResponse>(
           "transactions?page=1&limit=5&status=ACTIVE",
-        );
+        ),
+        apiClient.get<DashboardCategory[] | DashboardCategoryEnvelope>(
+          "categories",
+        ),
+      ]);
 
-        if (!cancelled) {
-          setRecentTransactions(
-            Array.isArray(response.data) ? response.data : [],
-          );
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setRecentTransactions([]);
-          setRecentTransactionsError(getErrorMessage(error));
-        }
-      } finally {
-        if (!cancelled) setRecentTransactionsLoading(false);
+      if (cancelled) return;
+
+      if (transactionsResult.status === "fulfilled") {
+        const response = transactionsResult.value;
+        setRecentTransactions(
+          Array.isArray(response.data) ? response.data : [],
+        );
+      } else {
+        setRecentTransactions([]);
+        setRecentTransactionsError(getErrorMessage(transactionsResult.reason));
       }
+
+      if (categoriesResult.status === "fulfilled") {
+        const categories = unwrapCategoryData(categoriesResult.value);
+
+        // Keep inactive categories too, so historical transactions can retain
+        // their original category icon and color when category metadata exists.
+        setTransactionCategories(categories);
+      } else {
+        // Category metadata is optional; transaction history remains available.
+        setTransactionCategories([]);
+      }
+
+      setRecentTransactionsLoading(false);
     }
 
     void fetchRecentTransactions();
@@ -469,6 +514,98 @@ export function DashboardPage() {
       ),
     [summary?.totalExpense, previousOverview?.summary.totalExpense],
   );
+
+  const netCashFlowComparison = useMemo(
+    () =>
+      getPeriodComparison(
+        summary?.netCashFlow,
+        previousOverview?.summary.netCashFlow,
+      ),
+    [summary?.netCashFlow, previousOverview?.summary.netCashFlow],
+  );
+
+  const savingsRate =
+    summary && toAmount(summary.totalIncome) > 0
+      ? (toAmount(summary.netCashFlow) / toAmount(summary.totalIncome)) * 100
+      : 0;
+
+  const savingsRateLabel = formatPercent(savingsRate);
+
+  const budgetUtilization =
+    summary && toAmount(summary.totalBudget) > 0
+      ? (toAmount(summary.totalExpense) / toAmount(summary.totalBudget)) * 100
+      : 0;
+
+  const budgetRemaining =
+    toAmount(summary?.totalBudget) - toAmount(summary?.totalExpense);
+
+  const budgetRemainingLabel = formatCurrency(budgetRemaining, currency);
+
+  const budgetUtilizationLabel = formatPercent(budgetUtilization);
+
+  const monthlyBudgetTotal = Object.values(monthlyBudgetAllocations).reduce(
+    (total, amount) => total + amount,
+    0,
+  );
+
+  const monthlyBudgetRemaining =
+    monthlyBudgetTotal - toAmount(summary?.totalExpense);
+
+  const monthlyBudgetUtilization =
+    monthlyBudgetTotal > 0
+      ? (toAmount(summary?.totalExpense) / monthlyBudgetTotal) * 100
+      : 0;
+
+  const monthlyBudgetUtilizationLabel = formatPercent(monthlyBudgetUtilization);
+
+  const monthlyBudgetRemainingLabel = formatCurrency(
+    monthlyBudgetRemaining,
+    currency,
+  );
+
+  const selectedMonthLabel = formatMonth(
+    `${selectedYear}-${String(Number(selectedMonth) + 1).padStart(2, "0")}`,
+  );
+
+  const periodLabel =
+    periodMode === "month"
+      ? `${selectedMonthLabel} ${selectedYear}`
+      : `${activeRange.startDate} – ${activeRange.endDate}`;
+
+  const hasValidCustomRange =
+    Boolean(customStartDate) &&
+    Boolean(customEndDate) &&
+    customStartDate <= customEndDate;
+
+  const handleApplyCustomRange = () => {
+    if (!hasValidCustomRange) {
+      setPeriodError("Tanggal mulai tidak boleh melebihi tanggal akhir.");
+      return;
+    }
+
+    setPeriodError(null);
+    setAppliedCustomRange({
+      startDate: customStartDate,
+      endDate: customEndDate,
+    });
+    setPeriodMode("custom");
+  };
+
+  const handleSelectMonth = (month: string) => {
+    setSelectedMonth(month);
+    setPeriodMode("month");
+    setPeriodError(null);
+  };
+
+  const handleSelectYear = (year: string) => {
+    setSelectedYear(year);
+    setPeriodMode("month");
+    setPeriodError(null);
+  };
+
+  const handleRefresh = () => {
+    setReloadKey((current) => current + 1);
+  };
 
   const budgetTotals = useMemo(() => {
     const performance = overview?.budgetPerformance;
@@ -1360,6 +1497,19 @@ export function DashboardPage() {
                         : transaction.type === "EXPENSE"
                           ? "Pengeluaran"
                           : "Transfer";
+                    const category = transaction.categoryId
+                      ? transactionCategories.find(
+                          (item) => item.id === transaction.categoryId,
+                        )
+                      : undefined;
+                    const CategoryIcon = category
+                      ? (CATEGORY_ICON_MAP[category.icon ?? ""] ?? Tag)
+                      : Tag;
+                    const categoryColor =
+                      category?.color &&
+                      /^#[0-9A-Fa-f]{6}$/.test(category.color)
+                        ? category.color
+                        : undefined;
                     const dateLabel = new Intl.DateTimeFormat("id-ID", {
                       day: "2-digit",
                       month: "short",
@@ -1374,12 +1524,21 @@ export function DashboardPage() {
                           <div className="dashboard-recent-name">
                             <span
                               className={`dashboard-recent-type-icon dashboard-recent-type-icon--${transaction.type.toLowerCase()}`}
+                              style={
+                                transaction.type !== "TRANSFER" && categoryColor
+                                  ? {
+                                      color: categoryColor,
+                                      backgroundColor: `${categoryColor}14`,
+                                    }
+                                  : undefined
+                              }
+                              aria-hidden="true"
                             >
-                              {transaction.type === "INCOME"
-                                ? "↗"
-                                : transaction.type === "EXPENSE"
-                                  ? "↘"
-                                  : "⇄"}
+                              {transaction.type === "TRANSFER" ? (
+                                "⇄"
+                              ) : (
+                                <CategoryIcon size={15} strokeWidth={1.9} />
+                              )}
                             </span>
                             <strong>
                               {transaction.description?.trim() || typeLabel}

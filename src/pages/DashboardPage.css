@@ -6544,6 +6544,32 @@
   font-size: 11px;
 }
 
+@media (max-width: 480px) {
+  .dashboard-page
+    .dashboard-transaction-modules-grid
+    .recurring-performance-heading {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .dashboard-page
+    .dashboard-transaction-modules-grid
+    .recurring-performance-heading
+    > div {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .dashboard-page
+    .dashboard-transaction-modules-grid
+    .recurring-refresh-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
 .dashboard-page .dashboard-transaction-modules-grid .recurring-summary-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;

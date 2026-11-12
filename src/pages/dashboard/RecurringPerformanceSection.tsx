@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { Tag } from "lucide-react";
 
 import { ApiRequestError, apiClient } from "../../lib/api-client";
+import { CATEGORY_ICON_MAP } from "../../components/categories/CategoryIconPicker";
+
 import "./RecurringPerformanceSection.css";
 
 type TransactionType = "INCOME" | "EXPENSE";
@@ -15,8 +18,28 @@ interface RecurringTransaction {
   nextRunAt: string;
   lastRunAt: string | null;
   isActive: boolean;
+  categoryId?: string | null;
   account?: { name?: string } | null;
-  category?: { name?: string } | null;
+  category?: {
+    id?: string;
+    name?: string;
+    icon?: string | null;
+    color?: string | null;
+  } | null;
+}
+
+interface CategoryMetadata {
+  id: string;
+  name: string;
+  type: "INCOME" | "EXPENSE";
+  icon: string | null;
+  color: string | null;
+  isActive?: boolean;
+  deletedAt?: string | null;
+}
+
+interface CategoryEnvelope {
+  data: CategoryMetadata[];
 }
 
 function formatCurrency(amount: number): string {
@@ -59,6 +82,7 @@ function getErrorMessage(error: unknown): string {
     if (error.status === 0) {
       return "Tidak dapat terhubung ke backend. Pastikan server API aktif.";
     }
+
     return error.message || "Gagal memuat transaksi berulang.";
   }
 
@@ -86,8 +110,52 @@ function parseRecurringTransactions(response: unknown): RecurringTransaction[] {
   );
 }
 
+function parseCategories(response: unknown): CategoryMetadata[] {
+  const categories = Array.isArray(response)
+    ? response
+    : typeof response === "object" &&
+        response !== null &&
+        "data" in response &&
+        Array.isArray((response as CategoryEnvelope).data)
+      ? (response as CategoryEnvelope).data
+      : [];
+
+  return categories.filter(
+    (item): item is CategoryMetadata =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      (item.type === "INCOME" || item.type === "EXPENSE"),
+  );
+}
+
+function getCategoryColor(
+  color: string | null | undefined,
+): string | undefined {
+  if (!color || !/^#[0-9A-Fa-f]{6}$/.test(color)) {
+    return undefined;
+  }
+
+  return color;
+}
+
+function getMonthlyMultiplier(frequency: Frequency): number {
+  switch (frequency) {
+    case "DAILY":
+      return 30;
+    case "WEEKLY":
+      return 4.345;
+    case "YEARLY":
+      return 1 / 12;
+    default:
+      return 1;
+  }
+}
+
 export function RecurringPerformanceSection() {
   const [items, setItems] = useState<RecurringTransaction[]>([]);
+  const [categories, setCategories] = useState<CategoryMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -104,6 +172,18 @@ export function RecurringPerformanceSection() {
     }
   }, []);
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const response = await apiClient.get<unknown>("/categories");
+
+      setCategories(parseCategories(response));
+    } catch {
+      // Metadata kategori bersifat opsional.
+      // Kegagalan endpoint ini tidak boleh mengganggu daftar recurring.
+      setCategories([]);
+    }
+  }, []);
+
   const reloadItems = useCallback(() => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -114,20 +194,16 @@ export function RecurringPerformanceSection() {
     void Promise.resolve().then(loadItems);
   }, [loadItems, reloadKey]);
 
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories, reloadKey]);
+
   const activeItems = items.filter((item) => item.isActive);
 
   const monthlyIncomeEstimate = activeItems.reduce(
     (total, item) =>
       item.type === "INCOME"
-        ? total +
-          Number(item.amount) *
-            (item.frequency === "DAILY"
-              ? 30
-              : item.frequency === "WEEKLY"
-                ? 4.345
-                : item.frequency === "YEARLY"
-                  ? 1 / 12
-                  : 1)
+        ? total + Number(item.amount) * getMonthlyMultiplier(item.frequency)
         : total,
     0,
   );
@@ -135,18 +211,34 @@ export function RecurringPerformanceSection() {
   const monthlyExpenseEstimate = activeItems.reduce(
     (total, item) =>
       item.type === "EXPENSE"
-        ? total +
-          Number(item.amount) *
-            (item.frequency === "DAILY"
-              ? 30
-              : item.frequency === "WEEKLY"
-                ? 4.345
-                : item.frequency === "YEARLY"
-                  ? 1 / 12
-                  : 1)
+        ? total + Number(item.amount) * getMonthlyMultiplier(item.frequency)
         : total,
     0,
   );
+
+  function getItemCategory(item: RecurringTransaction) {
+    if (item.categoryId) {
+      const matchedCategory = categories.find(
+        (category) => category.id === item.categoryId,
+      );
+
+      if (matchedCategory) {
+        return matchedCategory;
+      }
+    }
+
+    // Fallback untuk respons API yang sudah menyertakan relasi category.
+    if (item.category?.id || item.category?.name) {
+      return {
+        id: item.category.id ?? "",
+        name: item.category.name ?? "",
+        icon: item.category.icon ?? null,
+        color: item.category.color ?? null,
+      };
+    }
+
+    return null;
+  }
 
   return (
     <section
@@ -225,45 +317,69 @@ export function RecurringPerformanceSection() {
                 </div>
 
                 <div className="recurring-list-items">
-                  {activeItems.map((item) => (
-                    <article className="recurring-item" key={item.id}>
-                      <div className="recurring-item-symbol" aria-hidden="true">
-                        {item.type === "INCOME" ? "↗" : "↘"}
-                      </div>
+                  {activeItems.map((item) => {
+                    const category = getItemCategory(item);
 
-                      <div className="recurring-item-main">
-                        <strong>
-                          {item.description?.trim() ||
-                            (item.type === "INCOME"
-                              ? "Pemasukan rutin"
-                              : "Pengeluaran rutin")}
-                        </strong>
-                        <span>
-                          {getFrequencyLabel(item.frequency)}
-                          {item.category?.name
-                            ? ` · ${item.category.name}`
-                            : ""}
-                        </span>
-                        <small>Berikutnya: {formatDate(item.nextRunAt)}</small>
-                      </div>
+                    const CategoryIcon = category
+                      ? (CATEGORY_ICON_MAP[category.icon ?? ""] ?? Tag)
+                      : Tag;
 
-                      <div className="recurring-item-end">
-                        <strong
-                          className={
-                            item.type === "INCOME"
-                              ? "recurring-amount--income"
-                              : "recurring-amount--expense"
+                    const categoryColor = getCategoryColor(category?.color);
+
+                    return (
+                      <article className="recurring-item" key={item.id}>
+                        <div
+                          className="recurring-item-symbol"
+                          style={
+                            categoryColor
+                              ? {
+                                  color: categoryColor,
+                                  backgroundColor: `${categoryColor}14`,
+                                }
+                              : undefined
                           }
+                          aria-hidden="true"
                         >
-                          {item.type === "INCOME" ? "+" : "−"}
-                          {formatCurrency(Number(item.amount))}
-                        </strong>
-                        <span className="recurring-status recurring-status--active">
-                          Aktif
-                        </span>
-                      </div>
-                    </article>
-                  ))}
+                          <CategoryIcon size={17} strokeWidth={1.9} />
+                        </div>
+
+                        <div className="recurring-item-main">
+                          <strong>
+                            {item.description?.trim() ||
+                              (item.type === "INCOME"
+                                ? "Pemasukan rutin"
+                                : "Pengeluaran rutin")}
+                          </strong>
+
+                          <span>
+                            {getFrequencyLabel(item.frequency)}
+                            {category?.name ? ` · ${category.name}` : ""}
+                          </span>
+
+                          <small>
+                            Berikutnya: {formatDate(item.nextRunAt)}
+                          </small>
+                        </div>
+
+                        <div className="recurring-item-end">
+                          <strong
+                            className={
+                              item.type === "INCOME"
+                                ? "recurring-amount--income"
+                                : "recurring-amount--expense"
+                            }
+                          >
+                            {item.type === "INCOME" ? "+" : "−"}
+                            {formatCurrency(Number(item.amount))}
+                          </strong>
+
+                          <span className="recurring-status recurring-status--active">
+                            Aktif
+                          </span>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               </div>
             )
