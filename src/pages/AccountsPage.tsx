@@ -130,6 +130,7 @@ export function AccountsPage() {
 
     try {
       const result = await apiClient.get<Account[]>("accounts");
+
       // The accounts collection exposes openingBalance only. Fetch the authoritative
       // running balance separately for each account rather than mislabeling it.
       const withBalances = await Promise.all(
@@ -140,6 +141,7 @@ export function AccountsPage() {
               balance: string;
               currency: string;
             }>(`accounts/${encodeURIComponent(account.id)}/balance`);
+
             return {
               ...account,
               currentBalance: balance.balance,
@@ -154,6 +156,7 @@ export function AccountsPage() {
           }
         }),
       );
+
       setAccounts(withBalances);
     } catch (error) {
       setPageError(getErrorMessage(error));
@@ -377,26 +380,6 @@ export function AccountsPage() {
 
   return (
     <section className="accounts-page">
-      <header className="accounts-page-heading">
-        <div>
-          <p className="accounts-eyebrow">MANAJEMEN KEUANGAN</p>
-          <h2>Accounts</h2>
-          <p>
-            Kelola rekening bank, uang tunai, dompet digital, dan akun keuangan
-            lainnya.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="accounts-button accounts-button-primary"
-          onClick={openCreateForm}
-        >
-          <span aria-hidden="true">＋</span>
-          Tambah akun
-        </button>
-      </header>
-
       {pageError && (
         <div className="accounts-feedback accounts-feedback-error" role="alert">
           <span>{pageError}</span>
@@ -478,14 +461,26 @@ export function AccountsPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="accounts-button accounts-button-secondary"
-            onClick={() => void loadAccounts()}
-            disabled={loading}
-          >
-            {loading ? "Memuat…" : "↻ Segarkan"}
-          </button>
+          <div className="accounts-list-heading-actions">
+            <button
+              type="button"
+              className="accounts-button accounts-button-secondary"
+              onClick={() => void loadAccounts()}
+              disabled={loading}
+              aria-label="Segarkan daftar akun"
+            >
+              {loading ? "Memuat…" : "↻ Segarkan"}
+            </button>
+
+            <button
+              type="button"
+              className="accounts-button accounts-button-primary"
+              onClick={openCreateForm}
+            >
+              <span aria-hidden="true">＋</span>
+              Tambah akun
+            </button>
+          </div>
         </div>
 
         <div className="accounts-toolbar">
@@ -652,11 +647,7 @@ export function AccountsPage() {
           </div>
         )}
 
-        <p className="accounts-list-footnote">
-          Saldo menggunakan saldo berjalan dari endpoint akun. Jika saldo tampil
-          sebagai “—”, saldo akun tersebut gagal dimuat; gunakan muat ulang
-          untuk mencoba kembali. Saldo awal hanya digunakan saat membuat akun.
-        </p>
+        <p className="accounts-list-footnote"></p>
       </section>
 
       {isFormOpen && (
