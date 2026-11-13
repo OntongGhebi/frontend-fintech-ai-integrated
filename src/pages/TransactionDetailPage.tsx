@@ -108,6 +108,20 @@ function getTypeLabel(type: TransactionType): string {
   return "Transfer";
 }
 
+function getSourceLabel(source: string): string {
+  const labels: Record<string, string> = {
+    MANUAL: "Manual",
+    TELEGRAM: "Telegram",
+    AI: "Asisten AI",
+    IMPORT: "Impor",
+    SYSTEM: "Sistem",
+    RECURRING: "Berulang",
+    TRANSFER: "Transfer",
+  };
+
+  return labels[source.toUpperCase()] ?? source;
+}
+
 export function TransactionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -413,7 +427,7 @@ export function TransactionDetailPage() {
             isActive ? "transaction-status-active" : "transaction-status-voided"
           }`}
         >
-          {isActive ? "Aktif" : "Voided"}
+          {isActive ? "Aktif" : "Dibatalkan"}
         </span>
       </div>
 
@@ -459,17 +473,26 @@ export function TransactionDetailPage() {
             </div>
 
             {!isEditing && isActive && transaction.type !== "TRANSFER" && (
-              <button
-                className="transaction-button transaction-button-secondary"
-                type="button"
-                onClick={() =>
-                  navigate(
-                    `/transactions/${encodeURIComponent(transaction.id)}/edit`,
-                  )
-                }
-              >
-                Edit transaksi
-              </button>
+              <div className="transaction-detail-heading-actions">
+                <button
+                  className="transaction-button transaction-button-secondary"
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/transactions/${encodeURIComponent(transaction.id)}/edit`,
+                    )
+                  }
+                >
+                  Edit
+                </button>
+                <button
+                  className="transaction-button transaction-button-danger"
+                  type="button"
+                  onClick={() => setConfirmVoid(true)}
+                >
+                  Batalkan
+                </button>
+              </div>
             )}
           </div>
 
@@ -597,61 +620,13 @@ export function TransactionDetailPage() {
               </div>
               <div>
                 <dt>Sumber</dt>
-                <dd>{transaction.source}</dd>
+                <dd>{getSourceLabel(transaction.source)}</dd>
               </div>
               <div>
                 <dt>Status</dt>
-                <dd>{transaction.status}</dd>
+                <dd>{isActive ? "Aktif" : "Dibatalkan"}</dd>
               </div>
             </dl>
-          )}
-        </section>
-
-        <aside className="transaction-detail-card">
-          <h3>Metadata</h3>
-          <p className="transaction-detail-card-description">
-            Identitas dan riwayat perubahan transaksi.
-          </p>
-
-          <dl className="transaction-detail-list transaction-metadata-list">
-            <div>
-              <dt>ID transaksi</dt>
-              <dd className="transaction-id-value">{transaction.id}</dd>
-            </div>
-            <div>
-              <dt>Dibuat pada</dt>
-              <dd>{formatDate(transaction.createdAt)}</dd>
-            </div>
-            <div>
-              <dt>Terakhir diperbarui</dt>
-              <dd>{formatDate(transaction.updatedAt)}</dd>
-            </div>
-            {transaction.transferGroupId && (
-              <div>
-                <dt>Transfer group ID</dt>
-                <dd className="transaction-id-value">
-                  {transaction.transferGroupId}
-                </dd>
-              </div>
-            )}
-          </dl>
-
-          {isActive && transaction.type !== "TRANSFER" && (
-            <div className="transaction-danger-zone">
-              <h4>Zona berisiko</h4>
-              <p>
-                Void akan mengubah status transaksi menjadi VOIDED, bukan
-                menghapus catatan secara permanen. Tindakan ini tidak dapat
-                dibatalkan dari halaman ini.
-              </p>
-              <button
-                className="transaction-button transaction-button-danger"
-                type="button"
-                onClick={() => setConfirmVoid(true)}
-              >
-                Void transaksi
-              </button>
-            </div>
           )}
 
           {isActive && transaction.type === "TRANSFER" && (
@@ -666,7 +641,7 @@ export function TransactionDetailPage() {
               </p>
             </div>
           )}
-        </aside>
+        </section>
       </div>
 
       {confirmVoid && isActive && transaction.type !== "TRANSFER" && (
@@ -686,11 +661,12 @@ export function TransactionDetailPage() {
             aria-labelledby="void-transaction-title"
           >
             <div className="transaction-modal-icon">!</div>
-            <h3 id="void-transaction-title">Void transaksi ini?</h3>
+            <h3 id="void-transaction-title">Batalkan transaksi ini?</h3>
             <p>
-              Anda akan mengubah status transaksi senilai{" "}
-              <strong>{formatCurrency(transaction.amount)}</strong> menjadi
-              VOIDED. Pastikan Anda memilih transaksi yang benar.
+              Transaksi senilai{" "}
+              <strong>{formatCurrency(transaction.amount)}</strong> akan
+              ditandai dibatalkan dan tetap tersimpan di riwayat. Tindakan ini
+              tidak dapat dibatalkan.
             </p>
             <div className="transaction-modal-actions">
               <button
@@ -707,7 +683,7 @@ export function TransactionDetailPage() {
                 disabled={voiding}
                 onClick={() => void handleVoid()}
               >
-                {voiding ? "Memproses…" : "Ya, void transaksi"}
+                {voiding ? "Memproses…" : "Ya, batalkan"}
               </button>
             </div>
           </section>

@@ -571,7 +571,7 @@ export function TransferFormPage() {
     <section className="transfer-page">
       <Link
         to="/transactions"
-        className="transaction-back-icon-button transaction-back-icon-button--spaced"
+        className="transaction-back-icon-button"
         aria-label="Kembali ke daftar transaksi"
         title="Kembali ke daftar transaksi"
       >
@@ -686,13 +686,6 @@ export function TransferFormPage() {
               <div
                 className="transfer-source-balance"
                 aria-live="polite"
-                style={{
-                  display: "block",
-                  marginTop: "8px",
-                  marginBottom: "16px",
-                  fontSize: "0.8125rem",
-                  lineHeight: 1.5,
-                }}
               >
                 {sourceAccount ? (
                   isLoadingSourceBalance ? (
@@ -878,14 +871,6 @@ export function TransferFormPage() {
           <div className="transfer-summary-amount">
             <span>Total yang dipindahkan</span>
             <strong>{formatCurrency(isAmountValid ? amount : 0)}</strong>
-          </div>
-
-          <div className="transfer-summary-note">
-            <CheckCircle2 size={16} aria-hidden="true" />
-            <p>
-              Transfer dicatat melalui satu endpoint khusus agar catatan
-              rekening sumber dan tujuan terhubung.
-            </p>
           </div>
 
           <div className="transfer-summary-meta">

@@ -72,9 +72,7 @@
   padding: 25px;
   border: 1px solid #e6ede4;
   border-radius: 15px;
-  background:
-    radial-gradient(ellipse at 90% 0%, rgb(169 220 50 / 14%), transparent 45%),
-    #fff;
+  background: #fff;
 }
 
 .transaction-detail-amount-card > span:first-child {
@@ -108,7 +106,7 @@
 
 .transaction-detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 18px;
 }
@@ -130,14 +128,28 @@
   margin-bottom: 19px;
 }
 
+.transaction-detail-heading-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.transaction-detail-heading-actions .transaction-button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-xs, 6px);
+  font-size: 11px;
+  font-weight: 650;
+}
+
 .transaction-detail-card h3 {
   margin: 0;
   color: #303b33;
   font-size: 14px;
 }
 
-.transaction-detail-card-heading p,
-.transaction-detail-card-description {
+.transaction-detail-card-heading p {
   margin: 6px 0 0;
   color: #929a93;
   font-size: 10px;
@@ -180,16 +192,6 @@
   font-weight: 650;
   line-height: 1.7;
   overflow-wrap: anywhere;
-}
-
-.transaction-metadata-list {
-  margin-top: 18px;
-}
-
-.transaction-id-value {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px !important;
-  font-weight: 500 !important;
 }
 
 .transaction-edit-form {
@@ -258,12 +260,12 @@
 
 .transaction-button {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  padding: 9px 13px;
+  padding: 0 14px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 9px;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
@@ -310,25 +312,6 @@
 .transaction-button-danger:hover:not(:disabled) {
   border-color: #a63b3b;
   background: #a63b3b;
-}
-
-.transaction-danger-zone {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid #f0e4e2;
-}
-
-.transaction-danger-zone h4 {
-  margin: 0;
-  color: #a33e3e;
-  font-size: 12px;
-}
-
-.transaction-danger-zone p {
-  margin: 8px 0 13px;
-  color: #858c85;
-  font-size: 10px;
-  line-height: 1.8;
 }
 
 .transaction-feedback {
@@ -519,7 +502,7 @@
   }
 
   .transaction-detail-card-heading {
-    flex-direction: column;
+    flex-direction: row;
   }
 
   .transaction-detail-list > div {

@@ -392,7 +392,7 @@ export function EditTransactionPage() {
       <section className="edit-transaction-page">
         <Link
           to={`/transactions/${id}`}
-          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          className="transaction-back-icon-button"
           aria-label="Kembali ke daftar transaksi"
           title="Kembali ke daftar transaksi"
         >
@@ -424,7 +424,7 @@ export function EditTransactionPage() {
           </button>
           <Link
             to={`/transactions/${id}`}
-            className="transaction-back-icon-button transaction-back-icon-button--spaced"
+            className="transaction-back-icon-button"
             aria-label="Kembali ke daftar transaksi"
             title="Kembali ke daftar transaksi"
           >
@@ -444,7 +444,7 @@ export function EditTransactionPage() {
       <section className="edit-transaction-page">
         <Link
           to={`/transactions/${transaction.id}`}
-          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          className="transaction-back-icon-button"
           aria-label="Kembali ke daftar transaksi"
           title="Kembali ke daftar transaksi"
         >
@@ -467,7 +467,7 @@ export function EditTransactionPage() {
       <section className="edit-transaction-page">
         <Link
           to={`/transactions/${transaction.id}`}
-          className="transaction-back-icon-button transaction-back-icon-button--spaced"
+          className="transaction-back-icon-button"
           aria-label="Kembali ke daftar transaksi"
           title="Kembali ke daftar transaksi"
         >
@@ -485,7 +485,7 @@ export function EditTransactionPage() {
     <section className="edit-transaction-page">
       <Link
         to={`/transactions/${transaction.id}`}
-        className="transaction-back-icon-button transaction-back-icon-button--spaced"
+        className="transaction-back-icon-button"
         aria-label="Kembali ke daftar transaksi"
         title="Kembali ke daftar transaksi"
       >
@@ -616,11 +616,6 @@ export function EditTransactionPage() {
                   </option>
                 ))}
             </SelectField>
-            <small>
-              Pilih kategori aktif yang sesuai. Kategori transaksi yang sudah
-              ada dipertahankan jika tidak diganti; penghapusan kategori belum
-              didukung oleh kontrak PATCH backend saat ini.
-            </small>
           </div>
 
           <div className="edit-transaction-field">
@@ -711,10 +706,6 @@ export function EditTransactionPage() {
               )?.name ?? "Tidak dipilih"}
             </strong>
           </div>
-          <p>
-            Perubahan akan disimpan ke backend dan ditampilkan pada detail
-            transaksi setelah berhasil.
-          </p>
         </aside>
       </div>
     </section>
