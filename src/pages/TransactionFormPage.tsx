@@ -69,10 +69,13 @@ function toJakartaIsoDateTime(value: string): string {
 
 function isValidJakartaDateTime(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return false;
+
   const [datePart, timePart] = value.split("T");
   const [year, month, day] = datePart.split("-").map(Number);
   const [hour, minute] = timePart.split(":").map(Number);
+
   const date = new Date(Date.UTC(year, month - 1, day, hour, minute));
+
   return (
     date.getUTCFullYear() === year &&
     date.getUTCMonth() === month - 1 &&
@@ -210,6 +213,7 @@ export function TransactionFormPage() {
       type,
       categoryId: "",
     }));
+
     setFieldError("");
     setSubmitError("");
   }
@@ -267,7 +271,9 @@ export function TransactionFormPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (submitLock.current) return;
+
     setSubmitError("");
 
     const validationError = validateForm();
@@ -328,6 +334,7 @@ export function TransactionFormPage() {
             <strong>Data form belum dapat dimuat</strong>
             <p>{loadError}</p>
           </div>
+
           <button
             type="button"
             className="transaction-form-button transaction-form-button--secondary"
@@ -349,6 +356,7 @@ export function TransactionFormPage() {
               <h3>Informasi transaksi</h3>
               <p>Isi detail transaksi dengan benar sebelum menyimpan.</p>
             </div>
+
             <span className="transaction-form-currency-badge">IDR</span>
           </div>
 
@@ -367,10 +375,12 @@ export function TransactionFormPage() {
               <span className="transaction-type-option-icon" aria-hidden="true">
                 ↗
               </span>
+
               <span>
                 <strong>Pemasukan</strong>
                 <small>Uang masuk ke akun</small>
               </span>
+
               <span
                 className="transaction-type-option-check"
                 aria-hidden="true"
@@ -388,10 +398,12 @@ export function TransactionFormPage() {
               <span className="transaction-type-option-icon" aria-hidden="true">
                 ↘
               </span>
+
               <span>
                 <strong>Pengeluaran</strong>
                 <small>Uang keluar dari akun</small>
               </span>
+
               <span
                 className="transaction-type-option-check"
                 aria-hidden="true"
@@ -403,8 +415,10 @@ export function TransactionFormPage() {
 
           <div className="transaction-form-amount-panel">
             <label htmlFor="transaction-amount">Nominal transaksi</label>
+
             <div className="transaction-form-amount-input">
               <span>Rp</span>
+
               <InputField
                 id="transaction-amount"
                 name="amount"
@@ -421,9 +435,11 @@ export function TransactionFormPage() {
                 aria-describedby="transaction-amount-hint"
               />
             </div>
+
             <small id="transaction-amount-hint">
               Gunakan angka tanpa pemisah ribuan. Contoh: 75000 atau 1250.50.
             </small>
+
             {form.amount.trim() &&
               /^\d+(\.\d{1,4})?$/.test(form.amount.trim()) &&
               Number(form.amount) > 0 && (
@@ -438,6 +454,7 @@ export function TransactionFormPage() {
               <label htmlFor="transaction-account">
                 Akun <span aria-hidden="true">*</span>
               </label>
+
               <SelectField
                 id="transaction-account"
                 name="accountId"
@@ -453,12 +470,14 @@ export function TransactionFormPage() {
                 <option value="">
                   {isLoadingOptions ? "Memuat akun..." : "Pilih akun"}
                 </option>
+
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name} · {account.currency}
                   </option>
                 ))}
               </SelectField>
+
               {!isLoadingOptions && accounts.length === 0 && !loadError && (
                 <small className="transaction-form-field-note">
                   Belum ada akun IDR aktif. Buat atau aktifkan akun terlebih
@@ -469,6 +488,7 @@ export function TransactionFormPage() {
 
             <div className="transaction-form-field">
               <label htmlFor="transaction-category">Kategori</label>
+
               <SelectField
                 id="transaction-category"
                 name="categoryId"
@@ -484,12 +504,14 @@ export function TransactionFormPage() {
                 }
               >
                 <option value="">Tanpa kategori</option>
+
                 {eligibleCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </SelectField>
+
               <small className="transaction-form-field-note">
                 {eligibleCategories.length === 0
                   ? `Belum ada kategori ${form.type === "INCOME" ? "pemasukan" : "pengeluaran"} aktif. Kategori bisa ditambahkan nanti.`
@@ -501,6 +523,7 @@ export function TransactionFormPage() {
               <label htmlFor="transaction-date">
                 Tanggal dan waktu <span aria-hidden="true">*</span>
               </label>
+
               <InputField
                 id="transaction-date"
                 name="transactionDate"
@@ -512,6 +535,7 @@ export function TransactionFormPage() {
                 disabled={isSubmitting}
                 required
               />
+
               <small className="transaction-form-field-note">
                 Zona waktu aplikasi: Asia/Jakarta (UTC+07:00).
               </small>
@@ -519,6 +543,7 @@ export function TransactionFormPage() {
 
             <div className="transaction-form-field">
               <label htmlFor="transaction-description">Deskripsi</label>
+
               <TextareaField
                 id="transaction-description"
                 name="description"
@@ -535,6 +560,7 @@ export function TransactionFormPage() {
                 }
                 disabled={isSubmitting}
               />
+
               <div className="transaction-form-character-count">
                 {form.description.length}/500 karakter
               </div>
@@ -573,6 +599,7 @@ export function TransactionFormPage() {
             >
               Batal
             </Link>
+
             <button
               type="submit"
               className="transaction-form-button transaction-form-button--primary"
@@ -597,40 +624,6 @@ export function TransactionFormPage() {
             </button>
           </div>
         </form>
-
-        <aside className="transaction-form-side-panel">
-          <div className="transaction-form-tip-icon" aria-hidden="true">
-            ✦
-          </div>
-          <h3>Catatan keuangan yang lebih rapi</h3>
-          <p>
-            Catat transaksi sedekat mungkin dengan waktu terjadinya agar laporan
-            keuangan lebih akurat.
-          </p>
-
-          <ul>
-            <li>
-              <span>✓</span>
-              Pilih akun tempat uang masuk atau keluar.
-            </li>
-            <li>
-              <span>✓</span>
-              Gunakan kategori yang sesuai agar analitik lebih bermakna.
-            </li>
-            <li>
-              <span>✓</span>
-              Pastikan tanggal dan nominal sudah benar sebelum menyimpan.
-            </li>
-          </ul>
-
-          <div className="transaction-form-side-note">
-            <span aria-hidden="true">ⓘ</span>
-            <p>
-              Transfer antar-akun akan menggunakan form transfer khusus pada
-              tahap berikutnya agar kedua sisi transaksi tetap konsisten.
-            </p>
-          </div>
-        </aside>
       </div>
     </section>
   );

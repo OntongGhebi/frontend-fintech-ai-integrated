@@ -54,13 +54,12 @@
 
 .transaction-form-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 20px;
 }
 
-.transaction-form-card,
-.transaction-form-side-panel {
+.transaction-form-card {
   min-width: 0;
   padding: 24px;
   border: 1px solid #e8ece7;
@@ -81,8 +80,7 @@
   gap: 16px;
 }
 
-.transaction-form-card-heading h3,
-.transaction-form-side-panel h3 {
+.transaction-form-card-heading h3 {
   margin: 0;
   color: #2d382f;
   font-size: 15px;
@@ -451,106 +449,6 @@
   }
 }
 
-.transaction-form-side-panel {
-  display: grid;
-  gap: 14px;
-  padding: 22px;
-  background: #fbfcf8;
-}
-
-.transaction-form-tip-icon {
-  display: grid;
-  width: 39px;
-  height: 39px;
-  place-items: center;
-  border: 1px solid #e2ebd7;
-  border-radius: 11px;
-  background: #eff6e6;
-  color: #4d8050;
-  font-size: 20px;
-}
-
-.transaction-form-side-panel h3 {
-  line-height: 1.5;
-}
-
-.transaction-form-side-panel > p {
-  margin: -5px 0 2px;
-  color: #8a938a;
-  font-size: 11px;
-  line-height: 1.8;
-}
-
-.transaction-form-side-panel ul {
-  display: grid;
-  gap: 13px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.transaction-form-side-panel li {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  color: #637065;
-  font-size: 10px;
-  line-height: 1.7;
-}
-
-.transaction-form-side-panel li > span {
-  display: grid;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-  place-items: center;
-  border-radius: 50%;
-  background: #e6f2e2;
-  color: #398052;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.transaction-form-side-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  margin-top: 3px;
-  padding: 12px;
-  border: 1px solid #e8ecdf;
-  border-radius: 9px;
-  background: #fff;
-  color: #728071;
-}
-
-.transaction-form-side-note > span {
-  color: #6b9871;
-  font-size: 15px;
-}
-
-.transaction-form-side-note p {
-  margin: 0;
-  font-size: 10px;
-  line-height: 1.7;
-}
-
-@media (max-width: 1050px) {
-  .transaction-form-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .transaction-form-side-panel {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .transaction-form-side-panel > p,
-  .transaction-form-side-panel ul,
-  .transaction-form-side-note {
-    grid-column: 1 / -1;
-  }
-}
-
 @media (max-width: 650px) {
   .transaction-form-heading {
     flex-direction: column;
@@ -560,8 +458,7 @@
     align-self: flex-start;
   }
 
-  .transaction-form-card,
-  .transaction-form-side-panel {
+  .transaction-form-card {
     padding: 17px;
   }
 
@@ -575,16 +472,6 @@
 
   .transaction-form-button {
     width: 100%;
-  }
-
-  .transaction-form-side-panel {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .transaction-form-side-panel > p,
-  .transaction-form-side-panel ul,
-  .transaction-form-side-note {
-    grid-column: auto;
   }
 }
 
