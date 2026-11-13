@@ -629,41 +629,60 @@
   }
 }
 
+/* Account modal */
+
 .accounts-modal-backdrop {
   position: fixed;
-  z-index: 1000;
+  z-index: 1100;
   inset: 0;
   display: grid;
   overflow-y: auto;
   place-items: center;
   padding: 24px;
-  background: rgb(22 32 25 / 46%);
+  background: rgb(20 35 27 / 48%);
   backdrop-filter: blur(3px);
+  animation: accounts-modal-fade 160ms ease-out;
 }
 
 .accounts-modal {
+  display: flex;
   width: min(100%, 500px);
-  max-height: calc(100vh - 48px);
+  max-height: min(90vh, 720px);
+  max-height: min(90dvh, 720px);
+  flex-direction: column;
   overflow-y: auto;
-  padding: 25px;
-  border: 1px solid rgb(255 255 255 / 70%);
-  border-radius: 17px;
+  padding: 21px 22px;
+  border: 1px solid #e9eee8;
+  border-radius: 15px;
   background: #fff;
-  box-shadow: 0 24px 80px rgb(15 35 22 / 22%);
+  box-shadow: 0 24px 70px rgb(20 35 27 / 20%);
+  animation: accounts-modal-enter 180ms ease-out;
 }
 
 .accounts-modal-heading {
-  margin-bottom: 22px;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #edf1ec;
 }
 
 .accounts-modal-heading h3,
 .accounts-archive-modal h3 {
-  margin: 6px 0 8px;
-  color: #28352c;
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 1.25;
+  margin: 6px 0 5px;
+  color: #344238;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.35px;
+  line-height: 1.4;
+}
+
+.accounts-modal-heading p {
+  margin: 0;
+  color: #89948b;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.7;
 }
 
 .accounts-modal-close {
@@ -672,71 +691,120 @@
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 1px solid #e8ece8;
+  border: 1px solid #e6ebe5;
   border-radius: 9px;
   background: #fff;
-  color: #69746b;
-  font-size: 21px;
+  color: #778379;
+  font-size: 19px;
   cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.accounts-modal-close:hover:not(:disabled) {
+  border-color: #d3e3d3;
+  background: #f5f9f3;
+  color: #287654;
+}
+
+.accounts-modal-close:focus-visible {
+  outline: 3px solid rgb(40 118 84 / 15%);
+  outline-offset: 2px;
+}
+
+.accounts-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .accounts-form {
   display: grid;
-  gap: 17px;
+  gap: 15px;
 }
 
 .accounts-form-field {
   display: grid;
-  gap: 8px;
+  min-width: 0;
+  gap: 7px;
 }
 
 .accounts-form-field > span {
-  color: #3d4940;
-  font-size: 12px;
-  font-weight: 600;
+  color: #526056;
+  font-size: 11px;
+  font-weight: 550;
   line-height: 1.5;
 }
 
 .accounts-form-field input,
 .accounts-form-field select {
+  box-sizing: border-box;
   width: 100%;
-  min-height: 43px;
-  padding: 10px 12px;
-  border: 1px solid #dfe6df;
+  min-width: 0;
+  min-height: 41px;
+  padding: 0 11px;
+  border: 1px solid #e3e9e2;
   border-radius: 9px;
   outline: none;
   background: #fff;
-  color: #2d382f;
-  font-size: 12px;
+  color: #3d4a40;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 400;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.accounts-form-field input::placeholder {
+  color: #a6afa7;
+  opacity: 1;
 }
 
 .accounts-form-field input:focus,
 .accounts-form-field select:focus {
-  border-color: var(--color-primary, #24785b);
-  box-shadow: 0 0 0 3px rgb(36 120 91 / 8%);
+  border-color: #80ad8b;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(67 139 97 / 9%);
+}
+
+.accounts-form-field input:disabled,
+.accounts-form-field select:disabled {
+  border-color: #e8ece7;
+  background: #f7f9f6;
+  color: #929b93;
+  cursor: not-allowed;
 }
 
 .accounts-form-field small {
-  color: #8b948d;
+  color: #929c93;
   font-size: 10px;
+  font-weight: 400;
   line-height: 1.6;
 }
 
 .accounts-readonly-note {
-  padding: 12px;
-  border: 1px solid #e5eae5;
+  padding: 11px 12px;
+  border: 1px solid #e5eee1;
   border-radius: 9px;
-  background: #f8faf8;
-  color: #6f7971;
-  font-size: 11px;
+  background: #f5f9f2;
+  color: #647267;
+  font-size: 10px;
+  font-weight: 400;
   line-height: 1.7;
 }
 
 .accounts-form-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 3px;
+  padding-top: 14px;
+  border-top: 1px solid #edf1ec;
 }
 
 .accounts-archive-modal {
@@ -748,25 +816,33 @@
   display: grid;
   width: 44px;
   height: 44px;
-  margin: 0 auto 16px;
+  margin: 0 auto 14px;
   place-items: center;
-  border-radius: 50%;
-  background: #fff0e9;
-  color: #bc6338;
-  font-size: 20px;
+  border: 1px solid #f0e0d8;
+  border-radius: 12px;
+  background: #fff5ef;
+  color: #b66b48;
+  font-size: 19px;
   font-weight: 650;
+}
+
+.accounts-archive-modal h3 {
+  margin: 0 0 8px;
 }
 
 .accounts-archive-modal > p {
   margin: 0;
   color: #778078;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 400;
   line-height: 1.8;
 }
 
 .accounts-archive-modal .accounts-form-actions {
-  margin-top: 24px;
+  margin-top: 20px;
 }
+
+/* Accessibility */
 
 .accounts-visually-hidden {
   position: absolute;
@@ -777,6 +853,8 @@
   white-space: nowrap;
   clip-path: inset(50%);
 }
+
+/* Responsive layout */
 
 @media (max-width: 1000px) {
   .accounts-summary-grid {
@@ -858,21 +936,36 @@
   }
 
   .accounts-modal-backdrop {
-    align-items: start;
     padding: 14px;
   }
 
   .accounts-modal {
-    max-height: calc(100vh - 28px);
-    padding: 19px;
+    max-height: 92vh;
+    max-height: 92dvh;
+    padding: 17px;
+    border-radius: 13px;
+  }
+
+  .accounts-modal-heading {
+    margin-bottom: 15px;
+  }
+
+  .accounts-form {
+    gap: 13px;
+  }
+
+  .accounts-form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .accounts-form-actions .accounts-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .accounts-button {
     white-space: nowrap;
-  }
-
-  .accounts-form-actions {
-    flex-wrap: wrap;
   }
 }
 
@@ -888,16 +981,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .accounts-spinner {
-    animation-duration: 2s;
-  }
-
-  .accounts-button {
-    transition: none;
-  }
-}
-
 @media (max-width: 380px) {
   .accounts-list-heading-actions {
     gap: 7px;
@@ -908,5 +991,43 @@
     padding-right: 9px;
     padding-left: 9px;
     font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accounts-spinner {
+    animation-duration: 2s;
+  }
+
+  .accounts-button,
+  .accounts-modal-close {
+    transition: none;
+  }
+
+  .accounts-modal-backdrop,
+  .accounts-modal {
+    animation: none;
+  }
+}
+
+@keyframes accounts-modal-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes accounts-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
